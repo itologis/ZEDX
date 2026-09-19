@@ -1,4 +1,3 @@
-
 import {
   SafeAreaView,
   ScrollView,
@@ -18,7 +17,9 @@ export default function IntroScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Introduction data unavailable.</Text>
+          <Text style={styles.errorText}>
+            Introduction data unavailable.
+          </Text>
 
           <TouchableOpacity
             onPress={onBack}
@@ -53,7 +54,12 @@ export default function IntroScreen({
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.card, { borderTopColor: accentColor }]}>
+        <View
+          style={[
+            styles.card,
+            { borderTopColor: accentColor },
+          ]}
+        >
           <Text style={styles.title}>
             {intro.title || 'Untitled'}
           </Text>
@@ -72,15 +78,48 @@ export default function IntroScreen({
 
           {intro.useCases?.length > 0 ? (
             <>
-              <Text style={styles.subtitle}>Use Cases</Text>
+              <Text style={styles.subtitle}>
+                Use Cases
+              </Text>
 
-              {intro.useCases.map((useCase, index) => (
-                <Text key={`${useCase}-${index}`} style={styles.useCase}>
-                  • {useCase}
-                </Text>
-              ))}
+              {intro.useCases.map(
+                (useCase, index) => (
+                  <Text
+                    key={`${useCase}-${index}`}
+                    style={styles.useCase}
+                  >
+                    • {useCase}
+                  </Text>
+                )
+              )}
             </>
           ) : null}
+        </View>
+
+        <View
+          style={[
+            styles.assessmentNotice,
+            {
+              borderColor: accentColor,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.assessmentNoticeTitle,
+              {
+                color: accentColor,
+              },
+            ]}
+          >
+            Initial Assessment
+          </Text>
+
+          <Text style={styles.assessmentNoticeText}>
+            Before you start learning, you'll take
+            a short assessment to help find the
+            level that's right for you.
+          </Text>
         </View>
 
         <TouchableOpacity
@@ -193,6 +232,26 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
+  assessmentNotice: {
+    backgroundColor: '#24273a',
+    padding: 14,
+    borderRadius: 10,
+    marginTop: 16,
+    borderWidth: 1,
+  },
+
+  assessmentNoticeTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+
+  assessmentNoticeText: {
+    color: '#9399b2',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+
   startButton: {
     minHeight: 54,
     paddingHorizontal: 16,
@@ -200,7 +259,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: 16,
   },
 
   startButtonText: {
