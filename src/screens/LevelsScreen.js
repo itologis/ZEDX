@@ -33,7 +33,7 @@ export default function LevelsScreen({
     loadProgress();
   }, []);
 
-  // FIX 1: silent flag skips the full-screen spinner
+  // FIX 1: Silent reload skips the full-screen spinner.
   const loadProgress = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
@@ -59,7 +59,7 @@ export default function LevelsScreen({
       ...topic,
       _level: level.level,
 
-      // FIX 2: reload silently after marking a topic as read
+      // FIX 2: Reload silently after marking a topic as read.
       _onComplete: async () => {
         await saveProgress(languageKey, level.level, topic.id);
         await loadProgress(true);
@@ -84,7 +84,7 @@ export default function LevelsScreen({
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
 
-          {/* FIX 3: don't pass the press event in as "silent" */}
+          {/* FIX 3: Do not pass the press event as "silent". */}
           <TouchableOpacity
             style={[styles.retryButton, { backgroundColor: accentColor }]}
             onPress={() => loadProgress()}
@@ -111,25 +111,28 @@ export default function LevelsScreen({
         <View style={{ width: 60 }} />
       </View>
 
-      {assessment?.completed && (
-        <View style={[styles.recommendationCard, { borderColor: accentColor }]}>
-          <Text style={styles.recommendationTitle}>
-            Recommended starting point
-          </Text>
-
-          <Text style={[styles.recommendationLevel, { color: accentColor }]}>
-            {languageData.levels.find(
-              (level) => level.level === recommendedLevel,
-            )?.label || recommendedLevel}
-          </Text>
-
-          <Text style={styles.recommendationText}>
-            You can still explore every level freely.
-          </Text>
-        </View>
-      )}
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* FIX 4: Recommendation card is now inside the scroll area. */}
+        {assessment?.completed && (
+          <View
+            style={[styles.recommendationCard, { borderColor: accentColor }]}
+          >
+            <Text style={styles.recommendationTitle}>
+              Recommended starting point
+            </Text>
+
+            <Text style={[styles.recommendationLevel, { color: accentColor }]}>
+              {languageData.levels.find(
+                (level) => level.level === recommendedLevel,
+              )?.label || recommendedLevel}
+            </Text>
+
+            <Text style={styles.recommendationText}>
+              You can still explore every level freely.
+            </Text>
+          </View>
+        )}
+
         {languageData.levels.map((level) => {
           const levelTopics = level.topics || [];
           const completedTopics = progress[level.level] || [];
@@ -193,7 +196,9 @@ export default function LevelsScreen({
                     key={topic.id}
                     style={[
                       styles.topicCard,
-                      isCompleted && { borderLeftColor: accentColor },
+                      isCompleted && {
+                        borderLeftColor: accentColor,
+                      },
                     ]}
                     onPress={() => handleTopicPress(level, topic)}
                   >
@@ -302,9 +307,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  // FIX 5: Remove horizontal margins because ScrollView has padding.
   recommendationCard: {
-    marginHorizontal: 16,
-    marginTop: 12,
+    marginBottom: 16,
     padding: 14,
     borderRadius: 10,
     backgroundColor: "#24273a",

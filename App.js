@@ -1,11 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import AssessmentScreen from "./src/screens/AssessmentScreen";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -102,10 +97,7 @@ export default function App() {
 
   const handleStartLearning = async (languageKey) => {
     try {
-      const completed =
-        await hasCompletedAssessment(
-          languageKey
-        );
+      const completed = await hasCompletedAssessment(languageKey);
 
       if (completed) {
         goLevels(languageKey);
@@ -113,188 +105,95 @@ export default function App() {
         goAssessment(languageKey);
       }
     } catch (error) {
-      console.error(
-        "Error checking assessment:",
-        error
-      );
+      console.error("Error checking assessment:", error);
 
       goAssessment(languageKey);
     }
   };
 
-  const handleAssessmentComplete = (
-    languageKey
-  ) => {
+  const handleAssessmentComplete = (languageKey) => {
     goLevels(languageKey);
   };
 
-  const handleQuizPass = async (
-    languageKey,
-    levelId
-  ) => {
-    console.log(
-      `Quiz passed for ${languageKey} - ${levelId}, saving...`
-    );
+  const handleQuizPass = async (languageKey, levelId) => {
+    console.log(`Quiz passed for ${languageKey} - ${levelId}, saving...`);
 
-    await saveQuizPassed(
-      languageKey,
-      levelId
-    );
+    await saveQuizPassed(languageKey, levelId);
 
-    console.log(
-      "Quiz result saved."
-    );
+    console.log("Quiz result saved.");
   };
 
-  const openDevAssessment = (
-    languageKey
-  ) => {
+  const openDevAssessment = (languageKey) => {
     setShowDevTools(false);
     goAssessment(languageKey);
   };
 
-  const resetDevAssessment = async (
-    languageKey
-  ) => {
+  const resetDevAssessment = async (languageKey) => {
     await resetAssessment(languageKey);
 
-    console.log(
-      `Assessment reset for ${languageKey}`
-    );
+    console.log(`Assessment reset for ${languageKey}`);
   };
 
   let content;
 
   if (screen.name === "home") {
-    content = (
-      <HomeScreen
-        onSelectLanguage={goIntro}
-      />
-    );
+    content = <HomeScreen onSelectLanguage={goIntro} />;
   } else if (screen.name === "intro") {
-    const {
-      data,
-      color,
-    } = DATA_MAP[
-      screen.languageKey
-    ];
+    const { data, color } = DATA_MAP[screen.languageKey];
 
     content = (
       <IntroScreen
         intro={data.intro}
         accentColor={color}
         onBack={goHome}
-        onStart={() =>
-          handleStartLearning(
-            screen.languageKey
-          )
-        }
+        onStart={() => handleStartLearning(screen.languageKey)}
       />
     );
-  } else if (
-    screen.name === "assessment"
-  ) {
-    const {
-      data,
-      color,
-      key,
-    } = DATA_MAP[
-      screen.languageKey
-    ];
+  } else if (screen.name === "assessment") {
+    const { data, color, key } = DATA_MAP[screen.languageKey];
 
     content = (
       <AssessmentScreen
         languageKey={key}
         languageData={data}
         accentColor={color}
-        onBack={() =>
-          goIntro(
-            screen.languageKey
-          )
-        }
-        onComplete={() =>
-          handleAssessmentComplete(
-            key
-          )
-        }
+        onBack={() => goIntro(screen.languageKey)}
+        onComplete={() => handleAssessmentComplete(key)}
       />
     );
-  } else if (
-    screen.name === "levels"
-  ) {
-    const {
-      data,
-      color,
-      key,
-    } = DATA_MAP[
-      screen.languageKey
-    ];
+  } else if (screen.name === "levels") {
+    const { data, color, key } = DATA_MAP[screen.languageKey];
 
     content = (
       <LevelsScreen
         languageData={data}
         accentColor={color}
         languageKey={key}
-        onBack={() =>
-          goIntro(
-            screen.languageKey
-          )
-        }
-        onOpenTopic={(topic) =>
-          goTopic(
-            screen.languageKey,
-            topic
-          )
-        }
+        onBack={() => goIntro(screen.languageKey)}
+        onOpenTopic={(topic) => goTopic(screen.languageKey, topic)}
         onOpenQuiz={goQuiz}
       />
     );
-  } else if (
-    screen.name === "topic"
-  ) {
-    const {
-      color,
-    } = DATA_MAP[
-      screen.languageKey
-    ];
+  } else if (screen.name === "topic") {
+    const { color } = DATA_MAP[screen.languageKey];
 
     content = (
       <TopicScreen
         topic={screen.topic}
         accentColor={color}
-        onBack={() =>
-          goLevels(
-            screen.languageKey
-          )
-        }
+        onBack={() => goLevels(screen.languageKey)}
       />
     );
-  } else if (
-    screen.name === "quiz"
-  ) {
-    const {
-      color,
-      key,
-    } = DATA_MAP[
-      screen.languageKey
-    ];
+  } else if (screen.name === "quiz") {
+    const { color, key } = DATA_MAP[screen.languageKey];
 
     content = (
       <QuizScreen
         languageKey={key}
         levelId={screen.levelId}
         accentColor={color}
-        onBack={() =>
-          goLevels(
-            screen.languageKey
-          )
-        }
-        onPass={() =>
-          handleQuizPass(
-            key,
-            screen.levelId
-          )
-        }
+        onBack={() => goLevels(screen.languageKey)}
+        onPass={() => handleQuizPass(key, screen.levelId)}
       />
     );
   }
@@ -305,137 +204,75 @@ export default function App() {
 
       {content}
 
-      {SHOW_DEV_TOOLS &&
-        screen.name === "home" && (
-          <>
-            {showDevTools && (
-              <View style={styles.devPanel}>
-                <View style={styles.devHeader}>
-                  <Text style={styles.devTitle}>
-                    DEV TOOLS
-                  </Text>
+      {SHOW_DEV_TOOLS && screen.name === "home" && (
+        <>
+          {showDevTools && (
+            <View style={styles.devPanel}>
+              <View style={styles.devHeader}>
+                <Text style={styles.devTitle}>DEV TOOLS</Text>
 
-                  <TouchableOpacity
-                    onPress={() =>
-                      setShowDevTools(false)
-                    }
-                    style={styles.devClose}
-                  >
-                    <Text
-                      style={
-                        styles.devCloseText
-                      }
-                    >
-                      ×
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={styles.devSubtitle}>
-                  Assessment testing
-                </Text>
-
-                <Text style={styles.devLabel}>
-                  Open assessment
-                </Text>
-
-                {Object.entries(
-                  DATA_MAP
-                ).map(
-                  ([
-                    languageKey,
-                    language,
-                  ]) => (
-                    <TouchableOpacity
-                      key={languageKey}
-                      style={[
-                        styles.devButton,
-                        {
-                          borderColor:
-                            language.color,
-                        },
-                      ]}
-                      onPress={() =>
-                        openDevAssessment(
-                          languageKey
-                        )
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.devButtonText,
-                          {
-                            color:
-                              language.color,
-                          },
-                        ]}
-                      >
-                        Show{" "}
-                        {language.data.intro
-                          ?.title ||
-                          languageKey}{" "}
-                        Assessment
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-
-                <Text style={styles.devLabel}>
-                  Reset assessment data
-                </Text>
-
-                {Object.entries(
-                  DATA_MAP
-                ).map(
-                  ([
-                    languageKey,
-                    language,
-                  ]) => (
-                    <TouchableOpacity
-                      key={`reset-${languageKey}`}
-                      style={
-                        styles.devResetButton
-                      }
-                      onPress={() =>
-                        resetDevAssessment(
-                          languageKey
-                        )
-                      }
-                    >
-                      <Text
-                        style={
-                          styles.devResetText
-                        }
-                      >
-                        Reset{" "}
-                        {language.data.intro
-                          ?.title ||
-                          languageKey}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-              </View>
-            )}
-
-            {!showDevTools && (
-              <TouchableOpacity
-                style={styles.devToggle}
-                onPress={() =>
-                  setShowDevTools(true)
-                }
-              >
-                <Text
-                  style={
-                    styles.devToggleText
-                  }
+                <TouchableOpacity
+                  onPress={() => setShowDevTools(false)}
+                  style={styles.devClose}
                 >
-                  DEV
-                </Text>
-              </TouchableOpacity>
-            )}
-          </>
-        )}
+                  <Text style={styles.devCloseText}>×</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.devSubtitle}>Assessment testing</Text>
+
+              <Text style={styles.devLabel}>Open assessment</Text>
+
+              {Object.entries(DATA_MAP).map(([languageKey, language]) => (
+                <TouchableOpacity
+                  key={languageKey}
+                  style={[
+                    styles.devButton,
+                    {
+                      borderColor: language.color,
+                    },
+                  ]}
+                  onPress={() => openDevAssessment(languageKey)}
+                >
+                  <Text
+                    style={[
+                      styles.devButtonText,
+                      {
+                        color: language.color,
+                      },
+                    ]}
+                  >
+                    Show {language.data.intro?.title || languageKey} Assessment
+                  </Text>
+                </TouchableOpacity>
+              ))}
+
+              <Text style={styles.devLabel}>Reset assessment data</Text>
+
+              {Object.entries(DATA_MAP).map(([languageKey, language]) => (
+                <TouchableOpacity
+                  key={`reset-${languageKey}`}
+                  style={styles.devResetButton}
+                  onPress={() => resetDevAssessment(languageKey)}
+                >
+                  <Text style={styles.devResetText}>
+                    Reset {language.data.intro?.title || languageKey}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {!showDevTools && (
+            <TouchableOpacity
+              style={styles.devToggle}
+              onPress={() => setShowDevTools(true)}
+            >
+              <Text style={styles.devToggleText}>DEV</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      )}
     </View>
   );
 }
