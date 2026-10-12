@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ============================================================
 // LESSON PROGRESS
@@ -20,7 +20,7 @@ export const saveProgress = async (languageKey, level, topicId) => {
 
     return true;
   } catch (error) {
-    console.error('Error saving progress:', error);
+    console.error("Error saving progress:", error);
     return false;
   }
 };
@@ -32,7 +32,7 @@ export const getProgress = async (languageKey) => {
 
     return data ? JSON.parse(data) : {};
   } catch (error) {
-    console.error('Error getting progress:', error);
+    console.error("Error getting progress:", error);
     return {};
   }
 };
@@ -41,11 +41,9 @@ export const isLevelComplete = async (languageKey, level, topics) => {
   const progress = await getProgress(languageKey);
   const completedTopics = progress[level] || [];
 
-  const levelTopicIds = topics.map(topic => topic.id);
+  const levelTopicIds = topics.map((topic) => topic.id);
 
-  return levelTopicIds.every(id =>
-    completedTopics.includes(id)
-  );
+  return levelTopicIds.every((id) => completedTopics.includes(id));
 };
 
 // ============================================================
@@ -54,11 +52,7 @@ export const isLevelComplete = async (languageKey, level, topics) => {
 
 // Quiz scores no longer control lesson progression.
 // Completing the topics in a level is enough to unlock the next level.
-export const isLevelFullyComplete = async (
-  languageKey,
-  level,
-  topics
-) => {
+export const isLevelFullyComplete = async (languageKey, level, topics) => {
   return await isLevelComplete(languageKey, level, topics);
 };
 
@@ -76,7 +70,7 @@ export const getUnlockedLevels = async (languageKey, levels) => {
     const previousComplete = await isLevelComplete(
       languageKey,
       previousLevel.level,
-      previousLevel.topics
+      previousLevel.topics,
     );
 
     if (previousComplete) {
@@ -117,18 +111,13 @@ export const saveQuizPassed = async (languageKey, level) => {
 
     passed[level] = true;
 
-    await AsyncStorage.setItem(
-      key,
-      JSON.stringify(passed)
-    );
+    await AsyncStorage.setItem(key, JSON.stringify(passed));
 
-    console.log(
-      `Quiz passed saved for ${languageKey} - ${level}`
-    );
+    console.log(`Quiz passed saved for ${languageKey} - ${level}`);
 
     return true;
   } catch (error) {
-    console.error('Error saving quiz:', error);
+    console.error("Error saving quiz:", error);
     return false;
   }
 };
@@ -142,7 +131,7 @@ export const isQuizPassed = async (languageKey, level) => {
 
     return passed[level] || false;
   } catch (error) {
-    console.error('Error checking quiz:', error);
+    console.error("Error checking quiz:", error);
     return false;
   }
 };
@@ -155,7 +144,7 @@ export const getQuizProgress = async (languageKey) => {
 
     return data ? JSON.parse(data) : {};
   } catch (error) {
-    console.error('Error getting quiz progress:', error);
+    console.error("Error getting quiz progress:", error);
     return {};
   }
 };
@@ -169,94 +158,59 @@ export const resetQuizProgress = async (languageKey, level) => {
 
     delete passed[level];
 
-    await AsyncStorage.setItem(
-      key,
-      JSON.stringify(passed)
-    );
+    await AsyncStorage.setItem(key, JSON.stringify(passed));
 
     return true;
   } catch (error) {
-    console.error('Error resetting quiz:', error);
+    console.error("Error resetting quiz:", error);
     return false;
   }
 };
 
 // ============================================================
-// INITIAL ASSESSMENT
+// INITIAL ASSESSMENT (per language)
 // ============================================================
 
-export const saveAssessmentResult = async (results) => {
+const assessmentKey = (languageKey) => `assessment_${languageKey}`;
+
+export const saveAssessmentResult = async (languageKey, results) => {
   try {
     await AsyncStorage.setItem(
-      'initial_assessment',
+      assessmentKey(languageKey),
       JSON.stringify({
         completed: true,
-        results,
+        ...results, // { scores, startingLevel }
         completedAt: new Date().toISOString(),
-      })
+      }),
     );
-
     return true;
   } catch (error) {
-    console.error(
-      'Error saving assessment:',
-      error
-    );
+    console.error("Error saving assessment:", error);
     return false;
   }
 };
 
-export const getAssessmentResult = async () => {
+export const getAssessmentResult = async (languageKey) => {
   try {
-    const data = await AsyncStorage.getItem(
-      'initial_assessment'
-    );
-
+    const data = await AsyncStorage.getItem(assessmentKey(languageKey));
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error(
-      'Error getting assessment:',
-      error
-    );
+    console.error("Error getting assessment:", error);
     return null;
   }
 };
 
-export const hasCompletedAssessment = async () => {
-  try {
-    const data = await AsyncStorage.getItem(
-      'initial_assessment'
-    );
-
-    if (!data) {
-      return false;
-    }
-
-    const assessment = JSON.parse(data);
-
-    return assessment.completed === true;
-  } catch (error) {
-    console.error(
-      'Error checking assessment:',
-      error
-    );
-    return false;
-  }
+export const hasCompletedAssessment = async (languageKey) => {
+  const assessment = await getAssessmentResult(languageKey);
+  return assessment?.completed === true;
 };
 
-export const resetAssessment = async () => {
+export const resetAssessment = async (languageKey) => {
   try {
-    await AsyncStorage.removeItem(
-      'initial_assessment'
-    );
-
+    await AsyncStorage.removeItem(assessmentKey(languageKey));
     return true;
   } catch (error) {
-    console.error(
-      'Error resetting assessment:',
-      error
-    );
+    console.error("Error resetting assessment:", error);
     return false;
   }
 };
-

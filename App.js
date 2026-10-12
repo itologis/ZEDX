@@ -25,6 +25,8 @@ import {
   saveQuizPassed,
 } from "./src/data/progress";
 
+const SHOW_DEV_TOOLS = true;
+
 const DATA_MAP = {
   html: {
     data: htmlData,
@@ -303,112 +305,137 @@ export default function App() {
 
       {content}
 
-      {__DEV__ && screen.name === "home" && (
-        <>
-          {showDevTools && (
-            <View style={styles.devPanel}>
-              <View style={styles.devHeader}>
-                <Text style={styles.devTitle}>
-                  DEV TOOLS
-                </Text>
-
-                <TouchableOpacity
-                  onPress={() =>
-                    setShowDevTools(false)
-                  }
-                  style={styles.devClose}
-                >
-                  <Text style={styles.devCloseText}>
-                    ×
+      {SHOW_DEV_TOOLS &&
+        screen.name === "home" && (
+          <>
+            {showDevTools && (
+              <View style={styles.devPanel}>
+                <View style={styles.devHeader}>
+                  <Text style={styles.devTitle}>
+                    DEV TOOLS
                   </Text>
-                </TouchableOpacity>
-              </View>
 
-              <Text style={styles.devSubtitle}>
-                Assessment testing
-              </Text>
-
-              <Text style={styles.devLabel}>
-                Open assessment
-              </Text>
-
-              {Object.entries(DATA_MAP).map(
-                ([languageKey, language]) => (
                   <TouchableOpacity
-                    key={languageKey}
-                    style={[
-                      styles.devButton,
-                      {
-                        borderColor:
-                          language.color,
-                      },
-                    ]}
                     onPress={() =>
-                      openDevAssessment(
-                        languageKey
-                      )
+                      setShowDevTools(false)
                     }
+                    style={styles.devClose}
                   >
                     <Text
+                      style={
+                        styles.devCloseText
+                      }
+                    >
+                      ×
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={styles.devSubtitle}>
+                  Assessment testing
+                </Text>
+
+                <Text style={styles.devLabel}>
+                  Open assessment
+                </Text>
+
+                {Object.entries(
+                  DATA_MAP
+                ).map(
+                  ([
+                    languageKey,
+                    language,
+                  ]) => (
+                    <TouchableOpacity
+                      key={languageKey}
                       style={[
-                        styles.devButtonText,
+                        styles.devButton,
                         {
-                          color:
+                          borderColor:
                             language.color,
                         },
                       ]}
+                      onPress={() =>
+                        openDevAssessment(
+                          languageKey
+                        )
+                      }
                     >
-                      Show{" "}
-                      {language.data.intro?.title ||
-                        languageKey}
-                      {" "}Assessment
-                    </Text>
-                  </TouchableOpacity>
-                )
-              )}
+                      <Text
+                        style={[
+                          styles.devButtonText,
+                          {
+                            color:
+                              language.color,
+                          },
+                        ]}
+                      >
+                        Show{" "}
+                        {language.data.intro
+                          ?.title ||
+                          languageKey}{" "}
+                        Assessment
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                )}
 
-              <Text style={styles.devLabel}>
-                Reset assessment data
-              </Text>
+                <Text style={styles.devLabel}>
+                  Reset assessment data
+                </Text>
 
-              {Object.entries(DATA_MAP).map(
-                ([languageKey, language]) => (
-                  <TouchableOpacity
-                    key={`reset-${languageKey}`}
-                    style={styles.devResetButton}
-                    onPress={() =>
-                      resetDevAssessment(
-                        languageKey
-                      )
-                    }
-                  >
-                    <Text
-                      style={styles.devResetText}
+                {Object.entries(
+                  DATA_MAP
+                ).map(
+                  ([
+                    languageKey,
+                    language,
+                  ]) => (
+                    <TouchableOpacity
+                      key={`reset-${languageKey}`}
+                      style={
+                        styles.devResetButton
+                      }
+                      onPress={() =>
+                        resetDevAssessment(
+                          languageKey
+                        )
+                      }
                     >
-                      Reset{" "}
-                      {language.data.intro?.title ||
-                        languageKey}
-                    </Text>
-                  </TouchableOpacity>
-                )
-              )}
-            </View>
-          )}
+                      <Text
+                        style={
+                          styles.devResetText
+                        }
+                      >
+                        Reset{" "}
+                        {language.data.intro
+                          ?.title ||
+                          languageKey}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                )}
+              </View>
+            )}
 
-          {!showDevTools && (
-            <TouchableOpacity
-              style={styles.devToggle}
-              onPress={() =>
-                setShowDevTools(true)
-              }
-            >
-              <Text style={styles.devToggleText}>
-                DEV
-              </Text>
-            </TouchableOpacity>
-          )}
-        </>
-      )}
+            {!showDevTools && (
+              <TouchableOpacity
+                style={styles.devToggle}
+                onPress={() =>
+                  setShowDevTools(true)
+                }
+              >
+                <Text
+                  style={
+                    styles.devToggleText
+                  }
+                >
+                  DEV
+                </Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
     </View>
   );
 }
