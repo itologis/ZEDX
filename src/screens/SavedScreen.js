@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-
-import BottomNav from "../components/BottomNav";
 import GlassCard from "../components/GlassCard";
 import Header from "../components/Header";
 import Screen from "../components/Screen";
@@ -19,28 +17,29 @@ export default function SavedScreen({ onOpenTopic, onNavigate }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    setLoading(true);
     const list = await getBookmarks();
-
     setItems(
-      list.map((b) => findTopic(b.languageKey, b.topicId)).filter(Boolean),
+      list
+        .map((bookmark) => findTopic(bookmark.languageKey, bookmark.topicId))
+        .filter(Boolean),
     );
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   const remove = async (item) => {
     await toggleBookmark(item.languageKey, item.topic.id);
-    load();
+    await load();
   };
 
   return (
     <Screen>
       <Header title="Saved" />
-
       <ScrollView
         style={styles.list}
         contentContainerStyle={styles.listContent}
@@ -52,7 +51,6 @@ export default function SavedScreen({ onOpenTopic, onNavigate }) {
             save it here.
           </Text>
         )}
-
         {items.map((item) => (
           <GlassCard
             key={`${item.languageKey}-${item.topic.id}`}
@@ -69,15 +67,17 @@ export default function SavedScreen({ onOpenTopic, onNavigate }) {
                 {item.topic.description}
               </Text>
             </View>
-
-            <TouchableOpacity onPress={() => remove(item)} style={styles.star}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${item.topic.title} from saved`}
+              onPress={() => remove(item)}
+              style={styles.star}
+            >
               <Text style={styles.starText}>★</Text>
             </TouchableOpacity>
           </GlassCard>
         ))}
       </ScrollView>
-
-      <BottomNav active="saved" onNavigate={onNavigate} />
     </Screen>
   );
 }

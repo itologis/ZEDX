@@ -1,14 +1,12 @@
 import { useMemo } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-
-import BottomNav from "../components/BottomNav";
 import GlassCard from "../components/GlassCard";
 import Header from "../components/Header";
 import Screen from "../components/Screen";
@@ -21,19 +19,16 @@ const FILTERS = [
 ];
 
 export default function SearchScreen({
-  query,
-  onQueryChange,
-  filter,
-  onFilterChange,
+  query = "",
+  onQueryChange = () => {},
+  filter = "all",
+  onFilterChange = () => {},
   onOpenTopic,
   onOpenLanguage,
   onNavigate,
 }) {
   const index = useMemo(() => getAllTopics(), []);
-
-  const text = query.trim().toLowerCase();
-  const terms = text.split(/\s+/).filter(Boolean);
-
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const results =
     terms.length === 0
       ? []
@@ -41,32 +36,28 @@ export default function SearchScreen({
           .filter((item) => filter === "all" || item.languageKey === filter)
           .map((item) => {
             const title = item.topic.title.toLowerCase();
-            const haystack = `${title} ${item.topic.description} ${
-              item.topic.syntax || ""
-            } ${item.languageLabel} ${item.levelLabel}`.toLowerCase();
-
-            if (!terms.every((t) => haystack.includes(t))) return null;
-
-            // Title matches come first
+            const haystack =
+              `${title} ${item.topic.description || ""} ${item.topic.syntax || ""} ${item.languageLabel} ${item.levelLabel}`.toLowerCase();
+            if (!terms.every((term) => haystack.includes(term))) return null;
             return {
               item,
-              score: terms.every((t) => title.includes(t)) ? 0 : 1,
+              score: terms.every((term) => title.includes(term)) ? 0 : 1,
             };
           })
           .filter(Boolean)
           .sort((a, b) => a.score - b.score)
           .slice(0, 50)
           .map((r) => r.item);
-
   const languageMatches =
     terms.length === 0
       ? []
-      : LANGUAGES.filter((l) => l.label.toLowerCase().includes(text));
+      : LANGUAGES.filter((l) =>
+          l.label.toLowerCase().includes(query.trim().toLowerCase()),
+        );
 
   return (
     <Screen>
       <Header title="Search" />
-
       <TextInput
         style={styles.input}
         placeholder="Search topics, e.g. flexbox, decorators..."
@@ -76,28 +67,28 @@ export default function SearchScreen({
         autoCapitalize="none"
         autoCorrect={false}
       />
-
       <View style={styles.chips}>
         {FILTERS.map((f) => {
-          const on = filter === f.key;
-
+          const selected = filter === f.key;
           return (
             <TouchableOpacity
               key={f.key}
               onPress={() => onFilterChange(f.key)}
               style={[
                 styles.chip,
-                on && { backgroundColor: f.color + "33", borderColor: f.color },
+                selected && {
+                  backgroundColor: `${f.color}33`,
+                  borderColor: f.color,
+                },
               ]}
             >
-              <Text style={[styles.chipText, on && { color: f.color }]}>
+              <Text style={[styles.chipText, selected && { color: f.color }]}>
                 {f.label}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
-
       <ScrollView
         style={styles.list}
         contentContainerStyle={styles.listContent}
@@ -106,31 +97,29 @@ export default function SearchScreen({
       >
         {terms.length === 0 && (
           <Text style={styles.hint}>
-            Type a word to search every topic across HTML, CSS, Java and Python.
+            Type a word to search every topic across all languages.
           </Text>
         )}
-
         {terms.length > 0 &&
           results.length === 0 &&
           languageMatches.length === 0 && (
             <Text style={styles.hint}>No topics match "{query}"</Text>
           )}
-
         {languageMatches.map((lang) => (
           <GlassCard
             key={lang.key}
             accent={lang.color}
             style={styles.row}
-            onPress={() => onOpenLanguage(lang.key)}
+            onPress={() => onOpenLanguage?.(lang.key)}
           >
             <Text style={[styles.rowTag, { color: lang.color }]}>LANGUAGE</Text>
             <Text style={styles.rowTitle}>Open {lang.label}</Text>
           </GlassCard>
         ))}
-
         {results.map((item) => (
           <GlassCard
             key={`${item.languageKey}-${item.topic.id}`}
+            accent={item.color}
             style={styles.row}
             onPress={() => onOpenTopic(item.languageKey, item.topic.id)}
           >
@@ -144,8 +133,6 @@ export default function SearchScreen({
           </GlassCard>
         ))}
       </ScrollView>
-
-      <BottomNav active="search" onNavigate={onNavigate} />
     </Screen>
   );
 }

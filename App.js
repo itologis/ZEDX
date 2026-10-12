@@ -12,138 +12,108 @@ import SavedScreen from "./src/screens/SavedScreen";
 import SearchScreen from "./src/screens/SearchScreen";
 import TopicScreen from "./src/screens/TopicScreen";
 
-import cssData from "./src/data/css";
-import htmlData from "./src/data/html";
-import javaData from "./src/data/java";
-import pythonData from "./src/data/python";
+import BottomNav from "./src/components/BottomNav";
+import MoltenBackground from "./src/components/MoltenBackground";
 
+import { LANGUAGES, findTopic } from "./src/data/languages";
 import {
+  getMissedQuestions,
   hasCompletedAssessment,
   resetAssessment,
+  saveProgress,
   saveQuizPassed,
 } from "./src/data/progress";
+import { COLORS } from "./src/theme";
 
 const SHOW_DEV_TOOLS = true;
 
-const DATA_MAP = {
-  html: {
-    data: htmlData,
-    color: "#f38ba8",
-    key: "html",
-  },
-  css: {
-    data: cssData,
-    color: "#89b4fa",
-    key: "css",
-  },
-  java: {
-    data: javaData,
-    color: "#fab387",
-    key: "java",
-  },
-  python: {
-    data: pythonData,
-    color: "#a6e3a1",
-    key: "python",
-  },
-};
+// { html: { key, label, color, data }, css: {...}, ... }
+const DATA_MAP = Object.fromEntries(LANGUAGES.map((l) => [l.key, l]));
 
 export default function App() {
-  const [screen, setScreen] = useState({
-    name: "home",
-  });
-
-  const [activeTab, setActiveTab] = useState("learn");
+  const [screen, setScreen] = useState({ name: "home" });
+  const [activeTab, setActiveTab] = useState("home");
   const [showDevTools, setShowDevTools] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFilter, setSearchFilter] = useState("all");
 
-  const goHome = useCallback(() => {
-    setActiveTab("learn");
-    setScreen({ name: "home" });
+  const handleNavigate = useCallback((tab) => {
+    const next = tab === "learn" ? "home" : tab;
+    setActiveTab(next);
+    setScreen({ name: next });
   }, []);
 
+  const goHome = useCallback(() => handleNavigate("home"), [handleNavigate]);
+  const goQuizzes = useCallback(
+    () => handleNavigate("quizzes"),
+    [handleNavigate],
+  );
+
   const goIntro = useCallback((languageKey) => {
-    setScreen({
-      name: "intro",
-      languageKey,
-    });
+    setScreen({ name: "intro", languageKey });
   }, []);
 
   const goLevels = useCallback((languageKey) => {
-    setScreen({
-      name: "levels",
-      languageKey,
-    });
+    setScreen({ name: "levels", languageKey });
   }, []);
 
   const goAssessment = useCallback((languageKey) => {
-    setScreen({
-      name: "assessment",
-      languageKey,
-    });
+    setScreen({ name: "assessment", languageKey });
   }, []);
 
-  const goTopic = useCallback((languageKey, topic) => {
-    setScreen({
-      name: "topic",
-      languageKey,
-      topic,
-    });
+  // `topicOrId` is either a full topic object (from Levels) or a topic id
+  // (from Home / Search / Saved). `from` decides where Back returns to.
+  const goTopic = useCallback((languageKey, topicOrId, from = "levels") => {
+    let topic = topicOrId;
+
+    if (typeof topicOrId !== "object") {
+      const found = findTopic(languageKey, topicOrId);
+      if (!found) return;
+
+      topic = {
+        ...found.topic,
+        _level: found.level,
+        _onComplete: () =>
+          saveProgress(languageKey, found.level, found.topic.id),
+      };
+    }
+
+    setScreen({ name: "topic", languageKey, topic, from });
   }, []);
+
+  const closeTopic = () => {
+    if (screen.from === "levels") goLevels(screen.languageKey);
+    else handleNavigate(screen.from);
+  };
 
   const goQuiz = useCallback((languageKey, levelId, from = "levels") => {
-    setScreen({
-      name: "quiz",
-      languageKey,
-      levelId,
-      from,
-    });
+    setScreen({ name: "quiz", languageKey, levelId, from });
   }, []);
 
-  const goQuizzes = useCallback(() => {
-    setActiveTab("quizzes");
-    setScreen({ name: "quizzes" });
+  const goReview = useCallback(async () => {
+    try {
+      const questions = await getMissedQuestions();
+      if (questions.length === 0) return;
+      setScreen({ name: "review", questions });
+    } catch (error) {
+      console.error("Error loading missed questions:", error);
+    }
   }, []);
-
-  const goSearch = useCallback(() => {
-    setActiveTab("search");
-    setScreen({ name: "search" });
-  }, []);
-
-  const goSaved = useCallback(() => {
-    setActiveTab("saved");
-    setScreen({ name: "saved" });
-  }, []);
-
-  const goQuizFromHub = useCallback(
-    (languageKey, levelId) => {
-      goQuiz(languageKey, levelId, "quizzes");
-    },
-    [goQuiz],
-  );
 
   const handleStartLearning = async (languageKey) => {
     try {
       const completed = await hasCompletedAssessment(languageKey);
-
-      if (completed) {
-        goLevels(languageKey);
-      } else {
-        goAssessment(languageKey);
-      }
+      if (completed) goLevels(languageKey);
+      else goAssessment(languageKey);
     } catch (error) {
       console.error("Error checking assessment:", error);
       goAssessment(languageKey);
     }
   };
 
-  const handleAssessmentComplete = (languageKey) => {
-    goLevels(languageKey);
-  };
-
   const handleQuizPass = async (languageKey, levelId) => {
     try {
       await saveQuizPassed(languageKey, levelId);
-      console.log(`Quiz pass saved for ${languageKey} - ${levelId}`);
     } catch (error) {
       console.error("Error saving quiz result:", error);
     }
@@ -157,137 +127,117 @@ export default function App() {
   const resetDevAssessment = async (languageKey) => {
     try {
       await resetAssessment(languageKey);
-      console.log(`Assessment reset for ${languageKey}`);
     } catch (error) {
       console.error("Error resetting assessment:", error);
     }
   };
 
-  const handleNavigate = (tab) => {
-    setActiveTab(tab);
-
-    if (tab === "learn") {
-      setScreen({ name: "home" });
-    } else if (tab === "search") {
-      setScreen({ name: "search" });
-    } else if (tab === "quizzes") {
-      setScreen({ name: "quizzes" });
-    } else if (tab === "saved") {
-      setScreen({ name: "saved" });
-    }
-  };
-
-  let content;
+  let content = null;
+  const language = screen.languageKey ? DATA_MAP[screen.languageKey] : null;
 
   if (screen.name === "home") {
     content = (
       <HomeScreen
         onSelectLanguage={goIntro}
-        onOpenTopic={(languageKey, topic) => goTopic(languageKey, topic)}
-        onOpenQuizzes={goQuizzes}
-        onNavigate={handleNavigate}
+        onOpenTopic={(languageKey, topicId) =>
+          goTopic(languageKey, topicId, "home")
+        }
       />
     );
   } else if (screen.name === "search") {
     content = (
       <SearchScreen
-        onBack={goHome}
-        onOpenTopic={(languageKey, topic) => goTopic(languageKey, topic)}
-        onNavigate={handleNavigate}
+        query={searchQuery}
+        onQueryChange={setSearchQuery}
+        filter={searchFilter}
+        onFilterChange={setSearchFilter}
+        onOpenTopic={(languageKey, topicId) =>
+          goTopic(languageKey, topicId, "search")
+        }
+        onOpenLanguage={goIntro}
       />
     );
   } else if (screen.name === "saved") {
     content = (
       <SavedScreen
-        onBack={goHome}
-        onOpenTopic={(languageKey, topic) => goTopic(languageKey, topic)}
-        onNavigate={handleNavigate}
+        onOpenTopic={(languageKey, topicId) =>
+          goTopic(languageKey, topicId, "saved")
+        }
       />
     );
   } else if (screen.name === "quizzes") {
     content = (
       <QuizzesScreen
-        onBack={goHome}
-        onOpenQuiz={goQuizFromHub}
-        onNavigate={handleNavigate}
+        onOpenQuiz={(languageKey, levelId) =>
+          goQuiz(languageKey, levelId, "quizzes")
+        }
+        onOpenReview={goReview}
       />
     );
-  } else if (screen.name === "intro") {
-    const language = DATA_MAP[screen.languageKey];
-
-    if (language) {
-      content = (
-        <IntroScreen
-          intro={language.data.intro}
-          accentColor={language.color}
-          onBack={goHome}
-          onStart={() => handleStartLearning(screen.languageKey)}
-        />
-      );
-    }
-  } else if (screen.name === "assessment") {
-    const language = DATA_MAP[screen.languageKey];
-
-    if (language) {
-      content = (
-        <AssessmentScreen
-          languageKey={language.key}
-          languageData={language.data}
-          accentColor={language.color}
-          onBack={() => goIntro(screen.languageKey)}
-          onComplete={() => handleAssessmentComplete(language.key)}
-        />
-      );
-    }
-  } else if (screen.name === "levels") {
-    const language = DATA_MAP[screen.languageKey];
-
-    if (language) {
-      content = (
-        <LevelsScreen
-          languageData={language.data}
-          accentColor={language.color}
-          languageKey={language.key}
-          onBack={() => goIntro(screen.languageKey)}
-          onOpenTopic={(topic) => goTopic(screen.languageKey, topic)}
-          onOpenQuiz={(languageKey, levelId) =>
-            goQuiz(languageKey || screen.languageKey, levelId)
-          }
-        />
-      );
-    }
-  } else if (screen.name === "topic") {
-    const language = DATA_MAP[screen.languageKey];
-
-    if (language) {
-      content = (
-        <TopicScreen
-          topic={screen.topic}
-          accentColor={language.color}
-          onBack={() => goLevels(screen.languageKey)}
-        />
-      );
-    }
-  } else if (screen.name === "quiz") {
-    const language = DATA_MAP[screen.languageKey];
-
-    if (language) {
-      content = (
-        <QuizScreen
-          languageKey={language.key}
-          levelId={screen.levelId}
-          accentColor={language.color}
-          onBack={() => {
-            if (screen.from === "quizzes") {
-              goQuizzes();
-            } else {
-              goLevels(screen.languageKey);
-            }
-          }}
-          onPass={() => handleQuizPass(language.key, screen.levelId)}
-        />
-      );
-    }
+  } else if (screen.name === "intro" && language) {
+    content = (
+      <IntroScreen
+        intro={language.data.intro}
+        accentColor={language.color}
+        onBack={goHome}
+        onStart={() => handleStartLearning(language.key)}
+      />
+    );
+  } else if (screen.name === "assessment" && language) {
+    content = (
+      <AssessmentScreen
+        languageKey={language.key}
+        languageData={language.data}
+        accentColor={language.color}
+        onBack={() => goIntro(language.key)}
+        onComplete={() => goLevels(language.key)}
+      />
+    );
+  } else if (screen.name === "levels" && language) {
+    content = (
+      <LevelsScreen
+        languageData={language.data}
+        accentColor={language.color}
+        languageKey={language.key}
+        onBack={() => goIntro(language.key)}
+        onOpenTopic={(topic) => goTopic(language.key, topic, "levels")}
+        onOpenQuiz={(languageKey, levelId) =>
+          goQuiz(languageKey || language.key, levelId, "levels")
+        }
+      />
+    );
+  } else if (screen.name === "topic" && language) {
+    content = (
+      <TopicScreen
+        key={`${screen.languageKey}-${screen.topic.id}`}
+        topic={screen.topic}
+        languageKey={screen.languageKey}
+        accentColor={language.color}
+        onBack={closeTopic}
+      />
+    );
+  } else if (screen.name === "quiz" && language) {
+    content = (
+      <QuizScreen
+        key={`${language.key}-${screen.levelId}`}
+        languageKey={language.key}
+        levelId={screen.levelId}
+        accentColor={language.color}
+        onBack={() =>
+          screen.from === "quizzes" ? goQuizzes() : goLevels(language.key)
+        }
+        onPass={() => handleQuizPass(language.key, screen.levelId)}
+      />
+    );
+  } else if (screen.name === "review") {
+    content = (
+      <QuizScreen
+        customQuestions={screen.questions}
+        title="Review"
+        accentColor={COLORS.ember}
+        onBack={goQuizzes}
+      />
+    );
   }
 
   const showBottomNavigation = ["home", "search", "saved", "quizzes"].includes(
@@ -297,151 +247,83 @@ export default function App() {
   return (
     <View style={styles.app}>
       <StatusBar style="light" />
+      <MoltenBackground />
+      <View style={styles.shell}>
+        <View style={styles.content}>{content}</View>
 
-      <View style={styles.content}>{content}</View>
+        {showBottomNavigation && (
+          <BottomNav active={activeTab} onNavigate={handleNavigate} />
+        )}
 
-      {showBottomNavigation && (
-        <View style={styles.bottomNavigation}>
-          {[
-            { key: "learn", label: "Learn" },
-            { key: "search", label: "Search" },
-            { key: "quizzes", label: "Quizzes" },
-            { key: "saved", label: "Saved" },
-          ].map((tab) => {
-            const selected = activeTab === tab.key;
-
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                style={[styles.navItem, selected && styles.navItemActive]}
-                onPress={() => handleNavigate(tab.key)}
-              >
-                <Text
-                  style={[styles.navLabel, selected && styles.navLabelActive]}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
-
-      {SHOW_DEV_TOOLS && screen.name === "home" && (
-        <>
-          {showDevTools && (
-            <View style={styles.devPanel}>
-              <View style={styles.devHeader}>
-                <Text style={styles.devTitle}>DEV TOOLS</Text>
-
-                <TouchableOpacity
-                  onPress={() => setShowDevTools(false)}
-                  style={styles.devClose}
-                >
-                  <Text style={styles.devCloseText}>×</Text>
-                </TouchableOpacity>
-              </View>
-
-              <Text style={styles.devSubtitle}>Assessment testing</Text>
-
-              <Text style={styles.devLabel}>Open assessment</Text>
-
-              {Object.entries(DATA_MAP).map(([languageKey, language]) => (
-                <TouchableOpacity
-                  key={languageKey}
-                  style={[styles.devButton, { borderColor: language.color }]}
-                  onPress={() => openDevAssessment(languageKey)}
-                >
-                  <Text
-                    style={[styles.devButtonText, { color: language.color }]}
+        {SHOW_DEV_TOOLS && screen.name === "home" && (
+          <>
+            {showDevTools && (
+              <View style={styles.devPanel}>
+                <View style={styles.devHeader}>
+                  <Text style={styles.devTitle}>DEV TOOLS</Text>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    onPress={() => setShowDevTools(false)}
+                    style={styles.devClose}
                   >
-                    Show {language.data.intro?.title || languageKey} Assessment
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text style={styles.devCloseText}>×</Text>
+                  </TouchableOpacity>
+                </View>
 
-              <Text style={styles.devLabel}>Reset assessment data</Text>
+                <Text style={styles.devSubtitle}>Assessment testing</Text>
+                <Text style={styles.devLabel}>Open assessment</Text>
 
-              {Object.entries(DATA_MAP).map(([languageKey, language]) => (
-                <TouchableOpacity
-                  key={`reset-${languageKey}`}
-                  style={styles.devResetButton}
-                  onPress={() => resetDevAssessment(languageKey)}
-                >
-                  <Text style={styles.devResetText}>
-                    Reset {language.data.intro?.title || languageKey}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+                {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
+                  <TouchableOpacity
+                    key={languageKey}
+                    style={[styles.devButton, { borderColor: lang.color }]}
+                    onPress={() => openDevAssessment(languageKey)}
+                  >
+                    <Text style={[styles.devButtonText, { color: lang.color }]}>
+                      Show {lang.data.intro?.title || languageKey} Assessment
+                    </Text>
+                  </TouchableOpacity>
+                ))}
 
-          {!showDevTools && (
-            <TouchableOpacity
-              style={styles.devToggle}
-              onPress={() => setShowDevTools(true)}
-            >
-              <Text style={styles.devToggleText}>DEV</Text>
-            </TouchableOpacity>
-          )}
-        </>
-      )}
+                <Text style={styles.devLabel}>Reset assessment data</Text>
+
+                {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
+                  <TouchableOpacity
+                    key={`reset-${languageKey}`}
+                    style={styles.devResetButton}
+                    onPress={() => resetDevAssessment(languageKey)}
+                  >
+                    <Text style={styles.devResetText}>
+                      Reset {lang.data.intro?.title || languageKey}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {!showDevTools && (
+              <TouchableOpacity
+                style={styles.devToggle}
+                onPress={() => setShowDevTools(true)}
+              >
+                <Text style={styles.devToggleText}>DEV</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  app: {
-    flex: 1,
-    backgroundColor: "#1a1b26",
-  },
-
-  content: {
-    flex: 1,
-  },
-
-  bottomNavigation: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingTop: 8,
-    paddingBottom: 10,
-    backgroundColor: "#1a1b26",
-    borderTopWidth: 1,
-    borderTopColor: "#303347",
-  },
-
-  navItem: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    marginHorizontal: 3,
-    borderRadius: 12,
-  },
-
-  navItemActive: {
-    backgroundColor: "#303347",
-  },
-
-  navLabel: {
-    color: "#9399b2",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-
-  navLabelActive: {
-    color: "#c0caf5",
-    fontWeight: "700",
-  },
-
+  app: { flex: 1, backgroundColor: "#0f0f14" },
+  shell: { flex: 1, width: "100%", maxWidth: 560, alignSelf: "center" },
+  content: { flex: 1 },
   devToggle: {
     position: "absolute",
     right: 16,
-    bottom: 80,
+    bottom: 96,
     backgroundColor: "#2c2e3e",
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -449,18 +331,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#45475a",
   },
-
-  devToggleText: {
-    color: "#f9e2af",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-
+  devToggleText: { color: "#f9e2af", fontSize: 12, fontWeight: "bold" },
   devPanel: {
     position: "absolute",
     left: 16,
     right: 16,
-    bottom: 80,
+    bottom: 96,
     backgroundColor: "#24273a",
     borderRadius: 14,
     padding: 16,
@@ -471,36 +347,16 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 8,
   },
-
   devHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 4,
   },
-
-  devTitle: {
-    color: "#f9e2af",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-
-  devClose: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-
-  devCloseText: {
-    color: "#c0caf5",
-    fontSize: 24,
-  },
-
-  devSubtitle: {
-    color: "#9399b2",
-    fontSize: 12,
-    marginBottom: 14,
-  },
-
+  devTitle: { color: "#f9e2af", fontSize: 16, fontWeight: "bold" },
+  devClose: { paddingHorizontal: 8, paddingVertical: 2 },
+  devCloseText: { color: "#c0caf5", fontSize: 24 },
+  devSubtitle: { color: "#9399b2", fontSize: 12, marginBottom: 14 },
   devLabel: {
     color: "#c0caf5",
     fontSize: 13,
@@ -508,30 +364,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 8,
   },
-
   devButton: {
     padding: 11,
     borderRadius: 8,
     borderWidth: 1,
     marginBottom: 6,
-    backgroundColor: "#1a1b26",
+    backgroundColor: "#0f0f14",
   },
-
-  devButtonText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-
+  devButtonText: { fontSize: 13, fontWeight: "600" },
   devResetButton: {
     padding: 8,
     borderRadius: 8,
     backgroundColor: "#2a1e1e",
     marginBottom: 5,
   },
-
-  devResetText: {
-    color: "#f38ba8",
-    fontSize: 12,
-    textAlign: "center",
-  },
+  devResetText: { color: "#f38ba8", fontSize: 12, textAlign: "center" },
 });

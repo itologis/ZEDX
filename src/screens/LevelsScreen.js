@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,21 +8,27 @@ import {
   View,
 } from "react-native";
 
+import Screen from "../components/Screen";
+
 import {
   getAssessmentResult,
   getProgress,
+  getQuizProgress,
   saveProgress,
 } from "../data/progress";
+import { QUIZZES } from "../data/quiz";
 
 export default function LevelsScreen({
   languageData,
   accentColor = "#89b4fa",
   onBack,
   onOpenTopic,
+  onOpenQuiz,
   languageKey,
 }) {
   const [progress, setProgress] = useState({});
   const [assessment, setAssessment] = useState(null);
+  const [quizPassed, setQuizPassed] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -33,19 +38,20 @@ export default function LevelsScreen({
     loadProgress();
   }, []);
 
-  // FIX 1: Silent reload skips the full-screen spinner.
   const loadProgress = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
       setError(null);
 
-      const [prog, assessmentResult] = await Promise.all([
+      const [prog, assessmentResult, quizzes] = await Promise.all([
         getProgress(languageKey),
         getAssessmentResult(languageKey),
+        getQuizProgress(languageKey),
       ]);
 
       setProgress(prog);
       setAssessment(assessmentResult);
+      setQuizPassed(quizzes);
     } catch (err) {
       console.error(err);
       setError("Failed to load your progress.");
@@ -58,8 +64,6 @@ export default function LevelsScreen({
     onOpenTopic({
       ...topic,
       _level: level.level,
-
-      // FIX 2: Reload silently after marking a topic as read.
       _onComplete: async () => {
         await saveProgress(languageKey, level.level, topic.id);
         await loadProgress(true);
@@ -69,30 +73,29 @@ export default function LevelsScreen({
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <Screen style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={accentColor} />
-          <Text style={styles.loadingText}>Loading your progress...</Text>
+          <Text style={styles.loadingText}>Loading your progress…</Text>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
+      <Screen style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-
-          {/* FIX 3: Do not pass the press event as "silent". */}
           <TouchableOpacity
             style={[styles.retryButton, { backgroundColor: accentColor }]}
             onPress={() => loadProgress()}
+            activeOpacity={0.85}
           >
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
@@ -100,19 +103,30 @@ export default function LevelsScreen({
     assessment?.startingLevel || languageData.levels[0]?.level;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>← {languageName}</Text>
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.backButton}
+          accessibilityRole="button"
+          accessibilityLabel={`Back to ${languageName}`}
+          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.backText, { color: accentColor }]}>
+            ← {languageName}
+          </Text>
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>ZEDX</Text>
-
-        <View style={{ width: 60 }} />
+        <Text style={styles.headerTitle}>Levels</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* FIX 4: Recommendation card is now inside the scroll area. */}
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         {assessment?.completed && (
           <View
             style={[styles.recommendationCard, { borderColor: accentColor }]}
@@ -120,13 +134,10 @@ export default function LevelsScreen({
             <Text style={styles.recommendationTitle}>
               Recommended starting point
             </Text>
-
             <Text style={[styles.recommendationLevel, { color: accentColor }]}>
-              {languageData.levels.find(
-                (level) => level.level === recommendedLevel,
-              )?.label || recommendedLevel}
+              {languageData.levels.find((l) => l.level === recommendedLevel)
+                ?.label || recommendedLevel}
             </Text>
-
             <Text style={styles.recommendationText}>
               You can still explore every level freely.
             </Text>
@@ -136,15 +147,16 @@ export default function LevelsScreen({
         {languageData.levels.map((level) => {
           const levelTopics = level.topics || [];
           const completedTopics = progress[level.level] || [];
-
-          const completedCount = levelTopics.filter((topic) =>
-            completedTopics.includes(topic.id),
+          const completedCount = levelTopics.filter((t) =>
+            completedTopics.includes(t.id),
           ).length;
-
           const isComplete =
             levelTopics.length > 0 && completedCount === levelTopics.length;
-
           const isRecommended = level.level === recommendedLevel;
+          const percent =
+            levelTopics.length === 0
+              ? 0
+              : Math.round((completedCount / levelTopics.length) * 100);
 
           return (
             <View key={level.level} style={styles.levelContainer}>
@@ -153,7 +165,6 @@ export default function LevelsScreen({
                   <Text style={[styles.levelNumber, { color: accentColor }]}>
                     {level.level}
                   </Text>
-
                   <Text style={[styles.levelLabel, { color: accentColor }]}>
                     {level.label}
                   </Text>
@@ -163,14 +174,23 @@ export default function LevelsScreen({
                   <Text style={styles.levelProgressText}>
                     {completedCount}/{levelTopics.length}
                   </Text>
-
-                  {isComplete && (
-                    <Text style={styles.completeText}>Complete</Text>
-                  )}
+                  {isComplete && <Text style={styles.completeText}>Done</Text>}
                 </View>
               </View>
 
-              {isRecommended && (
+              <View style={styles.levelTrack}>
+                <View
+                  style={[
+                    styles.levelFill,
+                    {
+                      width: `${percent}%`,
+                      backgroundColor: accentColor,
+                    },
+                  ]}
+                />
+              </View>
+
+              {isRecommended && assessment?.completed && (
                 <View
                   style={[
                     styles.recommendedBadge,
@@ -183,7 +203,7 @@ export default function LevelsScreen({
                       { color: accentColor },
                     ]}
                   >
-                    Recommended starting level
+                    Recommended start
                   </Text>
                 </View>
               )}
@@ -198,9 +218,15 @@ export default function LevelsScreen({
                       styles.topicCard,
                       isCompleted && {
                         borderLeftColor: accentColor,
+                        backgroundColor: "rgba(166, 227, 161, 0.06)",
                       },
                     ]}
                     onPress={() => handleTopicPress(level, topic)}
+                    activeOpacity={0.75}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${topic.title}${
+                      isCompleted ? ", completed" : ""
+                    }`}
                   >
                     <View style={styles.topicRow}>
                       <View style={styles.topicLeft}>
@@ -213,232 +239,257 @@ export default function LevelsScreen({
                           {topic.title}
                         </Text>
                       </View>
-
                       <View style={styles.topicRight}>
-                        {isCompleted && (
-                          <Text style={styles.completedMark}>Done</Text>
+                        {isCompleted ? (
+                          <Text style={styles.completedMark}>✓</Text>
+                        ) : (
+                          <Text style={styles.chevron}>›</Text>
                         )}
                       </View>
                     </View>
-
-                    <Text style={styles.topicDescription} numberOfLines={1}>
-                      {topic.description}
-                    </Text>
+                    {!!topic.description && (
+                      <Text style={styles.topicDescription} numberOfLines={2}>
+                        {topic.description}
+                      </Text>
+                    )}
                   </TouchableOpacity>
                 );
               })}
+              {onOpenQuiz && QUIZZES[languageKey]?.[level.level] && (
+                <TouchableOpacity
+                  style={[styles.quizButton, { borderColor: accentColor }]}
+                  onPress={() => onOpenQuiz(languageKey, level.level)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.quizButtonText, { color: accentColor }]}>
+                    {quizPassed[level.level]
+                      ? "Quiz passed ✓ · retake"
+                      : `Take ${level.label} quiz`}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           );
         })}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1b26",
+    backgroundColor: "transparent",
   },
-
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-
   loadingText: {
     color: "#c0caf5",
-    fontSize: 18,
-    marginTop: 16,
+    fontSize: 15,
+    marginTop: 14,
   },
-
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 24,
   },
-
   errorText: {
     color: "#f38ba8",
-    fontSize: 18,
+    fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
   },
-
   retryButton: {
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 12,
+    minHeight: 48,
+    justifyContent: "center",
   },
-
   retryButtonText: {
     color: "#1a1b26",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
-
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#2c2e3e",
+    minHeight: 52,
   },
-
   backButton: {
-    padding: 12,
-    minWidth: 70,
+    minWidth: 88,
+    paddingVertical: 8,
   },
-
   backText: {
-    color: "#89b4fa",
     fontSize: 15,
-    fontWeight: "500",
+    fontWeight: "600",
   },
-
   headerTitle: {
+    flex: 1,
+    textAlign: "center",
     color: "#c0caf5",
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
-
-  // FIX 5: Remove horizontal margins because ScrollView has padding.
+  headerSpacer: {
+    minWidth: 88,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 32,
+  },
   recommendationCard: {
-    marginBottom: 16,
-    padding: 14,
-    borderRadius: 10,
+    marginBottom: 18,
+    padding: 16,
+    borderRadius: 14,
     backgroundColor: "#24273a",
     borderWidth: 1,
   },
-
   recommendationTitle: {
     color: "#9399b2",
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    marginBottom: 6,
   },
-
   recommendationLevel: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginBottom: 4,
   },
-
   recommendationText: {
     color: "#c0caf5",
     fontSize: 13,
+    lineHeight: 19,
   },
-
-  content: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-
   levelContainer: {
-    marginBottom: 24,
+    marginBottom: 28,
   },
-
   levelHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
   },
-
   levelHeaderLeft: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
   },
-
   levelNumber: {
     fontSize: 12,
-    fontWeight: "bold",
-    marginRight: 6,
+    fontWeight: "800",
+    marginRight: 8,
   },
-
   levelLabel: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 17,
+    fontWeight: "800",
   },
-
   levelStatus: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   levelProgressText: {
     color: "#9399b2",
     fontSize: 12,
+    fontWeight: "600",
   },
-
   completeText: {
     color: "#a6e3a1",
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: "700",
     marginLeft: 8,
   },
-
+  levelTrack: {
+    height: 4,
+    borderRadius: 4,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    overflow: "hidden",
+    marginBottom: 10,
+  },
+  levelFill: {
+    height: "100%",
+    borderRadius: 4,
+  },
   recommendedBadge: {
-    paddingVertical: 7,
+    paddingVertical: 6,
     paddingHorizontal: 10,
     borderWidth: 1,
-    borderRadius: 7,
-    marginBottom: 8,
+    borderRadius: 8,
+    marginBottom: 10,
     alignSelf: "flex-start",
   },
-
   recommendedBadgeText: {
-    fontSize: 12,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontWeight: "700",
   },
-
   topicCard: {
     backgroundColor: "#24273a",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginBottom: 8,
     borderLeftWidth: 4,
     borderLeftColor: "transparent",
+    minHeight: 56,
   },
-
   topicRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-
   topicLeft: {
     flex: 1,
+    paddingRight: 8,
   },
-
   topicRight: {
-    marginLeft: 10,
+    marginLeft: 4,
   },
-
   topicTitle: {
     fontSize: 15,
     fontWeight: "600",
     color: "#c0caf5",
   },
-
   topicTitleCompleted: {
     color: "#a6e3a1",
   },
-
   topicDescription: {
     fontSize: 12,
     color: "#9399b2",
-    marginTop: 3,
+    marginTop: 4,
+    lineHeight: 17,
   },
-
   completedMark: {
     color: "#a6e3a1",
-    fontSize: 11,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "700",
   },
+  chevron: {
+    color: "#585b70",
+    fontSize: 20,
+    fontWeight: "300",
+  },
+  quizButton: {
+    marginTop: 4,
+    minHeight: 46,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  quizButtonText: { fontSize: 14, fontWeight: "700" },
 });

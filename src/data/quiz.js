@@ -584,6 +584,138 @@ const RAW = {
       ],
     },
   },
+  javascript: {
+    L1: {
+      passingScore: 3,
+      questions: [
+        q(
+          "Which function displays a message in the console?",
+          ["print()", "console.log()", "display()", "show()"],
+          1,
+          "console.log() writes to the console. print() is Python, and display() and show() are not JavaScript functions.",
+        ),
+        q(
+          "Which keyword declares a variable that can be reassigned?",
+          ["const", "fixed", "let", "static"],
+          2,
+          "let allows reassignment. const cannot be reassigned, and fixed is not a keyword.",
+        ),
+        q(
+          'What is the data type of "Hello"?',
+          ["Number", "Boolean", "String", "Object"],
+          2,
+          "Text in quotes is a String.",
+        ),
+        q(
+          "Which operator checks equality without type conversion?",
+          ["=", "==", "===", "!="],
+          2,
+          "=== compares value and type. == converts types first, and a single = assigns a value.",
+        ),
+        q(
+          "Which statement repeats code while a condition is true?",
+          ["if", "while", "switch", "return"],
+          1,
+          "while keeps looping as long as its condition is true. if runs once, and switch picks a branch.",
+        ),
+      ],
+    },
+    L2: {
+      passingScore: 3,
+      questions: [
+        q(
+          "Which keyword defines a function?",
+          ["func", "function", "method", "define"],
+          1,
+          "function declares a function. func and define are not JavaScript keywords.",
+        ),
+        q(
+          "Which is a valid arrow function?",
+          [
+            "function => (a) { return a; }",
+            "const double = (n) => n * 2;",
+            "arrow(n) => n",
+            "const double = > n * 2",
+          ],
+          1,
+          "An arrow function is (params) => result. The others have the arrow or keyword in the wrong place.",
+        ),
+        q(
+          "What is the index of the first array element?",
+          ["0", "1", "-1", "It has no index"],
+          0,
+          "Array indexes start at zero.",
+        ),
+        q(
+          "How do you access the name property of person?",
+          ["person->name", "person(name)", "person.name", "person::name"],
+          2,
+          "Dot notation (person.name) reads a property. -> and :: belong to other languages.",
+        ),
+        q(
+          "What does Array.filter() return?",
+          [
+            "A new array containing matching elements",
+            "Always a number",
+            "The original array with every item changed",
+            "A single string",
+          ],
+          0,
+          "filter() builds a new array of the items that pass the test and leaves the original alone.",
+        ),
+      ],
+    },
+    L3: {
+      passingScore: 3,
+      questions: [
+        q(
+          "What does object destructuring allow you to do?",
+          [
+            "Delete every property",
+            "Extract properties into variables",
+            "Convert an object into a string automatically",
+            "Prevent all property changes",
+          ],
+          1,
+          "const { name } = person pulls properties out into their own variables.",
+        ),
+        q(
+          "What does the spread syntax use?",
+          ["...", "::", "**", "=>"],
+          0,
+          "Spread is three dots, like [...first, 3, 4]. => is an arrow function and ** is exponentiation.",
+        ),
+        q(
+          "What does a Promise represent?",
+          [
+            "A guaranteed successful result",
+            "An eventual result of an asynchronous operation",
+            "A loop",
+            "A class constructor only",
+          ],
+          1,
+          "A Promise stands for a result that will arrive later, and it can succeed or fail.",
+        ),
+        q(
+          "Which keyword is used to wait for a promise inside an async function?",
+          ["wait", "yield", "await", "pause"],
+          2,
+          "await pauses the async function until the promise settles.",
+        ),
+        q(
+          "Which statement imports a named export?",
+          [
+            'include add from "./math.js";',
+            'import { add } from "./math.js";',
+            'require add "./math.js";',
+            'using add from "./math.js";',
+          ],
+          1,
+          'Named imports use import { name } from "file".',
+        ),
+      ],
+    },
+  },
 };
 
 // Shuffle the answer options once when the app starts

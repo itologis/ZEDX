@@ -1,65 +1,73 @@
 import { useEffect, useState } from "react";
-import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import css from "../data/css";
-import html from "../data/html";
-import java from "../data/java";
-import { getQuizProgress } from "../data/progress";
-import python from "../data/python";
+import GlassCard from "../components/GlassCard";
+import Header from "../components/Header";
+import Screen from "../components/Screen";
+import { LANGUAGES } from "../data/languages";
+import { getMissedQuestions, getQuizProgress } from "../data/progress";
 import { QUIZZES } from "../data/quiz";
+import { COLORS } from "../theme";
 
-const LANGUAGES = [
-  { key: "html", label: "HTML", color: "#f38ba8", data: html },
-  { key: "css", label: "CSS", color: "#89b4fa", data: css },
-  { key: "java", label: "Java", color: "#fab387", data: java },
-  { key: "python", label: "Python", color: "#a6e3a1", data: python },
-];
-
-export default function QuizzesScreen({ onBack, onOpenQuiz }) {
+export default function QuizzesScreen({ onOpenQuiz, onOpenReview }) {
   const [passed, setPassed] = useState({});
+  const [missedCount, setMissedCount] = useState(0);
 
   useEffect(() => {
+    let mounted = true;
+
     const load = async () => {
-      const result = {};
+      try {
+        const result = {};
+        for (const lang of LANGUAGES) {
+          result[lang.key] = await getQuizProgress(lang.key);
+        }
+        const missed = await getMissedQuestions();
 
-      for (const lang of LANGUAGES) {
-        result[lang.key] = await getQuizProgress(lang.key);
+        if (mounted) {
+          setPassed(result);
+          setMissedCount(missed.length);
+        }
+      } catch (error) {
+        console.error("Error loading quizzes:", error);
       }
-
-      setPassed(result);
     };
 
     load();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>Quizzes</Text>
-
-        <View style={styles.headerSpacer} />
-      </View>
+    <Screen>
+      <Header title="Quizzes" />
 
       <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        <GlassCard
+          blur
+          accent={COLORS.ember}
+          style={styles.review}
+          onPress={onOpenReview}
+          disabled={missedCount === 0}
+        >
+          <Text style={styles.reviewTag}>REVIEW MODE</Text>
+          <Text style={styles.reviewTitle}>Review missed questions</Text>
+          <Text style={styles.reviewSub}>
+            {missedCount === 0
+              ? "Nothing to review yet. Questions you miss will show up here."
+              : `${missedCount} question${missedCount === 1 ? "" : "s"} waiting`}
+          </Text>
+        </GlassCard>
+
         {LANGUAGES.map((lang) => {
           const levels = lang.data.levels.filter(
             (level) => QUIZZES[lang.key]?.[level.level],
           );
+          if (levels.length === 0) return null;
 
           const passedCount = levels.filter(
             (level) => passed[lang.key]?.[level.level],
@@ -80,86 +88,69 @@ export default function QuizzesScreen({ onBack, onOpenQuiz }) {
                 const isPassed = !!passed[lang.key]?.[level.level];
 
                 return (
-                  <TouchableOpacity
+                  <GlassCard
                     key={level.level}
-                    style={[
-                      styles.quizCard,
-                      isPassed && { borderLeftColor: lang.color },
-                    ]}
-                    onPress={() =>
-                      onOpenQuiz(lang.key, level.level, lang.color)
-                    }
+                    accent={lang.color}
+                    style={styles.row}
+                    contentStyle={styles.rowInner}
+                    onPress={() => onOpenQuiz(lang.key, level.level)}
                   >
-                    <Text style={styles.quizTitle}>
-                      {level.level} {level.label}
+                    <Text style={styles.rowTitle}>
+                      {level.level} · {level.label}
                     </Text>
-
                     <Text
                       style={[
-                        styles.quizStatus,
-                        isPassed && styles.quizStatusPassed,
+                        styles.rowStatus,
+                        isPassed && {
+                          color: COLORS.success,
+                          fontWeight: "800",
+                        },
                       ]}
                     >
-                      {isPassed ? "Passed" : "Not taken"}
+                      {isPassed ? "Passed ✓" : "Not taken"}
                     </Text>
-                  </TouchableOpacity>
+                  </GlassCard>
                 );
               })}
             </View>
           );
         })}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1a1b26" },
-
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2c2e3e",
+  content: { paddingHorizontal: 16, paddingTop: 6, paddingBottom: 24 },
+  review: { padding: 16, marginBottom: 22 },
+  reviewTag: {
+    color: COLORS.ember,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.2,
   },
-  backButton: { padding: 8, minWidth: 70 },
-  backText: { color: "#89b4fa", fontSize: 16, fontWeight: "500" },
-  headerTitle: { color: "#c0caf5", fontSize: 20, fontWeight: "bold" },
-  headerSpacer: { width: 70 },
-
-  content: { flex: 1 },
-  contentContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 30,
+  reviewTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: "800",
+    marginTop: 6,
   },
-
-  section: { marginBottom: 24 },
+  reviewSub: { color: COLORS.textMuted, fontSize: 13, marginTop: 4 },
+  section: { marginBottom: 22 },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  sectionTitle: { fontSize: 20, fontWeight: "bold" },
-  sectionCount: { color: "#9399b2", fontSize: 12 },
-
-  quizCard: {
+  sectionTitle: { fontSize: 19, fontWeight: "800" },
+  sectionCount: { color: COLORS.textDim, fontSize: 12, fontWeight: "600" },
+  row: { padding: 14, marginBottom: 8 },
+  rowInner: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#24273a",
-    padding: 14,
-    borderRadius: 8,
-    marginBottom: 6,
-    borderLeftWidth: 4,
-    borderLeftColor: "transparent",
   },
-  quizTitle: { color: "#c0caf5", fontSize: 15, fontWeight: "600" },
-  quizStatus: { color: "#9399b2", fontSize: 12 },
-  quizStatusPassed: { color: "#a6e3a1", fontWeight: "bold" },
+  rowTitle: { color: COLORS.text, fontSize: 15, fontWeight: "700" },
+  rowStatus: { color: COLORS.textDim, fontSize: 12 },
 });

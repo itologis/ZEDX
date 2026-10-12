@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import BottomNav from "../components/BottomNav";
 import GlassCard from "../components/GlassCard";
 import Screen from "../components/Screen";
 import { LANGUAGES } from "../data/languages";
@@ -13,7 +12,7 @@ const levelsLabel = (data) => {
   return `${count} level${count === 1 ? "" : "s"}`;
 };
 
-// Percent of topics marked as read across every level of a language
+// Calculate completed topics across every level.
 const calcPercent = (data, progress) => {
   let total = 0;
   let done = 0;
@@ -29,12 +28,13 @@ const calcPercent = (data, progress) => {
   return total === 0 ? 0 : Math.round((done / total) * 100);
 };
 
-// The first unread topic, starting from the last topic you opened
+// Find the next unread topic in the last opened language.
 const findResume = async () => {
   const last = await getLastTopic();
   if (!last) return null;
 
-  const lang = LANGUAGES.find((l) => l.key === last.languageKey);
+  const lang = LANGUAGES.find((item) => item.key === last.languageKey);
+
   if (!lang) return null;
 
   const progress = await getProgress(lang.key);
@@ -46,10 +46,11 @@ const findResume = async () => {
     }
   }
 
-  const start = Math.max(
-    0,
-    flat.findIndex((item) => item.topic.id === last.topicId),
-  );
+  if (flat.length === 0) return null;
+
+  const foundIndex = flat.findIndex((item) => item.topic.id === last.topicId);
+
+  const start = Math.max(0, foundIndex);
 
   for (let n = 0; n < flat.length; n++) {
     const item = flat[(start + n) % flat.length];
@@ -60,31 +61,47 @@ const findResume = async () => {
     }
   }
 
-  return null; // everything in that language is finished
+  return null;
 };
 
-export default function HomeScreen({
-  onSelectLanguage,
-  onOpenTopic,
-  onNavigate,
-}) {
+export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
   const [query, setQuery] = useState("");
   const [percents, setPercents] = useState({});
   const [resume, setResume] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const load = async () => {
-      const result = {};
+      try {
+        const result = {};
 
-      for (const lang of LANGUAGES) {
-        result[lang.key] = calcPercent(lang.data, await getProgress(lang.key));
+        for (const lang of LANGUAGES) {
+          result[lang.key] = calcPercent(
+            lang.data,
+            await getProgress(lang.key),
+          );
+        }
+
+        const nextTopic = await findResume();
+
+        if (mounted) {
+          setPercents(result);
+          setResume(nextTopic);
+        }
+      } catch (error) {
+        console.error("Error loading home progress:", error);
+      } finally {
+        if (mounted) setLoading(false);
       }
-
-      setPercents(result);
-      setResume(await findResume());
     };
 
     load();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const visibleLanguages = LANGUAGES.filter((lang) =>
@@ -95,23 +112,49 @@ export default function HomeScreen({
     <Screen>
       <ScrollView
         style={styles.scroll}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.appTitle}>ZEDX</Text>
-        <Text style={styles.appSubtitle}>
-          Pick a language to browse the corresponding syntax
-        </Text>
+        <View style={styles.hero}>
+          <Text style={styles.eyebrow}>YOUR OFFLINE SYNTAX LIBRARY</Text>
+          <Text style={styles.appTitle}>ZEDX</Text>
+          <Text style={styles.appSubtitle}>
+            Learn syntax. Build understanding.
+          </Text>
+          <Text style={styles.helperText}>
+            Choose a language to explore its syntax and topics.
+          </Text>
+        </View>
 
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search languages..."
-          placeholderTextColor={COLORS.textDim}
-          value={query}
-          onChangeText={setQuery}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Explore languages</Text>
+          <Text style={styles.sectionMeta}>{LANGUAGES.length} available</Text>
+        </View>
+
+        <View style={styles.searchWrap}>
+          <Text style={styles.searchIcon}>⌕</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search languages..."
+            placeholderTextColor={COLORS.textDim}
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+            accessibilityLabel="Search languages"
+            returnKeyType="search"
+          />
+          {!!query && (
+            <Text
+              style={styles.clearSearch}
+              onPress={() => setQuery("")}
+              accessibilityRole="button"
+            >
+              Clear
+            </Text>
+          )}
+        </View>
 
         {resume && (
           <GlassCard
@@ -120,126 +163,345 @@ export default function HomeScreen({
             style={styles.resumeCard}
             onPress={() => onOpenTopic(resume.lang.key, resume.topic.id)}
           >
-            <Text style={styles.resumeLabel}>CONTINUE WHERE YOU LEFT OFF</Text>
+            <View style={styles.resumeTopRow}>
+              <Text style={styles.resumeLabel}>PICK UP WHERE YOU LEFT OFF</Text>
+              <Text style={[styles.resumeArrow, { color: resume.lang.color }]}>
+                ↗
+              </Text>
+            </View>
+
             <Text style={styles.resumeTitle}>{resume.topic.title}</Text>
+
             <Text style={[styles.resumeSub, { color: resume.lang.color }]}>
               {resume.lang.label} · {resume.level.label}
             </Text>
+
+            <Text style={styles.resumeHint}>Continue learning</Text>
           </GlassCard>
         )}
 
-        {visibleLanguages.length === 0 ? (
-          <Text style={styles.emptyText}>No languages match "{query}"</Text>
-        ) : (
-          <View style={styles.grid}>
-            {visibleLanguages.map((lang) => {
-              const percent = percents[lang.key] ?? 0;
+        <View style={styles.grid}>
+          {visibleLanguages.map((lang) => {
+            const percent = percents[lang.key] ?? 0;
 
-              return (
-                <GlassCard
-                  key={lang.key}
-                  blur
-                  accent={lang.color}
-                  style={styles.tile}
-                  onPress={() => onSelectLanguage(lang.key)}
+            return (
+              <GlassCard
+                key={lang.key}
+                blur
+                accent={lang.color}
+                style={styles.tile}
+                onPress={() => onSelectLanguage(lang.key)}
+              >
+                <View
+                  style={[
+                    styles.languageMark,
+                    { borderColor: `${lang.color}88` },
+                  ]}
                 >
-                  <Text style={[styles.tileTitle, { color: lang.color }]}>
-                    {lang.label}
+                  <Text style={[styles.languageInitial, { color: lang.color }]}>
+                    {lang.label.slice(0, 1).toUpperCase()}
                   </Text>
-                  <Text style={styles.tileSubtitle}>
-                    {levelsLabel(lang.data)}
+                </View>
+
+                <Text
+                  style={[styles.tileTitle, { color: lang.color }]}
+                  numberOfLines={1}
+                >
+                  {lang.label}
+                </Text>
+
+                <Text style={styles.tileSubtitle}>
+                  {levelsLabel(lang.data)}
+                </Text>
+
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${percent}%`,
+                        backgroundColor: lang.color,
+                      },
+                    ]}
+                  />
+                </View>
+
+                <View style={styles.progressRow}>
+                  <Text style={styles.progressText}>
+                    {loading ? "Loading..." : `${percent}% complete`}
                   </Text>
+                  <Text style={[styles.tileArrow, { color: lang.color }]}>
+                    →
+                  </Text>
+                </View>
+              </GlassCard>
+            );
+          })}
+        </View>
 
-                  <View style={styles.progressTrack}>
-                    <View
-                      style={[
-                        styles.progressFill,
-                        { width: `${percent}%`, backgroundColor: lang.color },
-                      ]}
-                    />
-                  </View>
-
-                  <Text style={styles.progressText}>{percent}% done</Text>
-                </GlassCard>
-              );
-            })}
+        {visibleLanguages.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No languages found</Text>
+            <Text style={styles.emptyText}>
+              Try another name or clear your search.
+            </Text>
           </View>
         )}
-      </ScrollView>
 
-      <BottomNav active="home" onNavigate={onNavigate} />
+        <Text style={styles.footer}>
+          ZEDX · Your syntax reference, offline.
+        </Text>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1 },
+  scroll: {
+    flex: 1,
+  },
+
+  content: {
+    paddingHorizontal: 18,
+    paddingTop: 24,
+    paddingBottom: 28,
+  },
+
+  hero: {
+    alignItems: "center",
+    paddingTop: 12,
+    paddingBottom: 28,
+  },
+
+  eyebrow: {
+    color: COLORS.textDim,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 2,
+    textAlign: "center",
+    marginBottom: 10,
+  },
 
   appTitle: {
     color: COLORS.text,
-    fontSize: 34,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 36,
-    marginBottom: 6,
-    letterSpacing: 4,
+    fontSize: 42,
+    fontWeight: "900",
+    letterSpacing: 7,
   },
+
   appSubtitle: {
-    color: COLORS.textDim,
-    fontSize: 15,
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 7,
     textAlign: "center",
-    marginBottom: 20,
-    paddingHorizontal: 20,
+  },
+
+  helperText: {
+    color: COLORS.textDim,
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 8,
+    textAlign: "center",
+    paddingHorizontal: 12,
+  },
+
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+
+  sectionTitle: {
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+
+  sectionMeta: {
+    color: COLORS.textDim,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  searchWrap: {
+    minHeight: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.glass,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 15,
+    paddingHorizontal: 14,
+    marginBottom: 18,
+  },
+
+  searchIcon: {
+    color: COLORS.textDim,
+    fontSize: 23,
+    marginRight: 10,
   },
 
   searchInput: {
-    backgroundColor: COLORS.glass,
+    flex: 1,
     color: COLORS.text,
-    fontSize: 16,
-    paddingHorizontal: 16,
+    fontSize: 14,
     paddingVertical: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginHorizontal: 20,
-    marginBottom: 16,
   },
 
-  resumeCard: { marginHorizontal: 20, marginBottom: 16, padding: 18 },
+  clearSearch: {
+    color: COLORS.textDim,
+    fontSize: 12,
+    fontWeight: "700",
+    paddingVertical: 10,
+    paddingLeft: 8,
+  },
+
+  resumeCard: {
+    padding: 18,
+    marginBottom: 20,
+  },
+
+  resumeTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
   resumeLabel: {
     color: COLORS.textDim,
-    fontSize: 11,
-    fontWeight: "bold",
-    letterSpacing: 1.5,
-    marginBottom: 6,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.2,
   },
-  resumeTitle: { color: COLORS.text, fontSize: 22, fontWeight: "bold" },
-  resumeSub: { fontSize: 13, fontWeight: "600", marginTop: 4 },
 
-  emptyText: {
+  resumeArrow: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+
+  resumeTitle: {
+    color: COLORS.text,
+    fontSize: 20,
+    fontWeight: "800",
+    marginTop: 12,
+  },
+
+  resumeSub: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: 5,
+  },
+
+  resumeHint: {
     color: COLORS.textDim,
-    fontSize: 15,
-    textAlign: "center",
-    marginTop: 20,
+    fontSize: 12,
+    marginTop: 14,
   },
 
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
   },
-  tile: { width: "48%", padding: 20, marginBottom: 16, alignItems: "center" },
-  tileTitle: { fontSize: 24, fontWeight: "bold", marginBottom: 4 },
-  tileSubtitle: { color: COLORS.textDim, fontSize: 14, marginBottom: 12 },
+
+  tile: {
+    width: "48.3%",
+    padding: 15,
+    marginBottom: 13,
+  },
+
+  languageMark: {
+    width: 40,
+    height: 40,
+    borderWidth: 1,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+    backgroundColor: "rgba(255,255,255,0.035)",
+  },
+
+  languageInitial: {
+    fontSize: 19,
+    fontWeight: "900",
+  },
+
+  tileTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    marginBottom: 4,
+  },
+
+  tileSubtitle: {
+    color: COLORS.textDim,
+    fontSize: 12,
+    marginBottom: 16,
+  },
 
   progressTrack: {
     width: "100%",
-    height: 6,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 3,
+    height: 5,
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderRadius: 5,
     overflow: "hidden",
   },
-  progressFill: { height: "100%", borderRadius: 3 },
-  progressText: { color: COLORS.textDim, fontSize: 12, marginTop: 6 },
+
+  progressFill: {
+    height: "100%",
+    borderRadius: 5,
+  },
+
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 9,
+  },
+
+  progressText: {
+    color: COLORS.textDim,
+    fontSize: 10,
+    fontWeight: "600",
+    flexShrink: 1,
+  },
+
+  tileArrow: {
+    fontSize: 16,
+    fontWeight: "800",
+    marginLeft: 4,
+  },
+
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: 32,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.glass,
+  },
+
+  emptyTitle: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: "800",
+  },
+
+  emptyText: {
+    color: COLORS.textDim,
+    fontSize: 13,
+    marginTop: 7,
+    textAlign: "center",
+    lineHeight: 19,
+  },
+
+  footer: {
+    color: COLORS.textDim,
+    fontSize: 11,
+    textAlign: "center",
+    marginTop: 12,
+    opacity: 0.8,
+  },
 });

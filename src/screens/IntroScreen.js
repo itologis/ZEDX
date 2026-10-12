@@ -1,52 +1,56 @@
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
+
+import Screen from "../components/Screen";
 
 export default function IntroScreen({
   intro,
-  accentColor = '#89b4fa',
+  accentColor = "#89b4fa",
   onBack,
   onStart,
 }) {
   if (!intro) {
     return (
-      <SafeAreaView style={styles.container}>
+      <Screen style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>
-            Introduction data unavailable.
-          </Text>
-
+          <Text style={styles.errorText}>Introduction data unavailable.</Text>
           <TouchableOpacity
             onPress={onBack}
             style={styles.errorBackButton}
             accessibilityRole="button"
             accessibilityLabel="Go back"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <Text style={styles.backText}>← Back</Text>
+            <Text style={[styles.backText, { color: accentColor }]}>
+              ← Back
+            </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={onBack}
           style={styles.backButton}
           accessibilityRole="button"
           accessibilityLabel="Go back"
+          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+          activeOpacity={0.7}
         >
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={[styles.backText, { color: accentColor }]}>← Back</Text>
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Introduction</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView
@@ -54,235 +58,185 @@ export default function IntroScreen({
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.card,
-            { borderTopColor: accentColor },
-          ]}
-        >
-          <Text style={styles.title}>
-            {intro.title || 'Untitled'}
-          </Text>
+        <View style={[styles.card, { borderTopColor: accentColor }]}>
+          <Text style={styles.title}>{intro.title || "Untitled"}</Text>
 
           {intro.tagline ? (
-            <Text style={styles.tagline}>
-              {intro.tagline}
-            </Text>
+            <Text style={styles.tagline}>{intro.tagline}</Text>
           ) : null}
 
           {intro.description ? (
-            <Text style={styles.description}>
-              {intro.description}
-            </Text>
+            <Text style={styles.description}>{intro.description}</Text>
           ) : null}
 
           {intro.useCases?.length > 0 ? (
             <>
-              <Text style={styles.subtitle}>
-                Use Cases
-              </Text>
-
-              {intro.useCases.map(
-                (useCase, index) => (
-                  <Text
-                    key={`${useCase}-${index}`}
-                    style={styles.useCase}
-                  >
-                    • {useCase}
-                  </Text>
-                )
-              )}
+              <Text style={styles.subtitle}>Use cases</Text>
+              {intro.useCases.map((useCase, index) => (
+                <View key={`${useCase}-${index}`} style={styles.useCaseRow}>
+                  <Text style={[styles.bullet, { color: accentColor }]}>•</Text>
+                  <Text style={styles.useCase}>{useCase}</Text>
+                </View>
+              ))}
             </>
           ) : null}
         </View>
 
-        <View
-          style={[
-            styles.assessmentNotice,
-            {
-              borderColor: accentColor,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.assessmentNoticeTitle,
-              {
-                color: accentColor,
-              },
-            ]}
-          >
-            Initial Assessment
+        <View style={[styles.assessmentNotice, { borderColor: accentColor }]}>
+          <Text style={[styles.assessmentNoticeTitle, { color: accentColor }]}>
+            Initial assessment
           </Text>
-
           <Text style={styles.assessmentNoticeText}>
-            Before you start learning, you'll take
-            a short assessment to help find the
-            level that's right for you.
+            A short quiz helps place you at the right starting level. You can
+            still explore every level freely afterward.
           </Text>
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.startButton,
-            { backgroundColor: accentColor },
-          ]}
+          style={[styles.startButton, { backgroundColor: accentColor }]}
           onPress={onStart}
           accessibilityRole="button"
-          accessibilityLabel={`Start learning ${
-            intro.title || 'this topic'
-          }`}
+          accessibilityLabel={`Start learning ${intro.title || "this topic"}`}
+          activeOpacity={0.85}
         >
-          <Text style={styles.startButtonText}>
-            Start Learning
-          </Text>
+          <Text style={styles.startButtonText}>Start learning</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1b26',
+    backgroundColor: "transparent",
   },
-
   header: {
-    height: 72,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#2c2e3e',
-    position: 'relative',
+    borderBottomColor: "#2c2e3e",
   },
-
   backButton: {
-    padding: 8,
+    minWidth: 72,
+    paddingVertical: 8,
     zIndex: 1,
   },
-
   backText: {
-    color: '#89b4fa',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "600",
   },
-
   headerTitle: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    textAlign: 'center',
-    color: '#c0caf5',
-    fontSize: 20,
-    fontWeight: 'bold',
+    flex: 1,
+    textAlign: "center",
+    color: "#c0caf5",
+    fontSize: 18,
+    fontWeight: "700",
   },
-
+  headerSpacer: {
+    minWidth: 72,
+  },
   content: {
     flex: 1,
   },
-
   contentContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 30,
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 36,
   },
-
   card: {
-    backgroundColor: '#24273a',
-    padding: 20,
-    borderRadius: 12,
+    backgroundColor: "#24273a",
+    padding: 22,
+    borderRadius: 16,
     borderTopWidth: 4,
   },
-
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#c0caf5',
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#c0caf5",
     marginBottom: 8,
   },
-
   tagline: {
-    fontSize: 18,
-    color: '#9399b2',
-    marginBottom: 16,
+    fontSize: 16,
+    color: "#9399b2",
+    marginBottom: 14,
+    lineHeight: 22,
   },
-
   description: {
     fontSize: 15,
-    color: '#cdd6f4',
-    lineHeight: 22,
-    marginBottom: 20,
+    color: "#cdd6f4",
+    lineHeight: 23,
+    marginBottom: 18,
   },
-
   subtitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#c0caf5',
-    marginTop: 4,
-    marginBottom: 12,
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#c0caf5",
+    marginBottom: 10,
   },
-
-  useCase: {
+  useCaseRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 6,
+  },
+  bullet: {
     fontSize: 14,
-    color: '#cdd6f4',
-    lineHeight: 21,
-    marginVertical: 4,
-    marginLeft: 8,
+    marginRight: 8,
+    marginTop: 1,
   },
-
+  useCase: {
+    flex: 1,
+    fontSize: 14,
+    color: "#cdd6f4",
+    lineHeight: 21,
+  },
   assessmentNotice: {
-    backgroundColor: '#24273a',
-    padding: 14,
-    borderRadius: 10,
-    marginTop: 16,
+    backgroundColor: "#24273a",
+    padding: 16,
+    borderRadius: 14,
+    marginTop: 18,
     borderWidth: 1,
   },
-
   assessmentNoticeTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-
-  assessmentNoticeText: {
-    color: '#9399b2',
     fontSize: 13,
-    lineHeight: 19,
+    fontWeight: "700",
+    marginBottom: 6,
+    letterSpacing: 0.3,
   },
-
+  assessmentNoticeText: {
+    color: "#9399b2",
+    fontSize: 13,
+    lineHeight: 20,
+  },
   startButton: {
-    minHeight: 54,
+    minHeight: 56,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
   },
-
   startButtonText: {
-    color: '#1a1b26',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: "#1a1b26",
+    fontSize: 17,
+    fontWeight: "800",
   },
-
   errorContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
   },
-
   errorText: {
-    color: '#c0caf5',
+    color: "#c0caf5",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
-
   errorBackButton: {
-    padding: 10,
+    padding: 12,
   },
 });

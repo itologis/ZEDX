@@ -5,7 +5,14 @@ export default function Header({ title, onBack, backLabel = "← Back", right })
   return (
     <View style={styles.row}>
       {onBack ? (
-        <TouchableOpacity onPress={onBack} style={styles.side}>
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.side}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+          activeOpacity={0.7}
+        >
           <Text style={styles.back}>{backLabel}</Text>
         </TouchableOpacity>
       ) : (
@@ -28,15 +35,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 10,
+    minHeight: 52,
   },
-  side: { width: 90 },
-  right: { alignItems: "flex-end" },
-  back: { color: COLORS.ember, fontSize: 16, fontWeight: "600" },
+  side: {
+    width: 90,
+    justifyContent: "center",
+  },
+  right: {
+    alignItems: "flex-end",
+  },
+  back: {
+    color: COLORS.ember,
+    fontSize: 16,
+    fontWeight: "600",
+  },
   title: {
     flex: 1,
     color: COLORS.text,
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "700",
     textAlign: "center",
   },
 });

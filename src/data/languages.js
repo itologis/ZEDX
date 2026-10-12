@@ -1,13 +1,21 @@
+import { COLORS } from "../theme";
 import css from "./css";
 import html from "./html";
 import java from "./java";
+import javascript from "./javascript";
 import python from "./python";
 
 export const LANGUAGES = [
-  { key: "html", label: "HTML", color: "#f38ba8", data: html },
-  { key: "css", label: "CSS", color: "#89b4fa", data: css },
-  { key: "java", label: "Java", color: "#fab387", data: java },
-  { key: "python", label: "Python", color: "#a6e3a1", data: python },
+  { key: "html", label: "HTML", color: COLORS.html, data: html },
+  { key: "css", label: "CSS", color: COLORS.css, data: css },
+  { key: "java", label: "Java", color: COLORS.java, data: java },
+  { key: "python", label: "Python", color: COLORS.python, data: python },
+  {
+    key: "javascript",
+    label: "JavaScript",
+    color: COLORS.javascript,
+    data: javascript,
+  },
 ];
 
 export const getLanguage = (key) => LANGUAGES.find((l) => l.key === key);
@@ -17,7 +25,7 @@ export const getAllTopics = () => {
   const all = [];
 
   for (const lang of LANGUAGES) {
-    for (const level of lang.data.levels) {
+    for (const level of lang.data.levels || []) {
       for (const topic of level.topics || []) {
         all.push({
           languageKey: lang.key,
