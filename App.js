@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import AssessmentScreen from "./src/screens/AssessmentScreen";
@@ -7,6 +7,9 @@ import HomeScreen from "./src/screens/HomeScreen";
 import IntroScreen from "./src/screens/IntroScreen";
 import LevelsScreen from "./src/screens/LevelsScreen";
 import QuizScreen from "./src/screens/QuizScreen";
+import QuizzesScreen from "./src/screens/QuizzesScreen";
+import SavedScreen from "./src/screens/SavedScreen";
+import SearchScreen from "./src/screens/SearchScreen";
 import TopicScreen from "./src/screens/TopicScreen";
 
 import cssData from "./src/data/css";
@@ -50,50 +53,73 @@ export default function App() {
     name: "home",
   });
 
+  const [activeTab, setActiveTab] = useState("learn");
   const [showDevTools, setShowDevTools] = useState(false);
 
-  const goHome = () => {
-    setScreen({
-      name: "home",
-    });
-  };
+  const goHome = useCallback(() => {
+    setActiveTab("learn");
+    setScreen({ name: "home" });
+  }, []);
 
-  const goIntro = (languageKey) => {
+  const goIntro = useCallback((languageKey) => {
     setScreen({
       name: "intro",
       languageKey,
     });
-  };
+  }, []);
 
-  const goLevels = (languageKey) => {
+  const goLevels = useCallback((languageKey) => {
     setScreen({
       name: "levels",
       languageKey,
     });
-  };
+  }, []);
 
-  const goAssessment = (languageKey) => {
+  const goAssessment = useCallback((languageKey) => {
     setScreen({
       name: "assessment",
       languageKey,
     });
-  };
+  }, []);
 
-  const goTopic = (languageKey, topic) => {
+  const goTopic = useCallback((languageKey, topic) => {
     setScreen({
       name: "topic",
       languageKey,
       topic,
     });
-  };
+  }, []);
 
-  const goQuiz = (languageKey, levelId) => {
+  const goQuiz = useCallback((languageKey, levelId, from = "levels") => {
     setScreen({
       name: "quiz",
       languageKey,
       levelId,
+      from,
     });
-  };
+  }, []);
+
+  const goQuizzes = useCallback(() => {
+    setActiveTab("quizzes");
+    setScreen({ name: "quizzes" });
+  }, []);
+
+  const goSearch = useCallback(() => {
+    setActiveTab("search");
+    setScreen({ name: "search" });
+  }, []);
+
+  const goSaved = useCallback(() => {
+    setActiveTab("saved");
+    setScreen({ name: "saved" });
+  }, []);
+
+  const goQuizFromHub = useCallback(
+    (languageKey, levelId) => {
+      goQuiz(languageKey, levelId, "quizzes");
+    },
+    [goQuiz],
+  );
 
   const handleStartLearning = async (languageKey) => {
     try {
@@ -106,7 +132,6 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error checking assessment:", error);
-
       goAssessment(languageKey);
     }
   };
@@ -116,11 +141,12 @@ export default function App() {
   };
 
   const handleQuizPass = async (languageKey, levelId) => {
-    console.log(`Quiz passed for ${languageKey} - ${levelId}, saving...`);
-
-    await saveQuizPassed(languageKey, levelId);
-
-    console.log("Quiz result saved.");
+    try {
+      await saveQuizPassed(languageKey, levelId);
+      console.log(`Quiz pass saved for ${languageKey} - ${levelId}`);
+    } catch (error) {
+      console.error("Error saving quiz result:", error);
+    }
   };
 
   const openDevAssessment = (languageKey) => {
@@ -129,80 +155,179 @@ export default function App() {
   };
 
   const resetDevAssessment = async (languageKey) => {
-    await resetAssessment(languageKey);
+    try {
+      await resetAssessment(languageKey);
+      console.log(`Assessment reset for ${languageKey}`);
+    } catch (error) {
+      console.error("Error resetting assessment:", error);
+    }
+  };
 
-    console.log(`Assessment reset for ${languageKey}`);
+  const handleNavigate = (tab) => {
+    setActiveTab(tab);
+
+    if (tab === "learn") {
+      setScreen({ name: "home" });
+    } else if (tab === "search") {
+      setScreen({ name: "search" });
+    } else if (tab === "quizzes") {
+      setScreen({ name: "quizzes" });
+    } else if (tab === "saved") {
+      setScreen({ name: "saved" });
+    }
   };
 
   let content;
 
   if (screen.name === "home") {
-    content = <HomeScreen onSelectLanguage={goIntro} />;
-  } else if (screen.name === "intro") {
-    const { data, color } = DATA_MAP[screen.languageKey];
-
     content = (
-      <IntroScreen
-        intro={data.intro}
-        accentColor={color}
+      <HomeScreen
+        onSelectLanguage={goIntro}
+        onOpenTopic={(languageKey, topic) => goTopic(languageKey, topic)}
+        onOpenQuizzes={goQuizzes}
+        onNavigate={handleNavigate}
+      />
+    );
+  } else if (screen.name === "search") {
+    content = (
+      <SearchScreen
         onBack={goHome}
-        onStart={() => handleStartLearning(screen.languageKey)}
+        onOpenTopic={(languageKey, topic) => goTopic(languageKey, topic)}
+        onNavigate={handleNavigate}
       />
     );
+  } else if (screen.name === "saved") {
+    content = (
+      <SavedScreen
+        onBack={goHome}
+        onOpenTopic={(languageKey, topic) => goTopic(languageKey, topic)}
+        onNavigate={handleNavigate}
+      />
+    );
+  } else if (screen.name === "quizzes") {
+    content = (
+      <QuizzesScreen
+        onBack={goHome}
+        onOpenQuiz={goQuizFromHub}
+        onNavigate={handleNavigate}
+      />
+    );
+  } else if (screen.name === "intro") {
+    const language = DATA_MAP[screen.languageKey];
+
+    if (language) {
+      content = (
+        <IntroScreen
+          intro={language.data.intro}
+          accentColor={language.color}
+          onBack={goHome}
+          onStart={() => handleStartLearning(screen.languageKey)}
+        />
+      );
+    }
   } else if (screen.name === "assessment") {
-    const { data, color, key } = DATA_MAP[screen.languageKey];
+    const language = DATA_MAP[screen.languageKey];
 
-    content = (
-      <AssessmentScreen
-        languageKey={key}
-        languageData={data}
-        accentColor={color}
-        onBack={() => goIntro(screen.languageKey)}
-        onComplete={() => handleAssessmentComplete(key)}
-      />
-    );
+    if (language) {
+      content = (
+        <AssessmentScreen
+          languageKey={language.key}
+          languageData={language.data}
+          accentColor={language.color}
+          onBack={() => goIntro(screen.languageKey)}
+          onComplete={() => handleAssessmentComplete(language.key)}
+        />
+      );
+    }
   } else if (screen.name === "levels") {
-    const { data, color, key } = DATA_MAP[screen.languageKey];
+    const language = DATA_MAP[screen.languageKey];
 
-    content = (
-      <LevelsScreen
-        languageData={data}
-        accentColor={color}
-        languageKey={key}
-        onBack={() => goIntro(screen.languageKey)}
-        onOpenTopic={(topic) => goTopic(screen.languageKey, topic)}
-        onOpenQuiz={goQuiz}
-      />
-    );
+    if (language) {
+      content = (
+        <LevelsScreen
+          languageData={language.data}
+          accentColor={language.color}
+          languageKey={language.key}
+          onBack={() => goIntro(screen.languageKey)}
+          onOpenTopic={(topic) => goTopic(screen.languageKey, topic)}
+          onOpenQuiz={(languageKey, levelId) =>
+            goQuiz(languageKey || screen.languageKey, levelId)
+          }
+        />
+      );
+    }
   } else if (screen.name === "topic") {
-    const { color } = DATA_MAP[screen.languageKey];
+    const language = DATA_MAP[screen.languageKey];
 
-    content = (
-      <TopicScreen
-        topic={screen.topic}
-        accentColor={color}
-        onBack={() => goLevels(screen.languageKey)}
-      />
-    );
+    if (language) {
+      content = (
+        <TopicScreen
+          topic={screen.topic}
+          accentColor={language.color}
+          onBack={() => goLevels(screen.languageKey)}
+        />
+      );
+    }
   } else if (screen.name === "quiz") {
-    const { color, key } = DATA_MAP[screen.languageKey];
+    const language = DATA_MAP[screen.languageKey];
 
-    content = (
-      <QuizScreen
-        languageKey={key}
-        levelId={screen.levelId}
-        accentColor={color}
-        onBack={() => goLevels(screen.languageKey)}
-        onPass={() => handleQuizPass(key, screen.levelId)}
-      />
-    );
+    if (language) {
+      content = (
+        <QuizScreen
+          languageKey={language.key}
+          levelId={screen.levelId}
+          accentColor={language.color}
+          onBack={() => {
+            if (screen.from === "quizzes") {
+              goQuizzes();
+            } else {
+              goLevels(screen.languageKey);
+            }
+          }}
+          onPass={() => handleQuizPass(language.key, screen.levelId)}
+        />
+      );
+    }
   }
+
+  const showBottomNavigation = ["home", "search", "saved", "quizzes"].includes(
+    screen.name,
+  );
 
   return (
     <View style={styles.app}>
       <StatusBar style="light" />
 
-      {content}
+      <View style={styles.content}>{content}</View>
+
+      {showBottomNavigation && (
+        <View style={styles.bottomNavigation}>
+          {[
+            { key: "learn", label: "Learn" },
+            { key: "search", label: "Search" },
+            { key: "quizzes", label: "Quizzes" },
+            { key: "saved", label: "Saved" },
+          ].map((tab) => {
+            const selected = activeTab === tab.key;
+
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                style={[styles.navItem, selected && styles.navItemActive]}
+                onPress={() => handleNavigate(tab.key)}
+              >
+                <Text
+                  style={[styles.navLabel, selected && styles.navLabelActive]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
 
       {SHOW_DEV_TOOLS && screen.name === "home" && (
         <>
@@ -226,21 +351,11 @@ export default function App() {
               {Object.entries(DATA_MAP).map(([languageKey, language]) => (
                 <TouchableOpacity
                   key={languageKey}
-                  style={[
-                    styles.devButton,
-                    {
-                      borderColor: language.color,
-                    },
-                  ]}
+                  style={[styles.devButton, { borderColor: language.color }]}
                   onPress={() => openDevAssessment(languageKey)}
                 >
                   <Text
-                    style={[
-                      styles.devButtonText,
-                      {
-                        color: language.color,
-                      },
-                    ]}
+                    style={[styles.devButtonText, { color: language.color }]}
                   >
                     Show {language.data.intro?.title || languageKey} Assessment
                   </Text>
@@ -283,10 +398,50 @@ const styles = StyleSheet.create({
     backgroundColor: "#1a1b26",
   },
 
+  content: {
+    flex: 1,
+  },
+
+  bottomNavigation: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 10,
+    backgroundColor: "#1a1b26",
+    borderTopWidth: 1,
+    borderTopColor: "#303347",
+  },
+
+  navItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    marginHorizontal: 3,
+    borderRadius: 12,
+  },
+
+  navItemActive: {
+    backgroundColor: "#303347",
+  },
+
+  navLabel: {
+    color: "#9399b2",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+
+  navLabelActive: {
+    color: "#c0caf5",
+    fontWeight: "700",
+  },
+
   devToggle: {
     position: "absolute",
     right: 16,
-    bottom: 16,
+    bottom: 80,
     backgroundColor: "#2c2e3e",
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -305,7 +460,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 16,
     right: 16,
-    bottom: 16,
+    bottom: 80,
     backgroundColor: "#24273a",
     borderRadius: 14,
     padding: 16,

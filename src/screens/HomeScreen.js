@@ -1,33 +1,19 @@
 import { useEffect, useState } from "react";
-import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import css from "../data/css";
-import html from "../data/html";
-import java from "../data/java";
-import { getProgress } from "../data/progress";
-import python from "../data/python";
-
-const LANGUAGES = [
-  { key: "html", label: "HTML", color: "#f38ba8", data: html },
-  { key: "css", label: "CSS", color: "#89b4fa", data: css },
-  { key: "java", label: "Java", color: "#fab387", data: java },
-  { key: "python", label: "Python", color: "#a6e3a1", data: python },
-];
+import BottomNav from "../components/BottomNav";
+import GlassCard from "../components/GlassCard";
+import Screen from "../components/Screen";
+import { LANGUAGES } from "../data/languages";
+import { getLastTopic, getProgress } from "../data/progress";
+import { COLORS } from "../theme";
 
 const levelsLabel = (data) => {
   const count = data.levels.length;
   return `${count} level${count === 1 ? "" : "s"}`;
 };
 
-// Percent of topics marked as read across all levels of a language
+// Percent of topics marked as read across every level of a language
 const calcPercent = (data, progress) => {
   let total = 0;
   let done = 0;
@@ -43,23 +29,62 @@ const calcPercent = (data, progress) => {
   return total === 0 ? 0 : Math.round((done / total) * 100);
 };
 
-export default function HomeScreen({ onSelectLanguage, onOpenQuizzes }) {
+// The first unread topic, starting from the last topic you opened
+const findResume = async () => {
+  const last = await getLastTopic();
+  if (!last) return null;
+
+  const lang = LANGUAGES.find((l) => l.key === last.languageKey);
+  if (!lang) return null;
+
+  const progress = await getProgress(lang.key);
+  const flat = [];
+
+  for (const level of lang.data.levels) {
+    for (const topic of level.topics || []) {
+      flat.push({ level, topic });
+    }
+  }
+
+  const start = Math.max(
+    0,
+    flat.findIndex((item) => item.topic.id === last.topicId),
+  );
+
+  for (let n = 0; n < flat.length; n++) {
+    const item = flat[(start + n) % flat.length];
+    const completed = progress[item.level.level] || [];
+
+    if (!completed.includes(item.topic.id)) {
+      return { lang, ...item };
+    }
+  }
+
+  return null; // everything in that language is finished
+};
+
+export default function HomeScreen({
+  onSelectLanguage,
+  onOpenTopic,
+  onNavigate,
+}) {
   const [query, setQuery] = useState("");
   const [percents, setPercents] = useState({});
+  const [resume, setResume] = useState(null);
 
   useEffect(() => {
-    const loadPercents = async () => {
+    const load = async () => {
       const result = {};
 
       for (const lang of LANGUAGES) {
-        const progress = await getProgress(lang.key);
-        result[lang.key] = calcPercent(lang.data, progress);
+        result[lang.key] = calcPercent(lang.data, await getProgress(lang.key));
       }
 
       setPercents(result);
+      setResume(await findResume());
     };
 
-    loadPercents();
+    load();
   }, []);
 
   const visibleLanguages = LANGUAGES.filter((lang) =>
@@ -67,7 +92,7 @@ export default function HomeScreen({ onSelectLanguage, onOpenQuizzes }) {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen>
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -81,12 +106,27 @@ export default function HomeScreen({ onSelectLanguage, onOpenQuizzes }) {
         <TextInput
           style={styles.searchInput}
           placeholder="Search languages..."
-          placeholderTextColor="#6c7086"
+          placeholderTextColor={COLORS.textDim}
           value={query}
           onChangeText={setQuery}
           autoCapitalize="none"
           autoCorrect={false}
         />
+
+        {resume && (
+          <GlassCard
+            blur
+            accent={resume.lang.color}
+            style={styles.resumeCard}
+            onPress={() => onOpenTopic(resume.lang.key, resume.topic.id)}
+          >
+            <Text style={styles.resumeLabel}>CONTINUE WHERE YOU LEFT OFF</Text>
+            <Text style={styles.resumeTitle}>{resume.topic.title}</Text>
+            <Text style={[styles.resumeSub, { color: resume.lang.color }]}>
+              {resume.lang.label} · {resume.level.label}
+            </Text>
+          </GlassCard>
+        )}
 
         {visibleLanguages.length === 0 ? (
           <Text style={styles.emptyText}>No languages match "{query}"</Text>
@@ -96,9 +136,11 @@ export default function HomeScreen({ onSelectLanguage, onOpenQuizzes }) {
               const percent = percents[lang.key] ?? 0;
 
               return (
-                <TouchableOpacity
+                <GlassCard
                   key={lang.key}
-                  style={[styles.tile, { borderColor: lang.color }]}
+                  blur
+                  accent={lang.color}
+                  style={styles.tile}
                   onPress={() => onSelectLanguage(lang.key)}
                 >
                   <Text style={[styles.tileTitle, { color: lang.color }]}>
@@ -118,61 +160,64 @@ export default function HomeScreen({ onSelectLanguage, onOpenQuizzes }) {
                   </View>
 
                   <Text style={styles.progressText}>{percent}% done</Text>
-                </TouchableOpacity>
+                </GlassCard>
               );
             })}
           </View>
         )}
       </ScrollView>
 
-      <View style={styles.navBar}>
-        <TouchableOpacity style={styles.navItem} disabled>
-          <Text style={[styles.navLabel, styles.navLabelActive]}>Learn</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem} onPress={onOpenQuizzes}>
-          <Text style={styles.navLabel}>Quizzes</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      <BottomNav active="home" onNavigate={onNavigate} />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#1a1b26" },
   scroll: { flex: 1 },
 
   appTitle: {
-    color: "#c0caf5",
-    fontSize: 32,
+    color: COLORS.text,
+    fontSize: 34,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 8,
-    marginTop: 40,
+    marginTop: 36,
+    marginBottom: 6,
+    letterSpacing: 4,
   },
   appSubtitle: {
-    color: "#9399b2",
-    fontSize: 16,
+    color: COLORS.textDim,
+    fontSize: 15,
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 20,
   },
 
   searchInput: {
-    backgroundColor: "#24273a",
-    color: "#c0caf5",
+    backgroundColor: COLORS.glass,
+    color: COLORS.text,
     fontSize: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#2c2e3e",
+    borderColor: COLORS.border,
     marginHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 16,
   },
 
+  resumeCard: { marginHorizontal: 20, marginBottom: 16, padding: 18 },
+  resumeLabel: {
+    color: COLORS.textDim,
+    fontSize: 11,
+    fontWeight: "bold",
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  resumeTitle: { color: COLORS.text, fontSize: 22, fontWeight: "bold" },
+  resumeSub: { fontSize: 13, fontWeight: "600", marginTop: 4 },
+
   emptyText: {
-    color: "#9399b2",
+    color: COLORS.textDim,
     fontSize: 15,
     textAlign: "center",
     marginTop: 20,
@@ -184,35 +229,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
   },
-  tile: {
-    width: "48%",
-    backgroundColor: "#24273a",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 2,
-    alignItems: "center",
-  },
+  tile: { width: "48%", padding: 20, marginBottom: 16, alignItems: "center" },
   tileTitle: { fontSize: 24, fontWeight: "bold", marginBottom: 4 },
-  tileSubtitle: { color: "#9399b2", fontSize: 14, marginBottom: 12 },
+  tileSubtitle: { color: COLORS.textDim, fontSize: 14, marginBottom: 12 },
 
   progressTrack: {
     width: "100%",
     height: 6,
-    backgroundColor: "#2c2e3e",
+    backgroundColor: "rgba(255,255,255,0.12)",
     borderRadius: 3,
     overflow: "hidden",
   },
   progressFill: { height: "100%", borderRadius: 3 },
-  progressText: { color: "#9399b2", fontSize: 12, marginTop: 6 },
-
-  navBar: {
-    flexDirection: "row",
-    backgroundColor: "#24273a",
-    borderTopWidth: 1,
-    borderTopColor: "#2c2e3e",
-  },
-  navItem: { flex: 1, alignItems: "center", paddingVertical: 14 },
-  navLabel: { color: "#9399b2", fontSize: 15, fontWeight: "600" },
-  navLabelActive: { color: "#89b4fa" },
+  progressText: { color: COLORS.textDim, fontSize: 12, marginTop: 6 },
 });
