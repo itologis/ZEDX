@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Animated, Easing } from "react-native";
+import { useEffect, useState } from "react";
+import { AccessibilityInfo, Animated, Easing } from "react-native";
 
 export default function FadeIn({
   children,
@@ -8,12 +8,48 @@ export default function FadeIn({
   delay = 0,
   from = "up",
 }) {
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(from === "up" ? 14 : 0)).current;
-  const scale = useRef(new Animated.Value(from === "scale" ? 0.96 : 1)).current;
+  const [opacity] = useState(() => new Animated.Value(0));
+  const [translateY] = useState(
+    () => new Animated.Value(from === "up" ? 14 : 0),
+  );
+  const [scale] = useState(
+    () => new Animated.Value(from === "scale" ? 0.96 : 1),
+  );
+  const [reduceMotion, setReduceMotion] = useState(null);
 
   useEffect(() => {
-    Animated.parallel([
+    let mounted = true;
+    const subscription = AccessibilityInfo.addEventListener(
+      "reduceMotionChanged",
+      setReduceMotion,
+    );
+
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (mounted) setReduceMotion(enabled);
+      })
+      .catch((error) => {
+        console.warn("Could not read reduced-motion preference:", error);
+        if (mounted) setReduceMotion(false);
+      });
+
+    return () => {
+      mounted = false;
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion === null) return undefined;
+
+    if (reduceMotion) {
+      opacity.setValue(1);
+      translateY.setValue(0);
+      scale.setValue(1);
+      return undefined;
+    }
+
+    const animation = Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
         duration,
@@ -35,8 +71,15 @@ export default function FadeIn({
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-    ]).start();
-  }, [opacity, translateY, scale, duration, delay]);
+    ]);
+
+    animation.start();
+    return () => animation.stop();
+  }, [opacity, translateY, scale, duration, delay, reduceMotion]);
+
+  if (reduceMotion === null) {
+    return <Animated.View style={style}>{children}</Animated.View>;
+  }
 
   return (
     <Animated.View

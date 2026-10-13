@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import GlassCard from "../components/GlassCard";
+import FadeIn from "../components/FadeIn";
 import Header from "../components/Header";
 import Screen from "../components/Screen";
 import { recordQuizAnswer } from "../data/progress";
@@ -99,36 +100,38 @@ export default function QuizScreen({
       <Screen>
         <Header title={title} onBack={onBack} />
         <View style={styles.pad}>
-          <GlassCard
-            blur
-            accent={accentColor}
-            style={styles.bigCard}
-            contentStyle={styles.centered}
-          >
-            <Text style={styles.bigTitle}>Level quiz</Text>
-            <Text style={styles.bigSub}>Test what you've learned</Text>
-
-            <View style={styles.info}>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Questions</Text>
-                <Text style={styles.infoValue}>{total}</Text>
-              </View>
-              <View style={[styles.infoRow, styles.infoLast]}>
-                <Text style={styles.infoLabel}>Passing score</Text>
-                <Text style={styles.infoValue}>
-                  {passingScore}/{total}
-                </Text>
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={[styles.primary, { backgroundColor: accentColor }]}
-              onPress={() => setStarted(true)}
-              activeOpacity={0.85}
+          <FadeIn from="scale" duration={300}>
+            <GlassCard
+              blur
+              accent={accentColor}
+              style={styles.bigCard}
+              contentStyle={styles.centered}
             >
-              <Text style={styles.primaryText}>Start quiz</Text>
-            </TouchableOpacity>
-          </GlassCard>
+              <Text style={styles.bigTitle}>Level quiz</Text>
+              <Text style={styles.bigSub}>Test what you&apos;ve learned</Text>
+
+              <View style={styles.info}>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Questions</Text>
+                  <Text style={styles.infoValue}>{total}</Text>
+                </View>
+                <View style={[styles.infoRow, styles.infoLast]}>
+                  <Text style={styles.infoLabel}>Passing score</Text>
+                  <Text style={styles.infoValue}>
+                    {passingScore}/{total}
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.primary, { backgroundColor: accentColor }]}
+                onPress={() => setStarted(true)}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.primaryText}>Start quiz</Text>
+              </TouchableOpacity>
+            </GlassCard>
+          </FadeIn>
         </View>
       </Screen>
     );
@@ -143,67 +146,69 @@ export default function QuizScreen({
       <Screen>
         <Header title={title} />
         <View style={styles.pad}>
-          <GlassCard
-            blur
-            accent={passed ? COLORS.success : COLORS.danger}
-            style={styles.bigCard}
-            contentStyle={styles.centered}
-          >
-            <Text style={styles.bigTitle}>
-              {isReview
-                ? "Review complete"
-                : passed
-                  ? "Passed!"
-                  : "Keep learning"}
-            </Text>
-            <Text
-              style={[
-                styles.score,
-                { color: passed ? COLORS.success : COLORS.danger },
-              ]}
+          <FadeIn from="scale" duration={300}>
+            <GlassCard
+              blur
+              accent={passed ? COLORS.success : COLORS.danger}
+              style={styles.bigCard}
+              contentStyle={styles.centered}
             >
-              {score} / {total}
-            </Text>
-            <Text style={styles.percent}>{percent}%</Text>
-            <Text style={styles.message}>
-              {isReview
-                ? "Questions you got right are cleared from your missed list."
-                : passed
-                  ? "Great work. This level's quiz is marked as passed."
-                  : `You need ${passingScore}/${total} to pass. Review the topics and try again.`}
-            </Text>
+              <Text style={styles.bigTitle}>
+                {isReview
+                  ? "Review complete"
+                  : passed
+                    ? "Passed!"
+                    : "Keep learning"}
+              </Text>
+              <Text
+                style={[
+                  styles.score,
+                  { color: passed ? COLORS.success : COLORS.danger },
+                ]}
+              >
+                {score} / {total}
+              </Text>
+              <Text style={styles.percent}>{percent}%</Text>
+              <Text style={styles.message}>
+                {isReview
+                  ? "Questions you got right are cleared from your missed list."
+                  : passed
+                    ? "Great work. This level's quiz is marked as passed."
+                    : `You need ${passingScore}/${total} to pass. Review the topics and try again.`}
+              </Text>
 
-            {!passed && (
+              {!passed && (
+                <TouchableOpacity
+                  style={[styles.primary, { backgroundColor: accentColor }]}
+                  onPress={retry}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.primaryText}>Retry quiz</Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
-                style={[styles.primary, { backgroundColor: accentColor }]}
-                onPress={retry}
+                style={[
+                  passed ? styles.primary : styles.secondary,
+                  passed
+                    ? { backgroundColor: accentColor }
+                    : { borderColor: accentColor },
+                ]}
+                onPress={onBack}
                 activeOpacity={0.85}
               >
-                <Text style={styles.primaryText}>Retry quiz</Text>
+                <Text
+                  style={
+                    passed
+                      ? styles.primaryText
+                      : [styles.secondaryText, { color: accentColor }]
+                  }
+                >
+                  {passed ? "Finish" : "← Back"}
+                </Text>
               </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={[
-                passed ? styles.primary : styles.secondary,
-                passed
-                  ? { backgroundColor: accentColor }
-                  : { borderColor: accentColor },
-              ]}
-              onPress={onBack}
-              activeOpacity={0.85}
-            >
-              <Text
-                style={
-                  passed
-                    ? styles.primaryText
-                    : [styles.secondaryText, { color: accentColor }]
-                }
-              >
-                {passed ? "Finish" : "← Back"}
-              </Text>
-            </TouchableOpacity>
-          </GlassCard>
+            </GlassCard>
+          </FadeIn>
         </View>
       </Screen>
     );
@@ -238,85 +243,91 @@ export default function QuizScreen({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <GlassCard blur accent={accentColor} style={styles.questionCard}>
-          {isReview && (
-            <Text style={[styles.tag, { color: accentColor }]}>
-              {(question._lang || "").toUpperCase()} · {question._level}
-            </Text>
-          )}
-          <Text style={styles.questionText}>{question.question}</Text>
+        <FadeIn key={current} from="up" duration={220}>
+          <GlassCard blur accent={accentColor} style={styles.questionCard}>
+            {isReview && (
+              <Text style={[styles.tag, { color: accentColor }]}>
+                {(question._lang || "").toUpperCase()} · {question._level}
+              </Text>
+            )}
+            <Text style={styles.questionText}>{question.question}</Text>
 
-          <View style={styles.options}>
-            {question.options.map((option, index) => {
-              const isSelected = selected === index;
-              const isCorrect = index === question.correct;
-              const showCorrect = answered && isCorrect;
-              const showWrong = answered && isSelected && !isCorrect;
+            <View style={styles.options}>
+              {question.options.map((option, index) => {
+                const isSelected = selected === index;
+                const isCorrect = index === question.correct;
+                const showCorrect = answered && isCorrect;
+                const showWrong = answered && isSelected && !isCorrect;
 
-              return (
-                <TouchableOpacity
-                  key={`${option}-${index}`}
+                return (
+                  <TouchableOpacity
+                    key={`${option}-${index}`}
+                    style={[
+                      styles.option,
+                      showCorrect && styles.optionCorrect,
+                      showWrong && styles.optionWrong,
+                    ]}
+                    onPress={() => pick(index)}
+                    disabled={answered}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        showCorrect && { color: COLORS.success },
+                        showWrong && { color: COLORS.danger },
+                      ]}
+                    >
+                      {option}
+                      {showCorrect ? "  ✓" : ""}
+                      {showWrong ? "  ✕" : ""}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {answered && (
+              <FadeIn from="up" duration={180}>
+                <View
                   style={[
-                    styles.option,
-                    showCorrect && styles.optionCorrect,
-                    showWrong && styles.optionWrong,
+                    styles.explain,
+                    {
+                      borderColor: gotItRight ? COLORS.success : COLORS.danger,
+                    },
                   ]}
-                  onPress={() => pick(index)}
-                  disabled={answered}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
                 >
                   <Text
                     style={[
-                      styles.optionText,
-                      showCorrect && { color: COLORS.success },
-                      showWrong && { color: COLORS.danger },
+                      styles.explainHead,
+                      { color: gotItRight ? COLORS.success : COLORS.danger },
                     ]}
                   >
-                    {option}
-                    {showCorrect ? "  ✓" : ""}
-                    {showWrong ? "  ✕" : ""}
+                    {gotItRight ? "Correct" : "Not quite"}
                   </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                  {!!question.explanation && (
+                    <Text style={styles.explainText}>
+                      {question.explanation}
+                    </Text>
+                  )}
+                </View>
+              </FadeIn>
+            )}
 
-          {answered && (
-            <View
-              style={[
-                styles.explain,
-                {
-                  borderColor: gotItRight ? COLORS.success : COLORS.danger,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.explainHead,
-                  { color: gotItRight ? COLORS.success : COLORS.danger },
-                ]}
+            {answered && (
+              <TouchableOpacity
+                style={[styles.primary, { backgroundColor: accentColor }]}
+                onPress={next}
+                activeOpacity={0.85}
               >
-                {gotItRight ? "Correct" : "Not quite"}
-              </Text>
-              {!!question.explanation && (
-                <Text style={styles.explainText}>{question.explanation}</Text>
-              )}
-            </View>
-          )}
-
-          {answered && (
-            <TouchableOpacity
-              style={[styles.primary, { backgroundColor: accentColor }]}
-              onPress={next}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.primaryText}>
-                {current === total - 1 ? "See results" : "Next question"}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </GlassCard>
+                <Text style={styles.primaryText}>
+                  {current === total - 1 ? "See results" : "Next question"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </GlassCard>
+        </FadeIn>
       </ScrollView>
     </Screen>
   );

@@ -17,6 +17,8 @@ export const COLORS = {
   java: "#fb923c",
   python: "#4ade80",
   javascript: "#facc15",
+  php: "#a78bfa",
+  sql: "#22d3ee",
 };
 
 export const SPACE = {

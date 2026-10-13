@@ -716,6 +716,220 @@ const RAW = {
       ],
     },
   },
+  php: {
+    L1: {
+      passingScore: 3,
+      questions: [
+        q(
+          "Which tag starts a PHP script?",
+          ["<?php", "<php>", "<?p>", "<?script>"],
+          0,
+          "PHP code starts with <?php and ends with ?>. The others are not valid PHP delimiters.",
+        ),
+        q(
+          "How do you declare a variable in PHP?",
+          ["var name = 'A';", "$name = 'A';", "let name = 'A';", "const name = 'A';"],
+          1,
+          "Variables in PHP always begin with a dollar sign, like $name.",
+        ),
+        q(
+          "What does echo do?",
+          ["Returns a value", "Prints output to the browser", "Defines a class", "Creates a loop"],
+          1,
+          "echo sends text or values to the output stream so the browser displays them.",
+        ),
+        q(
+          "Which is the correct comparison for strict equality?",
+          ["==", "=", "===", "=>"],
+          2,
+          "=== checks both value and type, while == only compares value.",
+        ),
+        q(
+          "What is the result of 5 + 3 in PHP?",
+          ["53", "8", "'53'", "5 3"],
+          1,
+          "Numbers are added with +, so 5 + 3 equals 8.",
+        ),
+      ],
+    },
+    L2: {
+      passingScore: 3,
+      questions: [
+        q(
+          "Which structure is used to repeat code while a condition is true?",
+          ["for", "while", "switch", "function"],
+          1,
+          "while keeps looping as long as its condition remains true.",
+        ),
+        q(
+          "What does foreach do?",
+          ["Creates a file", "Loops through each item in an array", "Matches a regex", "Starts a database connection"],
+          1,
+          "foreach is designed to iterate over arrays and associative arrays.",
+        ),
+        q(
+          "Which is a valid array in PHP?",
+          ["['apple', 'banana']", "{ 'apple', 'banana' }", "<array>apple</array>", "array = ('apple', 'banana')"],
+          0,
+          "PHP arrays use square brackets with comma-separated values.",
+        ),
+        q(
+          "How do you access an associative array value by key?",
+          ["$user.name", "$user['name']", "$user->name", "$user{name}"],
+          1,
+          "Associative arrays use square brackets with the key name, like $user['name'].",
+        ),
+        q(
+          "What does count($items) do?",
+          ["Deletes the array", "Counts the number of elements", "Sorts the array", "Adds a new item"],
+          1,
+          "count() returns the number of elements in the array.",
+        ),
+      ],
+    },
+    L3: {
+      passingScore: 3,
+      questions: [
+        q(
+          "What is a class in PHP?",
+          ["A reusable template for objects", "A loop statement", "A SQL query", "A CSS rule"],
+          0,
+          "A class is a blueprint from which objects are created.",
+        ),
+        q(
+          "Which keyword creates an instance of a class?",
+          ["new", "instanceof", "extends", "include"],
+          0,
+          "The new keyword instantiates an object from a class.",
+        ),
+        q(
+          "What does try/catch do?",
+          ["Skips code execution", "Handles thrown exceptions", "Creates arrays", "Starts a loop"],
+          1,
+          "try/catch catches exceptions and interrupts normal error flow.",
+        ),
+        q(
+          "Which statement is used to include a file only once?",
+          ["include_once", "copy_once", "require_if", "load_once"],
+          0,
+          "include_once prevents the same file from being included multiple times.",
+        ),
+        q(
+          "What is the purpose of a prepared statement in PDO?",
+          ["To speed up HTML rendering", "To protect against SQL injection", "To draw a database diagram", "To rename variables"],
+          1,
+          "Prepared statements separate SQL code from user input, reducing injection risk.",
+        ),
+      ],
+    },
+  },
+  sql: {
+    L1: {
+      passingScore: 3,
+      questions: [
+        q(
+          "Which SQL keyword retrieves rows from a table?",
+          ["SELECT", "INSERT", "UPDATE", "DELETE"],
+          0,
+          "SELECT is used to query data from one or more tables.",
+        ),
+        q(
+          "What does WHERE do in a query?",
+          ["Groups rows together", "Filters rows by a condition", "Sorts columns", "Creates a table"],
+          1,
+          "WHERE applies a condition to decide which rows are returned.",
+        ),
+        q(
+          "Which clause sorts results from highest to lowest?",
+          ["GROUP BY", "ORDER BY DESC", "HAVING", "LIMIT"],
+          1,
+          "ORDER BY DESC sorts values in descending order.",
+        ),
+        q(
+          "Which statement adds a new row?",
+          ["INSERT INTO", "DROP TABLE", "UPDATE", "CREATE TABLE"],
+          0,
+          "INSERT INTO adds new rows to an existing table.",
+        ),
+        q(
+          "Which clause prevents all rows from being changed by UPDATE?",
+          ["WHERE", "FROM", "SELECT", "VALUES"],
+          0,
+          "A WHERE clause narrows the UPDATE to the intended rows.",
+        ),
+      ],
+    },
+    L2: {
+      passingScore: 3,
+      questions: [
+        q(
+          "What does JOIN do?",
+          ["Combines rows from multiple tables", "Deletes duplicate rows", "Creates a database", "Filters text values"],
+          0,
+          "JOIN combines rows from related tables based on a condition.",
+        ),
+        q(
+          "Which pattern matches text with wildcard characters?",
+          ["LIKE", "IN", "BETWEEN", "JOIN"],
+          0,
+          "LIKE is used for pattern matching with % and _ wildcards.",
+        ),
+        q(
+          "Which function returns the number of rows?",
+          ["COUNT()", "SUM()", "AVG()", "MAX()"],
+          0,
+          "COUNT() counts the number of rows or values in a result set.",
+        ),
+        q(
+          "What does GROUP BY do?",
+          ["Adds rows to a table", "Groups rows for aggregate calculations", "Sorts by date", "Deletes a column"],
+          1,
+          "GROUP BY organizes rows into groups so aggregate functions can summarize each group.",
+        ),
+        q(
+          "Which join keeps all rows from the left table?",
+          ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "CROSS JOIN"],
+          1,
+          "LEFT JOIN keeps every row from the left side and matches what it can from the right side.",
+        ),
+      ],
+    },
+    L3: {
+      passingScore: 3,
+      questions: [
+        q(
+          "What is a subquery?",
+          ["A query inside another query", "A permanent table", "A text editor command", "A user table"],
+          0,
+          "Subqueries are nested queries used to compute or filter results inside a larger query.",
+        ),
+        q(
+          "What is an index used for?",
+          ["To store text files", "To speed up data lookup", "To rename columns", "To create tables"],
+          1,
+          "Indexes improve read performance for large tables by finding matching rows faster.",
+        ),
+        q(
+          "What does a transaction guarantee?",
+          ["All statements succeed or none do", "Only SELECT works", "The table is locked forever", "The data is deleted"],
+          0,
+          "Transactions group changes so they can be committed together or rolled back together.",
+        ),
+        q(
+          "What is a view?",
+          ["A saved query that acts like a virtual table", "A file extension", "A database server", "A primary key"],
+          0,
+          "A view stores a query definition and behaves like a table for reading purposes.",
+        ),
+        q(
+          "Which function gives a row number across an ordered result set?",
+          ["ROW_NUMBER()", "COUNT()", "CURRENT_DATE", "SUM()"],
+          0,
+          "ROW_NUMBER() assigns a unique number to each row in the window order.",
+        ),
+      ],
+    },
+  },
 };
 
 // Shuffle the answer options once when the app starts

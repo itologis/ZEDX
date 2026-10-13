@@ -13,6 +13,7 @@ import SearchScreen from "./src/screens/SearchScreen";
 import TopicScreen from "./src/screens/TopicScreen";
 
 import BottomNav from "./src/components/BottomNav";
+import FadeIn from "./src/components/FadeIn";
 import MoltenBackground from "./src/components/MoltenBackground";
 
 import { LANGUAGES, findTopic } from "./src/data/languages";
@@ -243,16 +244,32 @@ export default function App() {
   const showBottomNavigation = ["home", "search", "saved", "quizzes"].includes(
     screen.name,
   );
+  const screenTransitionKey = [
+    screen.name,
+    screen.languageKey || "",
+    screen.levelId || "",
+    screen.topic?.id || "",
+    screen.from || "",
+  ].join(":");
 
   return (
     <View style={styles.app}>
       <StatusBar style="light" />
       <MoltenBackground />
       <View style={styles.shell}>
-        <View style={styles.content}>{content}</View>
+        <FadeIn
+          key={screenTransitionKey}
+          style={styles.content}
+          duration={260}
+          from="up"
+        >
+          {content}
+        </FadeIn>
 
         {showBottomNavigation && (
-          <BottomNav active={activeTab} onNavigate={handleNavigate} />
+          <FadeIn key="bottom-navigation" duration={220} from="up">
+            <BottomNav active={activeTab} onNavigate={handleNavigate} />
+          </FadeIn>
         )}
 
         {SHOW_DEV_TOOLS && screen.name === "home" && (
