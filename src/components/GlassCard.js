@@ -56,6 +56,7 @@ export default function GlassCard({
     return (
       <TouchableOpacity
         accessibilityRole="button"
+        accessibilityState={{ disabled }}
         activeOpacity={0.78}
         onPress={onPress}
         disabled={disabled}

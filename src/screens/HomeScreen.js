@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import GlassCard from "../components/GlassCard";
 import Screen from "../components/Screen";
@@ -69,11 +76,15 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
   const [percents, setPercents] = useState({});
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let mounted = true;
 
     const load = async () => {
+      setLoadError(false);
+      setLoading(true);
       try {
         const result = {};
 
@@ -92,6 +103,7 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
         }
       } catch (error) {
         console.error("Error loading home progress:", error);
+        if (mounted) setLoadError(true);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -102,7 +114,7 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   const visibleLanguages = LANGUAGES.filter((lang) =>
     lang.label.toLowerCase().includes(query.trim().toLowerCase()),
@@ -146,15 +158,33 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
             returnKeyType="search"
           />
           {!!query && (
-            <Text
-              style={styles.clearSearch}
-              onPress={() => setQuery("")}
+            <TouchableOpacity
               accessibilityRole="button"
+              accessibilityLabel="Clear search"
+              onPress={() => setQuery("")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={styles.clearSearch}
             >
-              Clear
-            </Text>
+              <Text style={styles.clearSearchText}>Clear</Text>
+            </TouchableOpacity>
           )}
         </View>
+
+        {loadError && (
+          <View style={styles.loadNotice}>
+            <Text style={styles.loadNoticeText}>
+              Your progress could not be loaded. Percentages may be
+              inaccurate.
+            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => setReloadKey((key) => key + 1)}
+              style={styles.loadNoticeRetry}
+            >
+              <Text style={styles.loadNoticeRetryText}>Try again</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {resume && (
           <GlassCard
@@ -351,11 +381,50 @@ const styles = StyleSheet.create({
   },
 
   clearSearch: {
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: 8,
+  },
+
+  clearSearchText: {
     color: COLORS.textDim,
     fontSize: 12,
     fontWeight: "700",
-    paddingVertical: 10,
-    paddingLeft: 8,
+  },
+
+  loadNotice: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.glass,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 18,
+  },
+
+  loadNoticeText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+
+  loadNoticeRetry: {
+    marginTop: 10,
+    alignSelf: "flex-start",
+    minHeight: 44,
+    paddingHorizontal: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.ember,
+    borderRadius: 12,
+  },
+
+  loadNoticeRetryText: {
+    color: COLORS.ember,
+    fontSize: 13,
+    fontWeight: "700",
   },
 
   resumeCard: {

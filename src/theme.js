@@ -7,7 +7,7 @@ export const COLORS = {
   borderStrong: "rgba(255, 255, 255, 0.14)",
   text: "#ececf1",
   textMuted: "#a1a1b5",
-  textDim: "#6b6b80",
+  textDim: "#9494ab",
   ember: "#ff6b4a",
   success: "#4ade80",
   danger: "#f87171",

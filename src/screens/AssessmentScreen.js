@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+    Alert,
     ScrollView,
     StyleSheet,
     Text,
@@ -71,6 +72,7 @@ export default function AssessmentScreen({
           </Text>
 
           <TouchableOpacity
+            accessibilityRole="button"
             style={[
               styles.button,
               {
@@ -174,6 +176,21 @@ export default function AssessmentScreen({
     setResult(assessmentResult);
   };
 
+  const requestQuit = () => {
+    const hasProgress =
+      answers.length > 0 || selectedOption !== null || currentQuestion > 0;
+
+    if (!hasProgress) {
+      onBack?.();
+      return;
+    }
+
+    Alert.alert("Quit assessment?", "Your progress will be lost.", [
+      { text: "Keep going", style: "cancel" },
+      { text: "Quit", style: "destructive", onPress: () => onBack?.() },
+    ]);
+  };
+
   if (result) {
     const recommendedLevel = languageData.levels.find(
       (level) => level.level === result.startingLevel,
@@ -229,6 +246,7 @@ export default function AssessmentScreen({
             </Text>
 
             <TouchableOpacity
+              accessibilityRole="button"
               style={[
                 styles.button,
                 {
@@ -248,7 +266,13 @@ export default function AssessmentScreen({
   return (
     <Screen style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.quitButton}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Quit assessment"
+          onPress={requestQuit}
+          style={styles.quitButton}
+          hitSlop={{ top: 8, bottom: 8 }}
+        >
           <Text
             style={[
               styles.quitText,
@@ -270,7 +294,16 @@ export default function AssessmentScreen({
         <View style={styles.headerSpacer} />
       </View>
 
-      <View style={styles.progressContainer}>
+      <View
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityValue={{
+          min: 0,
+          max: questions.length,
+          now: currentQuestion + 1,
+        }}
+        style={styles.progressContainer}
+      >
         <Text style={styles.progressText}>
           Question {currentQuestion + 1}
           {" of "}
@@ -314,6 +347,8 @@ export default function AssessmentScreen({
               return (
                 <TouchableOpacity
                   key={index}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected }}
                   style={[
                     styles.optionButton,
                     isSelected && {
@@ -341,6 +376,7 @@ export default function AssessmentScreen({
 
           {selectedOption !== null && (
             <TouchableOpacity
+              accessibilityRole="button"
               style={[
                 styles.button,
                 {
@@ -381,6 +417,9 @@ const styles = StyleSheet.create({
   quitButton: {
     padding: 8,
     minWidth: 70,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   quitText: {

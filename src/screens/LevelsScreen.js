@@ -88,6 +88,7 @@ export default function LevelsScreen({
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
+            accessibilityRole="button"
             style={[styles.retryButton, { backgroundColor: accentColor }]}
             onPress={() => loadProgress()}
             activeOpacity={0.85}
@@ -257,6 +258,7 @@ export default function LevelsScreen({
               })}
               {onOpenQuiz && QUIZZES[languageKey]?.[level.level] && (
                 <TouchableOpacity
+                  accessibilityRole="button"
                   style={[styles.quizButton, { borderColor: accentColor }]}
                   onPress={() => onOpenQuiz(languageKey, level.level)}
                   activeOpacity={0.8}
@@ -485,7 +487,7 @@ const styles = StyleSheet.create({
   },
   quizButton: {
     marginTop: 4,
-    minHeight: 46,
+    minHeight: 48,
     borderWidth: 1.5,
     borderRadius: 12,
     alignItems: "center",

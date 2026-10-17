@@ -94,6 +94,8 @@ function PracticeCard({ topicId, languageKey, accent }) {
           return (
             <TouchableOpacity
               key={option}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: solved, selected: isChoice }}
               disabled={solved}
               onPress={() => pick(option)}
               activeOpacity={0.8}
@@ -268,12 +270,14 @@ export default function TopicScreen({
             </Text>
             <View style={styles.confirmButtons}>
               <TouchableOpacity
+                accessibilityRole="button"
                 style={styles.cancelButton}
                 onPress={() => setShowConfirm(false)}
               >
                 <Text style={styles.cancelText}>Not yet</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                accessibilityRole="button"
                 style={[styles.yesButton, { backgroundColor: accentColor }]}
                 onPress={confirmComplete}
               >
@@ -284,6 +288,8 @@ export default function TopicScreen({
         )}
 
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityState={{ disabled: completed }}
           style={[
             styles.completeButton,
             { backgroundColor: completed ? COLORS.surfaceRaised : accentColor },
@@ -370,6 +376,9 @@ const styles = StyleSheet.create({
   option: {
     paddingHorizontal: 14,
     paddingVertical: 10,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 10,
     borderWidth: 1.5,
     borderColor: COLORS.borderStrong,
@@ -411,13 +420,23 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cancelButton: {
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
     backgroundColor: COLORS.surfaceRaised,
   },
   cancelText: { color: COLORS.text, fontSize: 14, fontWeight: "600" },
-  yesButton: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 10 },
+  yesButton: {
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
   yesText: { color: COLORS.bg, fontSize: 14, fontWeight: "800" },
   completeButton: {
     minHeight: 54,

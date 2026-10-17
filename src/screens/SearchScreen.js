@@ -73,6 +73,8 @@ export default function SearchScreen({
           return (
             <TouchableOpacity
               key={f.key}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
               onPress={() => onFilterChange(f.key)}
               style={[
                 styles.chip,
@@ -158,6 +160,9 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 20,
     borderWidth: 1,
     borderColor: COLORS.border,

@@ -124,6 +124,7 @@ export default function QuizScreen({
               </View>
 
               <TouchableOpacity
+                accessibilityRole="button"
                 style={[styles.primary, { backgroundColor: accentColor }]}
                 onPress={() => setStarted(true)}
                 activeOpacity={0.85}
@@ -179,6 +180,7 @@ export default function QuizScreen({
 
               {!passed && (
                 <TouchableOpacity
+                  accessibilityRole="button"
                   style={[styles.primary, { backgroundColor: accentColor }]}
                   onPress={retry}
                   activeOpacity={0.85}
@@ -188,6 +190,7 @@ export default function QuizScreen({
               )}
 
               <TouchableOpacity
+                accessibilityRole="button"
                 style={[
                   passed ? styles.primary : styles.secondary,
                   passed
@@ -271,6 +274,10 @@ export default function QuizScreen({
                     disabled={answered}
                     activeOpacity={0.8}
                     accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: answered,
+                      selected: isSelected,
+                    }}
                   >
                     <Text
                       style={[
@@ -317,6 +324,7 @@ export default function QuizScreen({
 
             {answered && (
               <TouchableOpacity
+                accessibilityRole="button"
                 style={[styles.primary, { backgroundColor: accentColor }]}
                 onPress={next}
                 activeOpacity={0.85}

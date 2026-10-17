@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import AssessmentScreen from "./src/screens/AssessmentScreen";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -94,10 +94,20 @@ export default function App() {
   const goReview = useCallback(async () => {
     try {
       const questions = await getMissedQuestions();
-      if (questions.length === 0) return;
+      if (questions.length === 0) {
+        Alert.alert(
+          "Nothing to review",
+          "Questions you miss in quizzes will show up here.",
+        );
+        return;
+      }
       setScreen({ name: "review", questions });
     } catch (error) {
       console.error("Error loading missed questions:", error);
+      Alert.alert(
+        "Couldn't start review",
+        "Your missed questions could not be loaded. Try again in a moment.",
+      );
     }
   }, []);
 
