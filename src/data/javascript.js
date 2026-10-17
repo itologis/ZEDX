@@ -124,6 +124,14 @@ export default {
             "Objects group related information using properties and values. Properties can be accessed with dot notation or bracket notation.",
         },
         {
+          id: "js16",
+          title: "Classes",
+          syntax:
+            'class Person {\n  constructor(name) {\n    this.name = name;\n  }\n\n  greet() {\n    return "Hi, I am " + this.name;\n  }\n}\n\nconst person = new Person("Alex");\nconsole.log(person.greet());',
+          description:
+            "Classes are blueprints for creating objects. The constructor runs when you create an instance with new, and methods are shared by every instance. Use extends and super to build a class on top of another one.",
+        },
+        {
           id: "js10",
           title: "Array Methods",
           syntax:

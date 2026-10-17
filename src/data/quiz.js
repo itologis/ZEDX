@@ -663,6 +663,17 @@ const RAW = {
           0,
           "filter() builds a new array of the items that pass the test and leaves the original alone.",
         ),
+        q(
+          "What does the new keyword do when used with a class?",
+          [
+            "Creates an instance of the class",
+            "Declares a new variable",
+            "Makes a class immutable",
+            "Adds a new method to the class",
+          ],
+          0,
+          "new Person(...) runs the constructor and creates a new object. It does not declare variables or change the class itself.",
+        ),
       ],
     },
     L3: {

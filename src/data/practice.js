@@ -549,6 +549,13 @@ export const PRACTICE = {
     [`include`, `using`],
     `import pulls in a named export from another module.`,
   ),
+  js16: p(
+    `Which keyword defines a blueprint for creating objects?`,
+    `____ Person {\n  constructor(name) {\n    this.name = name;\n  }\n}`,
+    `class`,
+    [`object`, `def`],
+    `class defines the blueprint, and new Person(...) creates instances from it. def is Python.`,
+  ),
   // ---------------- PHP ----------------
   php1: p(
     `Which tag opens a block of PHP code?`,
