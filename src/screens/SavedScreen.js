@@ -1,20 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import GlassCard from "../components/GlassCard";
-import Header from "../components/Header";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
 import Screen from "../components/Screen";
+import TopBar from "../components/TopBar";
 import { findTopic } from "../data/languages";
 import { getBookmarks, toggleBookmark } from "../data/progress";
-import { COLORS } from "../theme";
+import { TYPO, useTheme } from "../theme";
 
-export default function SavedScreen({ onOpenTopic, onNavigate }) {
+export default function SavedScreen({ onOpenTopic }) {
+  const { colors } = useTheme();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -39,6 +33,8 @@ export default function SavedScreen({ onOpenTopic, onNavigate }) {
   }, []);
 
   useEffect(() => {
+    // Async storage read; the state update happens after the await.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -57,70 +53,95 @@ export default function SavedScreen({ onOpenTopic, onNavigate }) {
 
   return (
     <Screen>
-      <Header title="Saved" />
+      <TopBar left="ZEDX" right="Marked pages" strong />
+
       <ScrollView
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {loading && items.length === 0 && (
-          <View style={styles.loadingView}>
-            <ActivityIndicator color={COLORS.ember} />
-            <Text style={styles.loadingText}>Loading saved topics...</Text>
-          </View>
-        )}
-        {!loading && loadError && (
-          <View style={styles.errorState}>
-            <Text style={styles.errorText}>
+        <Text style={[TYPO.label, { color: colors.accent }]}>Saved</Text>
+        <Text style={[TYPO.title, styles.title, { color: colors.ink }]}>
+          Marked pages
+        </Text>
+        <Text style={[TYPO.lede, styles.lede, { color: colors.body }]}>
+          Topics you marked with the star, kept here for a quick return.
+        </Text>
+
+        {loading && items.length === 0 ? (
+          <Text style={[TYPO.small, styles.state, { color: colors.muted }]}>
+            Loading saved topics…
+          </Text>
+        ) : null}
+
+        {!loading && loadError ? (
+          <View style={styles.state}>
+            <Text style={[TYPO.small, styles.stateText, { color: colors.body }]}>
               Saved topics could not be loaded.
             </Text>
             <TouchableOpacity
               accessibilityRole="button"
               onPress={load}
-              style={styles.retryButton}
+              style={styles.retry}
             >
-              <Text style={styles.retryText}>Try again</Text>
+              <Text style={[TYPO.label, { color: colors.accent }]}>
+                Try again
+              </Text>
             </TouchableOpacity>
           </View>
-        )}
-        {!loading && !loadError && items.length === 0 && (
-          <Text style={styles.hint}>
-            Nothing saved yet. Open any topic and tap the star in the corner to
-            save it here.
+        ) : null}
+
+        {!loading && !loadError && items.length === 0 ? (
+          <Text style={[TYPO.small, styles.empty, { color: colors.muted }]}>
+            Nothing saved yet. Open any topic and tap Save to keep it here.
           </Text>
-        )}
+        ) : null}
+
         {items.map((item) => (
           <View
             key={`${item.languageKey}-${item.topic.id}`}
             style={styles.rowWrap}
           >
-            {/* The star stays outside the card's pressable area: on web,
-                react-native-web renders role="button" as a real <button>,
-                and a button nested inside the card's button is invalid DOM. */}
-            <GlassCard
-              accent={item.color}
-              style={styles.row}
+            {/* The remove action stays outside the row's pressable area: on
+                web, react-native-web renders role="button" as a real <button>,
+                and nesting one button inside another is invalid DOM. */}
+            <TouchableOpacity
+              accessibilityRole="button"
               onPress={() => onOpenTopic(item.languageKey, item.topic.id)}
+              activeOpacity={0.65}
+              style={[styles.row, { borderBottomColor: colors.rule }]}
             >
-              <View style={styles.rowLeft}>
-                <Text style={[styles.rowTag, { color: item.color }]}>
+              <View
+                style={[
+                  styles.swatch,
+                  { backgroundColor: colors.lang[item.languageKey] },
+                ]}
+              />
+              <View style={styles.rowBody}>
+                <Text style={[TYPO.label, { color: colors.muted }]}>
                   {item.languageLabel} · {item.levelLabel}
                 </Text>
-                <Text style={styles.rowTitle}>{item.topic.title}</Text>
-                <Text style={styles.rowDesc} numberOfLines={1}>
+                <Text style={[TYPO.item, styles.rowTitle, { color: colors.ink }]}>
+                  {item.topic.title}
+                </Text>
+                <Text
+                  style={[TYPO.small, styles.rowDesc, { color: colors.muted }]}
+                  numberOfLines={1}
+                >
                   {item.topic.description}
                 </Text>
               </View>
-            </GlassCard>
+            </TouchableOpacity>
+
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel={`Remove ${item.topic.title} from saved`}
               accessibilityState={{ disabled: busyId === item.topic.id }}
               onPress={() => remove(item)}
               disabled={busyId === item.topic.id}
-              style={styles.star}
+              style={styles.remove}
             >
-              <Text style={styles.starText}>★</Text>
+              <Text style={[TYPO.label, { color: colors.accent }]}>Remove</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -130,73 +151,43 @@ export default function SavedScreen({ onOpenTopic, onNavigate }) {
 }
 
 const styles = StyleSheet.create({
-  list: { flex: 1 },
-  listContent: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 6 },
-  rowWrap: { position: "relative" },
-  hint: {
-    color: COLORS.textDim,
-    fontSize: 14,
+  scroll: { flex: 1 },
+  content: { paddingHorizontal: 24, paddingTop: 26, paddingBottom: 40 },
+  title: { marginTop: 14 },
+  lede: { marginTop: 14, maxWidth: 340 },
+  state: { paddingVertical: 28, alignItems: "center" },
+  stateText: { textAlign: "center" },
+  empty: {
+    marginTop: 32,
     textAlign: "center",
-    marginTop: 40,
-    lineHeight: 21,
-    paddingHorizontal: 20,
+    lineHeight: 20,
+    paddingHorizontal: 12,
   },
+  retry: {
+    marginTop: 8,
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: 8,
+  },
+  rowWrap: { position: "relative", marginTop: 26 },
   row: {
     flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    marginBottom: 10,
+    alignItems: "flex-start",
+    paddingVertical: 16,
+    paddingRight: 82,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  loadingView: {
-    alignItems: "center",
-    paddingVertical: 32,
-  },
-  loadingText: {
-    color: COLORS.textMuted,
-    fontSize: 14,
-    marginTop: 8,
-  },
-  errorState: {
-    alignItems: "center",
-    paddingVertical: 32,
-    paddingHorizontal: 20,
-  },
-  errorText: {
-    color: COLORS.textMuted,
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 21,
-  },
-  retryButton: {
-    borderWidth: 1,
-    borderColor: COLORS.ember,
-    borderRadius: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    minHeight: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 12,
-  },
-  retryText: { color: COLORS.ember, fontSize: 13, fontWeight: "700" },
-  rowLeft: { flex: 1, paddingRight: 40 },
-  rowTag: {
-    fontSize: 11,
-    fontWeight: "bold",
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  rowTitle: { color: COLORS.text, fontSize: 16, fontWeight: "700" },
-  rowDesc: { color: COLORS.textDim, fontSize: 12, marginTop: 3 },
-  star: {
+  swatch: { width: 7, height: 7, marginTop: 4, marginRight: 12 },
+  rowBody: { flex: 1 },
+  rowTitle: { marginTop: 6 },
+  rowDesc: { marginTop: 4 },
+  remove: {
     position: "absolute",
-    right: 6,
-    top: "50%",
-    marginTop: -22,
-    width: 44,
-    height: 44,
-    alignItems: "center",
+    right: 0,
+    bottom: 10,
+    minHeight: 44,
+    minWidth: 72,
+    alignItems: "flex-end",
     justifyContent: "center",
   },
-  starText: { color: COLORS.ember, fontSize: 24 },
 });

@@ -1,17 +1,14 @@
 import { useMemo, useState } from "react";
-import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import Button from "../components/Button";
+import FieldLabel from "../components/FieldLabel";
+import OptionRow from "../components/OptionRow";
 import Screen from "../components/Screen";
-
+import TopBar from "../components/TopBar";
 import { saveAssessmentResult } from "../data/progress";
 import { QUIZZES } from "../data/quiz";
+import { TYPO, useTheme } from "../theme";
 
 const shuffleQuestions = (questions) => {
   const shuffled = [...questions];
@@ -28,10 +25,11 @@ const shuffleQuestions = (questions) => {
 export default function AssessmentScreen({
   languageKey,
   languageData,
-  accentColor = "#89b4fa",
+  languageLabel,
   onComplete,
   onBack,
 }) {
+  const { colors } = useTheme();
   const questions = useMemo(() => {
     const allQuestions = [];
 
@@ -54,35 +52,24 @@ export default function AssessmentScreen({
   }, [languageKey, languageData]);
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
-
   const [selectedOption, setSelectedOption] = useState(null);
-
   const [answers, setAnswers] = useState([]);
-
   const [result, setResult] = useState(null);
 
   if (questions.length === 0) {
     return (
-      <Screen style={styles.container}>
-        <View style={styles.centerContainer}>
-          <Text style={styles.errorTitle}>Assessment unavailable</Text>
-
-          <Text style={styles.errorText}>
+      <Screen>
+        <TopBar left="← Back" onLeft={onBack} leftLabel="Go back" right="Placement" />
+        <View style={styles.center}>
+          <Text style={[TYPO.h2, { color: colors.ink }]}>
+            Assessment unavailable
+          </Text>
+          <Text style={[TYPO.small, styles.centerText, { color: colors.body }]}>
             There are currently no assessment questions for this language.
           </Text>
-
-          <TouchableOpacity
-            accessibilityRole="button"
-            style={[
-              styles.button,
-              {
-                backgroundColor: accentColor,
-              },
-            ]}
-            onPress={() => onComplete?.()}
-          >
-            <Text style={styles.buttonText}>Continue</Text>
-          </TouchableOpacity>
+          <Button onPress={() => onComplete?.()} style={styles.centerButton}>
+            Continue
+          </Button>
         </View>
       </Screen>
     );
@@ -91,8 +78,7 @@ export default function AssessmentScreen({
   const question = questions[currentQuestion];
 
   const handleOptionSelect = (index) => {
-    // The user can change their answer
-    // until they press Next.
+    // The answer can change until Next is pressed.
     setSelectedOption(index);
   };
 
@@ -103,19 +89,14 @@ export default function AssessmentScreen({
       const levelQuestions = questions.filter(
         (item) => item._level === level.level,
       );
-
       const levelAnswers = finalAnswers.filter(
         (answer) => answer.level === level.level,
       );
-
       const score = levelAnswers.filter(
         (answer) => answer.selected === answer.correct,
       ).length;
-
       const total = levelQuestions.length;
-
       const quizData = QUIZZES[languageKey]?.[level.level];
-
       const passingScore = quizData?.passingScore || Math.ceil(total * 0.6);
 
       levelResults[level.level] = {
@@ -133,23 +114,17 @@ export default function AssessmentScreen({
 
       if (!levelResult?.passed) {
         startingLevel = level.level;
-
         break;
       }
 
       startingLevel = level.level;
     }
 
-    return {
-      scores: levelResults,
-      startingLevel,
-    };
+    return { scores: levelResults, startingLevel };
   };
 
   const handleNext = async () => {
-    if (selectedOption === null) {
-      return;
-    }
+    if (selectedOption === null) return;
 
     const answer = {
       level: question._level,
@@ -158,20 +133,21 @@ export default function AssessmentScreen({
     };
 
     const finalAnswers = [...answers, answer];
-
     setAnswers(finalAnswers);
 
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
-
       setSelectedOption(null);
-
       return;
     }
 
     const assessmentResult = calculateResults(finalAnswers);
 
-    await saveAssessmentResult(languageKey, assessmentResult);
+    try {
+      await saveAssessmentResult(languageKey, assessmentResult);
+    } catch (error) {
+      console.error("Error saving assessment result:", error);
+    }
 
     setResult(assessmentResult);
   };
@@ -197,102 +173,69 @@ export default function AssessmentScreen({
     );
 
     return (
-      <Screen style={styles.container}>
-        <ScrollView contentContainerStyle={styles.resultContainer}>
-          <View style={styles.resultCard}>
-            <Text style={styles.resultTitle}>Assessment Complete</Text>
+      <Screen>
+        <TopBar right="Placement" />
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.resultContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={[TYPO.label, { color: colors.accent }]}>
+            Placement
+          </Text>
+          <Text style={[TYPO.title, styles.resultTitle, { color: colors.ink }]}>
+            Assessment complete
+          </Text>
 
-            <Text style={styles.resultSubtitle}>
-              Recommended starting point
-            </Text>
+          <FieldLabel>Recommended start</FieldLabel>
+          <Text style={[TYPO.title, styles.recommended, { color: colors.ink }]}>
+            {recommendedLevel?.label || result.startingLevel}
+          </Text>
+          <Text style={[TYPO.body, styles.resultText, { color: colors.body }]}>
+            Based on your answers, this is the level we recommend starting
+            with. You can still open any level and learn in whatever order you
+            prefer.
+          </Text>
 
-            <Text
-              style={[
-                styles.recommendedLevel,
-                {
-                  color: accentColor,
-                },
-              ]}
-            >
-              {recommendedLevel?.label || result.startingLevel}
-            </Text>
+          <FieldLabel>Scores</FieldLabel>
+          <View style={styles.scores}>
+            {languageData.levels.map((level) => {
+              const levelResult = result.scores[level.level];
 
-            <Text style={styles.resultDescription}>
-              Based on your answers, this is the level we recommend starting
-              with.
-            </Text>
-
-            <View style={styles.scoreContainer}>
-              {languageData.levels.map((level) => {
-                const levelResult = result.scores[level.level];
-
-                return (
-                  <View key={level.level} style={styles.scoreRow}>
-                    <Text style={styles.scoreLevel}>{level.label}</Text>
-
-                    <Text style={styles.scoreValue}>
-                      {levelResult.score}
-                      {" / "}
-                      {levelResult.total}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-
-            <Text style={styles.freeExploreText}>
-              You can still open any level and learn in whatever order you
-              prefer.
-            </Text>
-
-            <TouchableOpacity
-              accessibilityRole="button"
-              style={[
-                styles.button,
-                {
-                  backgroundColor: accentColor,
-                },
-              ]}
-              onPress={() => onComplete?.(result)}
-            >
-              <Text style={styles.buttonText}>Start Learning</Text>
-            </TouchableOpacity>
+              return (
+                <View
+                  key={level.level}
+                  style={[styles.scoreRow, { borderBottomColor: colors.rule }]}
+                >
+                  <Text style={[TYPO.body, { color: colors.ink }]}>
+                    {level.level} · {level.label}
+                  </Text>
+                  <Text style={[TYPO.meta, { color: colors.muted }]}>
+                    {levelResult.score} / {levelResult.total}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
+
+          <Button onPress={() => onComplete?.(result)} style={styles.resultButton}>
+            Start learning
+          </Button>
         </ScrollView>
       </Screen>
     );
   }
 
+  const progressPct = ((currentQuestion + 1) / questions.length) * 100;
+
   return (
-    <Screen style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Quit assessment"
-          onPress={requestQuit}
-          style={styles.quitButton}
-          hitSlop={{ top: 8, bottom: 8 }}
-        >
-          <Text
-            style={[
-              styles.quitText,
-              {
-                color: accentColor,
-              },
-            ]}
-          >
-            ← Quit
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Initial Assessment</Text>
-
-          <Text style={styles.headerSubtitle}>Find your starting point</Text>
-        </View>
-
-        <View style={styles.headerSpacer} />
-      </View>
+    <Screen>
+      <TopBar
+        left="← Quit"
+        onLeft={requestQuit}
+        leftLabel="Quit assessment"
+        right={languageLabel || "Placement"}
+      />
 
       <View
         accessible
@@ -302,333 +245,94 @@ export default function AssessmentScreen({
           max: questions.length,
           now: currentQuestion + 1,
         }}
-        style={styles.progressContainer}
+        style={styles.progressWrap}
       >
-        <Text style={styles.progressText}>
-          Question {currentQuestion + 1}
-          {" of "}
-          {questions.length}
-        </Text>
-
-        <View style={styles.progressBar}>
+        <View style={styles.progressMeta}>
+          <Text style={[TYPO.label, { color: colors.muted }]}>
+            Question {String(currentQuestion + 1).padStart(2, "0")} /{" "}
+            {String(questions.length).padStart(2, "0")}
+          </Text>
+          <Text style={[TYPO.label, { color: colors.muted }]}>Placement</Text>
+        </View>
+        <View style={[styles.track, { backgroundColor: colors.rule }]}>
           <View
             style={[
-              styles.progressFill,
-              {
-                width: `${((currentQuestion + 1) / questions.length) * 100}%`,
-                backgroundColor: accentColor,
-              },
+              styles.fill,
+              { width: `${progressPct}%`, backgroundColor: colors.accent },
             ]}
           />
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View
-          style={[
-            styles.questionCard,
-            {
-              borderTopColor: accentColor,
-            },
-          ]}
-        >
-          <Text style={styles.assessmentLabel}>Assessment</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={[TYPO.question, { color: colors.ink }]}>
+          {question.question}
+        </Text>
 
-          <Text style={styles.questionText}>{question.question}</Text>
+        <Text style={[TYPO.small, styles.hint, { color: colors.muted }]}>
+          Select an answer. You can change it before continuing.
+        </Text>
 
-          <Text style={styles.changeHint}>
-            Select an answer. You can change it before continuing.
-          </Text>
+        <View style={styles.options}>
+          {question.options.map((option, index) => {
+            const isSelected = selectedOption === index;
 
-          <View style={styles.optionsContainer}>
-            {question.options.map((option, index) => {
-              const isSelected = selectedOption === index;
-
-              return (
-                <TouchableOpacity
-                  key={index}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
-                  style={[
-                    styles.optionButton,
-                    isSelected && {
-                      borderColor: accentColor,
-                      backgroundColor: "#202238",
-                    },
-                  ]}
-                  onPress={() => handleOptionSelect(index)}
-                >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      isSelected && {
-                        color: accentColor,
-                        fontWeight: "600",
-                      },
-                    ]}
-                  >
-                    {option}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {selectedOption !== null && (
-            <TouchableOpacity
-              accessibilityRole="button"
-              style={[
-                styles.button,
-                {
-                  backgroundColor: accentColor,
-                },
-              ]}
-              onPress={handleNext}
-            >
-              <Text style={styles.buttonText}>
-                {currentQuestion === questions.length - 1
-                  ? "See Results"
-                  : "Next Question"}
-              </Text>
-            </TouchableOpacity>
-          )}
+            return (
+              <OptionRow
+                key={index}
+                index={index}
+                label={option}
+                state={isSelected ? "selected" : "idle"}
+                onPress={() => handleOptionSelect(index)}
+              />
+            );
+          })}
         </View>
+
+        {selectedOption !== null ? (
+          <Button onPress={handleNext} style={styles.next}>
+            {currentQuestion === questions.length - 1
+              ? "See results"
+              : "Next question"}
+          </Button>
+        ) : null}
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
-
-  header: {
+  scroll: { flex: 1 },
+  content: { paddingHorizontal: 24, paddingTop: 18, paddingBottom: 40 },
+  center: { flex: 1, justifyContent: "center", padding: 24 },
+  centerText: { marginTop: 10, lineHeight: 20 },
+  centerButton: { marginTop: 22 },
+  progressWrap: { paddingHorizontal: 24, paddingTop: 18, paddingBottom: 16 },
+  progressMeta: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2c2e3e",
-  },
-
-  quitButton: {
-    padding: 8,
-    minWidth: 70,
-    minHeight: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  quitText: {
-    fontSize: 15,
-    fontWeight: "500",
-  },
-
-  headerCenter: {
-    flex: 1,
-    alignItems: "center",
-  },
-
-  headerSpacer: {
-    width: 70,
-  },
-
-  headerTitle: {
-    color: "#c0caf5",
-    fontSize: 21,
-    fontWeight: "bold",
-  },
-
-  headerSubtitle: {
-    color: "#9399b2",
-    fontSize: 13,
-    marginTop: 4,
-  },
-
-  progressContainer: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    padding: 14,
-    backgroundColor: "#24273a",
-    borderRadius: 12,
-  },
-
-  progressText: {
-    color: "#c0caf5",
-    fontSize: 14,
-    marginBottom: 8,
-  },
-
-  progressBar: {
-    height: 6,
-    backgroundColor: "#2c2e3e",
-    borderRadius: 3,
-    overflow: "hidden",
-  },
-
-  progressFill: {
-    height: "100%",
-    borderRadius: 3,
-  },
-
-  content: {
-    flex: 1,
-  },
-
-  questionCard: {
-    backgroundColor: "#24273a",
-    margin: 16,
-    padding: 20,
-    borderRadius: 12,
-    borderTopWidth: 4,
-  },
-
-  assessmentLabel: {
-    color: "#9399b2",
-    fontSize: 13,
-    marginBottom: 8,
-  },
-
-  questionText: {
-    color: "#c0caf5",
-    fontSize: 20,
-    fontWeight: "bold",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
-
-  changeHint: {
-    color: "#9399b2",
-    fontSize: 12,
-    marginBottom: 18,
-    lineHeight: 18,
-  },
-
-  optionsContainer: {
-    marginBottom: 16,
-  },
-
-  optionButton: {
-    backgroundColor: "#1a1b26",
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-
-  optionText: {
-    color: "#cdd6f4",
-    fontSize: 16,
-  },
-
-  button: {
-    padding: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 8,
-  },
-
-  buttonText: {
-    color: "#1a1b26",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-
-  resultContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 20,
-  },
-
-  resultCard: {
-    backgroundColor: "#24273a",
-    padding: 24,
-    borderRadius: 16,
-    alignItems: "center",
-  },
-
-  resultTitle: {
-    color: "#c0caf5",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-
-  resultSubtitle: {
-    color: "#9399b2",
-    fontSize: 15,
-    textAlign: "center",
-  },
-
-  recommendedLevel: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginTop: 8,
-    marginBottom: 10,
-  },
-
-  resultDescription: {
-    color: "#cdd6f4",
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-
-  scoreContainer: {
-    width: "100%",
-    backgroundColor: "#1a1b26",
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 18,
-  },
-
+  track: { height: 2 },
+  fill: { height: 2 },
+  hint: { marginTop: 10 },
+  options: { marginTop: 22 },
+  next: { marginTop: 24 },
+  resultContent: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: 40 },
+  resultTitle: { marginTop: 14 },
+  recommended: { marginTop: 10 },
+  resultText: { marginTop: 12 },
+  scores: { marginTop: 4 },
   scoreRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 7,
-  },
-
-  scoreLevel: {
-    color: "#c0caf5",
-    fontSize: 14,
-  },
-
-  scoreValue: {
-    color: "#a6e3a1",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-
-  freeExploreText: {
-    color: "#9399b2",
-    fontSize: 13,
-    textAlign: "center",
-    lineHeight: 19,
-    marginBottom: 12,
-  },
-
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-
-  errorTitle: {
-    color: "#c0caf5",
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-
-  errorText: {
-    color: "#9399b2",
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 20,
-  },
+  resultButton: { marginTop: 28 },
 });

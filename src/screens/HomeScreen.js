@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import GlassCard from "../components/GlassCard";
+import ContinueStrip from "../components/ContinueStrip";
+import IndexRow from "../components/IndexRow";
 import Screen from "../components/Screen";
+import SectionHead from "../components/SectionHead";
+import ThemeToggle from "../components/ThemeToggle";
+import TopBar from "../components/TopBar";
 import { LANGUAGES } from "../data/languages";
 import { getLastTopic, getProgress } from "../data/progress";
-import { COLORS } from "../theme";
+import { TYPO, useTheme } from "../theme";
 
 const levelsLabel = (data) => {
   const count = data.levels.length;
   return `${count} level${count === 1 ? "" : "s"}`;
 };
 
-// Calculate completed topics across every level.
+const topicsLabel = (data) =>
+  data.levels.reduce((sum, level) => sum + (level.topics?.length || 0), 0);
+
+// Completed topics across every level.
 const calcPercent = (data, progress) => {
   let total = 0;
   let done = 0;
@@ -35,28 +35,33 @@ const calcPercent = (data, progress) => {
   return total === 0 ? 0 : Math.round((done / total) * 100);
 };
 
-// Find the next unread topic in the last opened language.
+// Next unread topic in the last opened language, plus how much of that
+// language has been read (for the continue strip's meta line).
 const findResume = async () => {
   const last = await getLastTopic();
   if (!last) return null;
 
   const lang = LANGUAGES.find((item) => item.key === last.languageKey);
-
   if (!lang) return null;
 
   const progress = await getProgress(lang.key);
   const flat = [];
+  let read = 0;
+  let total = 0;
 
   for (const level of lang.data.levels) {
+    const completed = progress[level.level] || [];
+
     for (const topic of level.topics || []) {
       flat.push({ level, topic });
+      total += 1;
+      if (completed.includes(topic.id)) read += 1;
     }
   }
 
   if (flat.length === 0) return null;
 
   const foundIndex = flat.findIndex((item) => item.topic.id === last.topicId);
-
   const start = Math.max(0, foundIndex);
 
   for (let n = 0; n < flat.length; n++) {
@@ -64,7 +69,7 @@ const findResume = async () => {
     const completed = progress[item.level.level] || [];
 
     if (!completed.includes(item.topic.id)) {
-      return { lang, ...item };
+      return { lang, ...item, read, total };
     }
   }
 
@@ -72,10 +77,9 @@ const findResume = async () => {
 };
 
 export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
-  const [query, setQuery] = useState("");
+  const { colors } = useTheme();
   const [percents, setPercents] = useState({});
   const [resume, setResume] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -84,15 +88,11 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
 
     const load = async () => {
       setLoadError(false);
-      setLoading(true);
       try {
         const result = {};
 
         for (const lang of LANGUAGES) {
-          result[lang.key] = calcPercent(
-            lang.data,
-            await getProgress(lang.key),
-          );
+          result[lang.key] = calcPercent(lang.data, await getProgress(lang.key));
         }
 
         const nextTopic = await findResume();
@@ -104,8 +104,6 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
       } catch (error) {
         console.error("Error loading home progress:", error);
         if (mounted) setLoadError(true);
-      } finally {
-        if (mounted) setLoading(false);
       }
     };
 
@@ -116,8 +114,9 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
     };
   }, [reloadKey]);
 
-  const visibleLanguages = LANGUAGES.filter((lang) =>
-    lang.label.toLowerCase().includes(query.trim().toLowerCase()),
+  const totalTopics = LANGUAGES.reduce(
+    (sum, lang) => sum + topicsLabel(lang.data),
+    0,
   );
 
   return (
@@ -126,451 +125,111 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.hero}>
-          <Text style={styles.eyebrow}>YOUR OFFLINE SYNTAX LIBRARY</Text>
-          <Text style={styles.appTitle}>ZEDX</Text>
-          <Text style={styles.appSubtitle}>
-            Learn syntax. Build understanding.
+        <TopBar left="ZEDX" right={<ThemeToggle />} strong />
+
+        <View style={styles.masthead}>
+          <Text style={[TYPO.label, { color: colors.accent }]}>
+            A quiet reference
           </Text>
-          <Text style={styles.helperText}>
-            Choose a language to explore its syntax and topics.
+          <Text style={[TYPO.display, styles.title, { color: colors.ink }]}>
+            ZEDX
+          </Text>
+          <Text style={[TYPO.subtitle, styles.subtitle, { color: colors.muted }]}>
+            Syntax Library
+          </Text>
+          <Text style={[TYPO.lede, styles.lede, { color: colors.body }]}>
+            Seven languages, three levels each. Read a page, answer one
+            question, keep going.
           </Text>
         </View>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Explore languages</Text>
-          <Text style={styles.sectionMeta}>{LANGUAGES.length} available</Text>
-        </View>
+        <SectionHead
+          left="Index"
+          right={`${String(LANGUAGES.length).padStart(2, "0")} languages`}
+        />
 
-        <View style={styles.searchWrap}>
-          <Text style={styles.searchIcon}>⌕</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search languages..."
-            placeholderTextColor={COLORS.textDim}
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-            accessibilityLabel="Search languages"
-            returnKeyType="search"
+        {resume ? (
+          <ContinueStrip
+            title={resume.topic.title}
+            meta={`${resume.lang.label} · ${resume.level.label} · ${resume.read} of ${resume.total} read`}
+            onPress={() => onOpenTopic(resume.lang.key, resume.topic.id)}
           />
-          {!!query && (
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Clear search"
-              onPress={() => setQuery("")}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={styles.clearSearch}
-            >
-              <Text style={styles.clearSearchText}>Clear</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        ) : null}
 
-        {loadError && (
-          <View style={styles.loadNotice}>
-            <Text style={styles.loadNoticeText}>
-              Your progress could not be loaded. Percentages may be
-              inaccurate.
+        {loadError ? (
+          <View style={[styles.notice, { borderColor: colors.rule }]}>
+            <Text style={[TYPO.small, styles.noticeText, { color: colors.body }]}>
+              Your progress could not be loaded. Percentages may be inaccurate.
             </Text>
             <TouchableOpacity
               accessibilityRole="button"
               onPress={() => setReloadKey((key) => key + 1)}
-              style={styles.loadNoticeRetry}
+              style={styles.noticeAction}
             >
-              <Text style={styles.loadNoticeRetryText}>Try again</Text>
+              <Text style={[TYPO.label, { color: colors.accent }]}>
+                Try again
+              </Text>
             </TouchableOpacity>
           </View>
-        )}
+        ) : null}
 
-        {resume && (
-          <GlassCard
-            blur
-            accent={resume.lang.color}
-            style={styles.resumeCard}
-            onPress={() => onOpenTopic(resume.lang.key, resume.topic.id)}
-          >
-            <View style={styles.resumeTopRow}>
-              <Text style={styles.resumeLabel}>PICK UP WHERE YOU LEFT OFF</Text>
-              <Text style={[styles.resumeArrow, { color: resume.lang.color }]}>
-                ↗
-              </Text>
-            </View>
+        {LANGUAGES.map((lang, index) => {
+          const percent = percents[lang.key] ?? 0;
 
-            <Text style={styles.resumeTitle}>{resume.topic.title}</Text>
+          return (
+            <IndexRow
+              key={lang.key}
+              number={String(index + 1).padStart(2, "0")}
+              swatch={colors.lang[lang.key]}
+              name={lang.label}
+              meta={`${levelsLabel(lang.data)} · ${topicsLabel(lang.data)} topics`}
+              percent={percent}
+              onPress={() => onSelectLanguage(lang.key)}
+            />
+          );
+        })}
 
-            <Text style={[styles.resumeSub, { color: resume.lang.color }]}>
-              {resume.lang.label} · {resume.level.label}
-            </Text>
-
-            <Text style={styles.resumeHint}>Continue learning</Text>
-          </GlassCard>
-        )}
-
-        <View style={styles.grid}>
-          {visibleLanguages.map((lang) => {
-            const percent = percents[lang.key] ?? 0;
-
-            return (
-              <GlassCard
-                key={lang.key}
-                blur
-                accent={lang.color}
-                style={styles.tile}
-                onPress={() => onSelectLanguage(lang.key)}
-              >
-                <View
-                  style={[
-                    styles.languageMark,
-                    { borderColor: `${lang.color}88` },
-                  ]}
-                >
-                  <Text style={[styles.languageInitial, { color: lang.color }]}>
-                    {lang.label.slice(0, 1).toUpperCase()}
-                  </Text>
-                </View>
-
-                <Text
-                  style={[styles.tileTitle, { color: lang.color }]}
-                  numberOfLines={1}
-                >
-                  {lang.label}
-                </Text>
-
-                <Text style={styles.tileSubtitle}>
-                  {levelsLabel(lang.data)}
-                </Text>
-
-                <View style={styles.progressTrack}>
-                  <View
-                    style={[
-                      styles.progressFill,
-                      {
-                        width: `${percent}%`,
-                        backgroundColor: lang.color,
-                      },
-                    ]}
-                  />
-                </View>
-
-                <View style={styles.progressRow}>
-                  <Text style={styles.progressText}>
-                    {loading ? "Loading..." : `${percent}% complete`}
-                  </Text>
-                  <Text style={[styles.tileArrow, { color: lang.color }]}>
-                    →
-                  </Text>
-                </View>
-              </GlassCard>
-            );
-          })}
+        <View style={styles.foot}>
+          <Text style={[TYPO.tiny, { color: colors.muted }]}>ZEDX</Text>
+          <Text style={[TYPO.tiny, { color: colors.muted }]}>
+            {totalTopics} topics · 0 accounts
+          </Text>
         </View>
-
-        {visibleLanguages.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No languages found</Text>
-            <Text style={styles.emptyText}>
-              Try another name or clear your search.
-            </Text>
-          </View>
-        )}
-
-        <Text style={styles.footer}>
-          ZEDX · Your syntax reference, offline.
-        </Text>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-  },
-
+  scroll: { flex: 1 },
   content: {
-    paddingHorizontal: 18,
-    paddingTop: 24,
-    paddingBottom: 28,
+    paddingHorizontal: 24,
+    paddingTop: 0,
+    // The nav is a sibling below the scroll area; keep the last row clear of it.
+    paddingBottom: 48,
   },
-
-  hero: {
-    alignItems: "center",
-    paddingTop: 12,
-    paddingBottom: 28,
+  masthead: { paddingTop: 26, paddingBottom: 26 },
+  title: { marginTop: 12 },
+  subtitle: { marginTop: 10 },
+  lede: { marginTop: 14, maxWidth: 330 },
+  notice: {
+    marginTop: 16,
+    paddingTop: 14,
+    paddingBottom: 14,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-
-  eyebrow: {
-    color: COLORS.textDim,
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 2,
-    textAlign: "center",
-    marginBottom: 10,
-  },
-
-  appTitle: {
-    color: COLORS.text,
-    fontSize: 42,
-    fontWeight: "900",
-    letterSpacing: 7,
-  },
-
-  appSubtitle: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 7,
-    textAlign: "center",
-  },
-
-  helperText: {
-    color: COLORS.textDim,
-    fontSize: 13,
-    lineHeight: 20,
-    marginTop: 8,
-    textAlign: "center",
-    paddingHorizontal: 12,
-  },
-
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-
-  sectionTitle: {
-    color: COLORS.text,
-    fontSize: 18,
-    fontWeight: "800",
-  },
-
-  sectionMeta: {
-    color: COLORS.textDim,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  searchWrap: {
-    minHeight: 50,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.glass,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 15,
-    paddingHorizontal: 14,
-    marginBottom: 18,
-  },
-
-  searchIcon: {
-    color: COLORS.textDim,
-    fontSize: 23,
-    marginRight: 10,
-  },
-
-  searchInput: {
-    flex: 1,
-    color: COLORS.text,
-    fontSize: 14,
-    paddingVertical: 12,
-  },
-
-  clearSearch: {
-    minHeight: 44,
-    minWidth: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingLeft: 8,
-  },
-
-  clearSearchText: {
-    color: COLORS.textDim,
-    fontSize: 12,
-    fontWeight: "700",
-  },
-
-  loadNotice: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.glass,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 18,
-  },
-
-  loadNoticeText: {
-    color: COLORS.textMuted,
-    fontSize: 13,
-    lineHeight: 19,
-  },
-
-  loadNoticeRetry: {
+  noticeText: { lineHeight: 20 },
+  noticeAction: {
     marginTop: 10,
-    alignSelf: "flex-start",
     minHeight: 44,
-    paddingHorizontal: 18,
-    alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: COLORS.ember,
-    borderRadius: 12,
+    alignSelf: "flex-start",
   },
-
-  loadNoticeRetryText: {
-    color: COLORS.ember,
-    fontSize: 13,
-    fontWeight: "700",
-  },
-
-  resumeCard: {
-    padding: 18,
-    marginBottom: 20,
-  },
-
-  resumeTopRow: {
+  foot: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-  },
-
-  resumeLabel: {
-    color: COLORS.textDim,
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1.2,
-  },
-
-  resumeArrow: {
-    fontSize: 20,
-    fontWeight: "700",
-  },
-
-  resumeTitle: {
-    color: COLORS.text,
-    fontSize: 20,
-    fontWeight: "800",
-    marginTop: 12,
-  },
-
-  resumeSub: {
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 5,
-  },
-
-  resumeHint: {
-    color: COLORS.textDim,
-    fontSize: 12,
-    marginTop: 14,
-  },
-
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-
-  tile: {
-    width: "48.3%",
-    padding: 15,
-    marginBottom: 13,
-  },
-
-  languageMark: {
-    width: 40,
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 13,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
-    backgroundColor: "rgba(255,255,255,0.035)",
-  },
-
-  languageInitial: {
-    fontSize: 19,
-    fontWeight: "900",
-  },
-
-  tileTitle: {
-    fontSize: 17,
-    fontWeight: "800",
-    marginBottom: 4,
-  },
-
-  tileSubtitle: {
-    color: COLORS.textDim,
-    fontSize: 12,
-    marginBottom: 16,
-  },
-
-  progressTrack: {
-    width: "100%",
-    height: 5,
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderRadius: 5,
-    overflow: "hidden",
-  },
-
-  progressFill: {
-    height: "100%",
-    borderRadius: 5,
-  },
-
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 9,
-  },
-
-  progressText: {
-    color: COLORS.textDim,
-    fontSize: 10,
-    fontWeight: "600",
-    flexShrink: 1,
-  },
-
-  tileArrow: {
-    fontSize: 16,
-    fontWeight: "800",
-    marginLeft: 4,
-  },
-
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 32,
-    paddingHorizontal: 18,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.glass,
-  },
-
-  emptyTitle: {
-    color: COLORS.text,
-    fontSize: 16,
-    fontWeight: "800",
-  },
-
-  emptyText: {
-    color: COLORS.textDim,
-    fontSize: 13,
-    marginTop: 7,
-    textAlign: "center",
-    lineHeight: 19,
-  },
-
-  footer: {
-    color: COLORS.textDim,
-    fontSize: 11,
-    textAlign: "center",
-    marginTop: 12,
-    opacity: 0.8,
+    marginTop: 26,
   },
 });

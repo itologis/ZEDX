@@ -1,8 +1,8 @@
-# SyntaxLibrary
+# ZEDX
 
-A mobile app for learning programming-language syntax in short sessions. SyntaxLibrary covers **seven languages** — HTML, CSS, Java, Python, JavaScript, PHP, and SQL — each organized into three levels (L1–L3) of topics, fill-in-the-blank practice, and quizzes, plus an initial assessment, progress tracking, saved topics, and search.
+A mobile app for learning programming-language syntax in short sessions. ZEDX covers **seven languages** — HTML, CSS, Java, Python, JavaScript, PHP, and SQL — each organized into three levels (L1–L3) of topics, fill-in-the-blank practice, and quizzes, plus an initial assessment, progress tracking, saved topics, and search.
 
-Built with [Expo](https://docs.expo.dev/) (SDK 57) and React Native — runs on Android, iOS, and web. Content is bundled with the app, so it works offline.
+Built with [Expo](https://docs.expo.dev/) (SDK 58) and React Native — runs on Android, iOS, and web. Content is bundled with the app, so it works offline.
 
 ## How the content fits together
 
@@ -18,6 +18,10 @@ npm run check:content
 ```
 
 It verifies that every topic has a practice exercise, every level has a quiz with four-option questions and a valid passing score, quiz levels match content levels, and every practice entry belongs to a real topic — and it exercises the progress/review flows.
+
+## Design
+
+The UI follows the "Manual" direction: IBM Plex Sans + Mono, paper/ink palettes with dark as the default, one vermilion accent, 7px language swatches, 2px radius, and rules instead of cards. Type carries the hierarchy; there are no gradients, shadows, or blur.
 
 ## Screens
 
@@ -35,8 +39,8 @@ npm run android    # or: npm run ios / npm run web
 
 - `App.js` — app shell, navigation, and the Home dev-tools panel (`SHOW_DEV_TOOLS`, kept for testing builds until store release).
 - `src/screens/` — one file per screen.
-- `src/components/` — shared UI: `GlassCard`, `Screen`, `Header`, `BottomNav`, `FadeIn`, `MoltenBackground`, `EmptyState`, `BackButton`, `SyntaxCard`.
-- `src/theme.js` — theme colors and per-language accents.
+- `src/components/` — shared UI: `TopBar`, `Screen`, `BottomNav`, `FadeIn`, `SectionHead`, `FieldLabel`, `Rule`, `CodePlate`, `OptionRow`, `Button`, `IndexRow`, `ContinueStrip`, `ThemeToggle`.
+- `src/theme.js` — light/dark palettes, Plex type scale, spacing, and the 7px language swatches; `ThemeProvider`/`useTheme` persist the theme in AsyncStorage (`zedx_theme`).
 - `src/data/progress.js` — local progress (quiz passes, completed practice, missed questions) stored with AsyncStorage; nothing leaves the device.
 - `scripts/check-content-coverage.cjs` — the coverage checker behind `npm run check:content`.
 
@@ -51,5 +55,5 @@ npm run android    # or: npm run ios / npm run web
 
 ## Notes
 
-- The project started under the working name **ZEDX**; the in-app title still says ZEDX in places, while `app.json` and the repo use **SyntaxLibrary** (pre-release cleanup item).
+- The project was renamed from **SyntaxLibrary** to **ZEDX** on 2026-11-02 (app name/slug, package name, folder, in-app brand, icon/favicon/splash assets). The `app.json` URL scheme, Android package, and EAS `projectId` still use the old identifiers; changing them affects deep links, Play identity, and EAS linkage, so that is a separate decision.
 - `src/data/render_test.js` is a stale scratch file (old absolute paths, not wired to any script) — safe to ignore; most current `expo lint` warnings trace to it.

@@ -1,31 +1,26 @@
 import { useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import GlassCard from "../components/GlassCard";
+import Button from "../components/Button";
 import FadeIn from "../components/FadeIn";
-import Header from "../components/Header";
+import OptionRow from "../components/OptionRow";
 import Screen from "../components/Screen";
+import TopBar from "../components/TopBar";
 import { recordQuizAnswer } from "../data/progress";
 import { QUIZZES, shuffle, shuffleOptions } from "../data/quiz";
-import { COLORS } from "../theme";
+import { TYPO, useTheme } from "../theme";
 
 const prepare = (questions) => shuffle(questions).map(shuffleOptions);
 
 export default function QuizScreen({
   languageKey,
   levelId,
-  accentColor = COLORS.ember,
   customQuestions,
   title = "Quiz",
   onBack,
   onPass,
 }) {
+  const { colors } = useTheme();
   const isReview = Array.isArray(customQuestions);
   const quizData = isReview
     ? { questions: customQuestions }
@@ -43,9 +38,11 @@ export default function QuizScreen({
   if (!quizData || questions.length === 0) {
     return (
       <Screen>
-        <Header title={title} onBack={onBack} />
+        <TopBar left="← Back" onLeft={onBack} leftLabel="Go back" />
         <View style={styles.center}>
-          <Text style={styles.muted}>No quiz available here yet.</Text>
+          <Text style={[TYPO.body, { color: colors.muted }]}>
+            No quiz available here yet.
+          </Text>
         </View>
       </Screen>
     );
@@ -63,7 +60,7 @@ export default function QuizScreen({
     const correct = index === question.correct;
 
     setSelected(index);
-    if (correct) setScore((s) => s + 1);
+    if (correct) setScore((value) => value + 1);
 
     recordQuizAnswer(
       question._lang || languageKey,
@@ -75,7 +72,7 @@ export default function QuizScreen({
 
   const next = () => {
     if (current < total - 1) {
-      setCurrent((c) => c + 1);
+      setCurrent((value) => value + 1);
       setSelected(null);
       return;
     }
@@ -94,46 +91,43 @@ export default function QuizScreen({
     setStarted(true);
   };
 
-  // ---------- Start card ----------
+  // ---------- Start ----------
   if (!started) {
     return (
       <Screen>
-        <Header title={title} onBack={onBack} />
-        <View style={styles.pad}>
-          <FadeIn from="scale" duration={300}>
-            <GlassCard
-              blur
-              accent={accentColor}
-              style={styles.bigCard}
-              contentStyle={styles.centered}
-            >
-              <Text style={styles.bigTitle}>Level quiz</Text>
-              <Text style={styles.bigSub}>Test what you&apos;ve learned</Text>
+        <TopBar left="← Back" onLeft={onBack} leftLabel="Go back" right={title} />
+        <ScrollView contentContainerStyle={styles.pad}>
+          <FadeIn from="none" duration={150}>
+            <Text style={[TYPO.label, { color: colors.accent }]}>
+              Examination
+            </Text>
+            <Text style={[TYPO.title, styles.startTitle, { color: colors.ink }]}>
+              {isReview ? "Review" : `${levelId} · Quiz`}
+            </Text>
+            <Text style={[TYPO.lede, styles.startLede, { color: colors.body }]}>
+              Test what you&apos;ve learned. Answers are marked as you go.
+            </Text>
 
-              <View style={styles.info}>
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Questions</Text>
-                  <Text style={styles.infoValue}>{total}</Text>
-                </View>
-                <View style={[styles.infoRow, styles.infoLast]}>
-                  <Text style={styles.infoLabel}>Passing score</Text>
-                  <Text style={styles.infoValue}>
-                    {passingScore}/{total}
-                  </Text>
-                </View>
+            <View style={styles.info}>
+              <View style={[styles.infoRow, { borderBottomColor: colors.rule }]}>
+                <Text style={[TYPO.label, { color: colors.muted }]}>
+                  Questions
+                </Text>
+                <Text style={[TYPO.meta, { color: colors.ink }]}>{total}</Text>
               </View>
+              <View style={[styles.infoRow, styles.infoLast]}>
+                <Text style={[TYPO.label, { color: colors.muted }]}>
+                  Passing score
+                </Text>
+                <Text style={[TYPO.meta, { color: colors.ink }]}>
+                  {passingScore}/{total}
+                </Text>
+              </View>
+            </View>
 
-              <TouchableOpacity
-                accessibilityRole="button"
-                style={[styles.primary, { backgroundColor: accentColor }]}
-                onPress={() => setStarted(true)}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.primaryText}>Start quiz</Text>
-              </TouchableOpacity>
-            </GlassCard>
+            <Button onPress={() => setStarted(true)}>Start quiz</Button>
           </FadeIn>
-        </View>
+        </ScrollView>
       </Screen>
     );
   }
@@ -145,74 +139,54 @@ export default function QuizScreen({
 
     return (
       <Screen>
-        <Header title={title} />
-        <View style={styles.pad}>
-          <FadeIn from="scale" duration={300}>
-            <GlassCard
-              blur
-              accent={passed ? COLORS.success : COLORS.danger}
-              style={styles.bigCard}
-              contentStyle={styles.centered}
+        <TopBar right={title} />
+        <ScrollView contentContainerStyle={styles.pad}>
+          <FadeIn from="none" duration={150}>
+            <Text style={[TYPO.label, { color: colors.accent }]}>Result</Text>
+            <Text style={[TYPO.title, styles.score, { color: colors.ink }]}>
+              {score} / {total}
+            </Text>
+            <Text style={[TYPO.meta, styles.percent, { color: colors.muted }]}>
+              {percent}% correct
+            </Text>
+
+            <Text style={[TYPO.lede, styles.message, { color: colors.body }]}>
+              {isReview
+                ? "Questions you got right are cleared from your missed list."
+                : passed
+                  ? "Great work. This level's quiz is marked as passed."
+                  : `You need ${passingScore}/${total} to pass. Review the topics and try again.`}
+            </Text>
+
+            <Text
+              style={[
+                TYPO.label,
+                styles.verdict,
+                { color: passed ? colors.ink : colors.accent },
+              ]}
             >
-              <Text style={styles.bigTitle}>
-                {isReview
-                  ? "Review complete"
-                  : passed
-                    ? "Passed!"
-                    : "Keep learning"}
-              </Text>
-              <Text
-                style={[
-                  styles.score,
-                  { color: passed ? COLORS.success : COLORS.danger },
-                ]}
-              >
-                {score} / {total}
-              </Text>
-              <Text style={styles.percent}>{percent}%</Text>
-              <Text style={styles.message}>
-                {isReview
-                  ? "Questions you got right are cleared from your missed list."
-                  : passed
-                    ? "Great work. This level's quiz is marked as passed."
-                    : `You need ${passingScore}/${total} to pass. Review the topics and try again.`}
-              </Text>
+              {isReview
+                ? "Review complete"
+                : passed
+                  ? "Passed"
+                  : "Not passed"}
+            </Text>
 
-              {!passed && (
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  style={[styles.primary, { backgroundColor: accentColor }]}
-                  onPress={retry}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.primaryText}>Retry quiz</Text>
-                </TouchableOpacity>
-              )}
+            {!passed ? (
+              <Button onPress={retry} style={styles.action}>
+                Retry quiz
+              </Button>
+            ) : null}
 
-              <TouchableOpacity
-                accessibilityRole="button"
-                style={[
-                  passed ? styles.primary : styles.secondary,
-                  passed
-                    ? { backgroundColor: accentColor }
-                    : { borderColor: accentColor },
-                ]}
-                onPress={onBack}
-                activeOpacity={0.85}
-              >
-                <Text
-                  style={
-                    passed
-                      ? styles.primaryText
-                      : [styles.secondaryText, { color: accentColor }]
-                  }
-                >
-                  {passed ? "Finish" : "← Back"}
-                </Text>
-              </TouchableOpacity>
-            </GlassCard>
+            <Button
+              variant={passed ? "primary" : "secondary"}
+              onPress={onBack}
+              style={styles.action}
+            >
+              {passed ? "Finish" : "← Back"}
+            </Button>
           </FadeIn>
-        </View>
+        </ScrollView>
       </Screen>
     );
   }
@@ -223,118 +197,104 @@ export default function QuizScreen({
 
   return (
     <Screen>
-      <Header title={title} onBack={onBack} />
+      <TopBar left="← Back" onLeft={onBack} leftLabel="Go back" right={title} />
 
       <View style={styles.progressWrap}>
         <View style={styles.progressMeta}>
-          <Text style={styles.progressText}>
-            {current + 1} of {total}
+          <Text style={[TYPO.label, { color: colors.muted }]}>
+            Question {String(current + 1).padStart(2, "0")} /{" "}
+            {String(total).padStart(2, "0")}
           </Text>
-          <Text style={styles.scoreText}>Score {score}</Text>
+          <Text style={[TYPO.label, { color: colors.muted }]}>
+            Score {score}
+          </Text>
         </View>
-        <View style={styles.track}>
+        <View style={[styles.track, { backgroundColor: colors.rule }]}>
           <View
             style={[
               styles.fill,
-              { width: `${progressPct}%`, backgroundColor: accentColor },
+              { width: `${progressPct}%`, backgroundColor: colors.accent },
             ]}
           />
         </View>
       </View>
 
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <FadeIn key={current} from="up" duration={220}>
-          <GlassCard blur accent={accentColor} style={styles.questionCard}>
-            {isReview && (
-              <Text style={[styles.tag, { color: accentColor }]}>
-                {(question._lang || "").toUpperCase()} · {question._level}
-              </Text>
-            )}
-            <Text style={styles.questionText}>{question.question}</Text>
+        <FadeIn key={current} from="none" duration={140}>
+          {isReview ? (
+            <Text style={[TYPO.label, { color: colors.accent }]}>
+              {(question._lang || "").toUpperCase()} · {question._level}
+            </Text>
+          ) : null}
 
-            <View style={styles.options}>
-              {question.options.map((option, index) => {
-                const isSelected = selected === index;
-                const isCorrect = index === question.correct;
-                const showCorrect = answered && isCorrect;
-                const showWrong = answered && isSelected && !isCorrect;
+          <Text
+            style={[
+              TYPO.question,
+              styles.questionText,
+              isReview && styles.questionTextReview,
+              { color: colors.ink },
+            ]}
+          >
+            {question.question}
+          </Text>
 
-                return (
-                  <TouchableOpacity
-                    key={`${option}-${index}`}
-                    style={[
-                      styles.option,
-                      showCorrect && styles.optionCorrect,
-                      showWrong && styles.optionWrong,
-                    ]}
-                    onPress={() => pick(index)}
-                    disabled={answered}
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
-                    accessibilityState={{
-                      disabled: answered,
-                      selected: isSelected,
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.optionText,
-                        showCorrect && { color: COLORS.success },
-                        showWrong && { color: COLORS.danger },
-                      ]}
-                    >
-                      {option}
-                      {showCorrect ? "  ✓" : ""}
-                      {showWrong ? "  ✕" : ""}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+          <View style={styles.options}>
+            {question.options.map((option, index) => {
+              const showCorrect = answered && index === question.correct;
+              const showWrong =
+                answered && selected === index && index !== question.correct;
 
-            {answered && (
-              <FadeIn from="up" duration={180}>
-                <View
+              return (
+                <OptionRow
+                  key={`${option}-${index}`}
+                  index={index}
+                  label={option}
+                  state={showCorrect ? "correct" : showWrong ? "wrong" : "idle"}
+                  disabled={answered}
+                  onPress={() => pick(index)}
+                />
+              );
+            })}
+          </View>
+
+          {answered ? (
+            <FadeIn from="none" duration={130}>
+              <View
+                style={[
+                  styles.explain,
+                  {
+                    borderLeftColor: gotItRight ? colors.ink : colors.accent,
+                  },
+                ]}
+              >
+                <Text
                   style={[
-                    styles.explain,
-                    {
-                      borderColor: gotItRight ? COLORS.success : COLORS.danger,
-                    },
+                    TYPO.label,
+                    { color: gotItRight ? colors.ink : colors.accent },
                   ]}
                 >
-                  <Text
-                    style={[
-                      styles.explainHead,
-                      { color: gotItRight ? COLORS.success : COLORS.danger },
-                    ]}
-                  >
-                    {gotItRight ? "Correct" : "Not quite"}
-                  </Text>
-                  {!!question.explanation && (
-                    <Text style={styles.explainText}>
-                      {question.explanation}
-                    </Text>
-                  )}
-                </View>
-              </FadeIn>
-            )}
-
-            {answered && (
-              <TouchableOpacity
-                accessibilityRole="button"
-                style={[styles.primary, { backgroundColor: accentColor }]}
-                onPress={next}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.primaryText}>
-                  {current === total - 1 ? "See results" : "Next question"}
+                  {gotItRight ? "Correct" : "Not quite"}
                 </Text>
-              </TouchableOpacity>
-            )}
-          </GlassCard>
+                {!!question.explanation ? (
+                  <Text
+                    style={[TYPO.small, styles.explainText, { color: colors.body }]}
+                  >
+                    {question.explanation}
+                  </Text>
+                ) : null}
+              </View>
+            </FadeIn>
+          ) : null}
+
+          {answered ? (
+            <Button onPress={next} style={styles.next}>
+              {current === total - 1 ? "See results" : "Next question"}
+            </Button>
+          ) : null}
         </FadeIn>
       </ScrollView>
     </Screen>
@@ -343,126 +303,41 @@ export default function QuizScreen({
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  muted: { color: COLORS.textDim, fontSize: 15 },
-  pad: { padding: 18 },
-  bigCard: { padding: 26 },
-  centered: { alignItems: "center" },
-  bigTitle: { fontSize: 26, fontWeight: "800", color: COLORS.text },
-  bigSub: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    marginTop: 6,
-    marginBottom: 20,
-  },
-  info: {
-    width: "100%",
-    backgroundColor: "rgba(0,0,0,0.3)",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    marginBottom: 22,
-  },
+  pad: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: 40 },
+  startTitle: { marginTop: 14 },
+  startLede: { marginTop: 14 },
+  info: { marginTop: 30, marginBottom: 28 },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 11,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    alignItems: "center",
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   infoLast: { borderBottomWidth: 0 },
-  infoLabel: { color: COLORS.textMuted, fontSize: 13, fontWeight: "600" },
-  infoValue: { color: COLORS.text, fontSize: 14, fontWeight: "700" },
-  primary: {
-    minHeight: 52,
-    width: "100%",
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 14,
-  },
-  primaryText: { color: COLORS.bg, fontSize: 16, fontWeight: "800" },
-  secondary: {
-    minHeight: 48,
-    width: "100%",
-    marginTop: 12,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  secondaryText: { fontSize: 15, fontWeight: "700" },
-  score: { fontSize: 42, fontWeight: "900", marginTop: 10 },
-  percent: {
-    color: COLORS.textMuted,
-    fontSize: 14,
-    fontWeight: "600",
-    marginTop: 2,
-    marginBottom: 14,
-  },
-  message: {
-    color: COLORS.textMuted,
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 21,
-    marginBottom: 10,
-  },
-  progressWrap: { paddingHorizontal: 18, paddingTop: 4, paddingBottom: 8 },
+  score: { marginTop: 14 },
+  percent: { marginTop: 8 },
+  message: { marginTop: 20 },
+  verdict: { marginTop: 26 },
+  action: { marginTop: 16 },
+  progressWrap: { paddingHorizontal: 24, paddingTop: 18, paddingBottom: 16 },
   progressMeta: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  progressText: { color: COLORS.textMuted, fontSize: 13, fontWeight: "600" },
-  scoreText: { color: COLORS.text, fontSize: 13, fontWeight: "700" },
-  track: {
-    height: 6,
-    borderRadius: 6,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    overflow: "hidden",
-  },
-  fill: { height: "100%", borderRadius: 6 },
-  content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 },
-  questionCard: { padding: 20 },
-  tag: { fontSize: 11, fontWeight: "800", letterSpacing: 1, marginBottom: 8 },
-  questionText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.text,
-    lineHeight: 26,
-    marginBottom: 18,
-  },
-  options: { gap: 10 },
-  option: {
-    backgroundColor: "rgba(0,0,0,0.25)",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-    minHeight: 52,
-    justifyContent: "center",
-  },
-  optionCorrect: {
-    borderColor: COLORS.success,
-    backgroundColor: "rgba(74,222,128,0.14)",
-  },
-  optionWrong: {
-    borderColor: COLORS.danger,
-    backgroundColor: "rgba(248,113,113,0.14)",
-  },
-  optionText: {
-    color: COLORS.text,
-    fontSize: 15,
-    fontWeight: "500",
-    lineHeight: 22,
-  },
+  track: { height: 2 },
+  fill: { height: 2 },
+  scroll: { flex: 1 },
+  content: { paddingHorizontal: 24, paddingTop: 8, paddingBottom: 40 },
+  questionText: { marginTop: 16 },
+  questionTextReview: { marginTop: 10 },
+  options: { marginTop: 22 },
   explain: {
-    marginTop: 16,
-    padding: 14,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    backgroundColor: "rgba(0,0,0,0.25)",
+    marginTop: 20,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
   },
-  explainHead: { fontSize: 13, fontWeight: "800", marginBottom: 4 },
-  explainText: { color: COLORS.textMuted, fontSize: 14, lineHeight: 21 },
+  explainText: { marginTop: 8 },
+  next: { marginTop: 24 },
 });

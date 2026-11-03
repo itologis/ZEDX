@@ -1,5 +1,14 @@
+import { IBMPlexMono_400Regular } from "@expo-google-fonts/ibm-plex-mono/400Regular";
+import { IBMPlexMono_500Medium } from "@expo-google-fonts/ibm-plex-mono/500Medium";
+import { IBMPlexMono_600SemiBold } from "@expo-google-fonts/ibm-plex-mono/600SemiBold";
+import { IBMPlexSans_400Regular } from "@expo-google-fonts/ibm-plex-sans/400Regular";
+import { IBMPlexSans_500Medium } from "@expo-google-fonts/ibm-plex-sans/500Medium";
+import { IBMPlexSans_600SemiBold } from "@expo-google-fonts/ibm-plex-sans/600SemiBold";
+import { IBMPlexSans_700Bold } from "@expo-google-fonts/ibm-plex-sans/700Bold";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import AssessmentScreen from "./src/screens/AssessmentScreen";
@@ -14,7 +23,6 @@ import TopicScreen from "./src/screens/TopicScreen";
 
 import BottomNav from "./src/components/BottomNav";
 import FadeIn from "./src/components/FadeIn";
-import MoltenBackground from "./src/components/MoltenBackground";
 
 import { LANGUAGES, findTopic } from "./src/data/languages";
 import {
@@ -24,14 +32,27 @@ import {
   saveProgress,
   saveQuizPassed,
 } from "./src/data/progress";
-import { COLORS } from "./src/theme";
+import { TYPO, ThemeProvider, useTheme } from "./src/theme";
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+const FONT_MAP = {
+  IBMPlexSans_400Regular,
+  IBMPlexSans_500Medium,
+  IBMPlexSans_600SemiBold,
+  IBMPlexSans_700Bold,
+  IBMPlexMono_400Regular,
+  IBMPlexMono_500Medium,
+  IBMPlexMono_600SemiBold,
+};
 
 const SHOW_DEV_TOOLS = true;
 
-// { html: { key, label, color, data }, css: {...}, ... }
+// { html: { key, label, data }, css: {...}, ... }
 const DATA_MAP = Object.fromEntries(LANGUAGES.map((l) => [l.key, l]));
 
-export default function App() {
+function Root() {
+  const { colors, isDark } = useTheme();
   const [screen, setScreen] = useState({ name: "home" });
   const [activeTab, setActiveTab] = useState("home");
   const [showDevTools, setShowDevTools] = useState(false);
@@ -44,7 +65,6 @@ export default function App() {
     setScreen({ name: next });
   }, []);
 
-  const goHome = useCallback(() => handleNavigate("home"), [handleNavigate]);
   const goQuizzes = useCallback(
     () => handleNavigate("quizzes"),
     [handleNavigate],
@@ -189,8 +209,10 @@ export default function App() {
     content = (
       <IntroScreen
         intro={language.data.intro}
-        accentColor={language.color}
-        onBack={goHome}
+        languageKey={language.key}
+        languageLabel={language.label}
+        languageData={language.data}
+        onBack={() => handleNavigate("home")}
         onStart={() => handleStartLearning(language.key)}
       />
     );
@@ -199,7 +221,7 @@ export default function App() {
       <AssessmentScreen
         languageKey={language.key}
         languageData={language.data}
-        accentColor={language.color}
+        languageLabel={language.label}
         onBack={() => goIntro(language.key)}
         onComplete={() => goLevels(language.key)}
       />
@@ -208,8 +230,8 @@ export default function App() {
     content = (
       <LevelsScreen
         languageData={language.data}
-        accentColor={language.color}
         languageKey={language.key}
+        languageLabel={language.label}
         onBack={() => goIntro(language.key)}
         onOpenTopic={(topic) => goTopic(language.key, topic, "levels")}
         onOpenQuiz={(languageKey, levelId) =>
@@ -223,7 +245,7 @@ export default function App() {
         key={`${screen.languageKey}-${screen.topic.id}`}
         topic={screen.topic}
         languageKey={screen.languageKey}
-        accentColor={language.color}
+        languageLabel={language.label}
         onBack={closeTopic}
       />
     );
@@ -233,7 +255,6 @@ export default function App() {
         key={`${language.key}-${screen.levelId}`}
         languageKey={language.key}
         levelId={screen.levelId}
-        accentColor={language.color}
         onBack={() =>
           screen.from === "quizzes" ? goQuizzes() : goLevels(language.key)
         }
@@ -245,7 +266,6 @@ export default function App() {
       <QuizScreen
         customQuestions={screen.questions}
         title="Review"
-        accentColor={COLORS.ember}
         onBack={goQuizzes}
       />
     );
@@ -263,21 +283,20 @@ export default function App() {
   ].join(":");
 
   return (
-    <View style={styles.app}>
-      <StatusBar style="light" />
-      <MoltenBackground />
+    <View style={[styles.app, { backgroundColor: colors.paper }]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.shell}>
         <FadeIn
           key={screenTransitionKey}
           style={styles.content}
-          duration={260}
-          from="up"
+          duration={160}
+          from="none"
         >
           {content}
         </FadeIn>
 
         {showBottomNavigation && (
-          <FadeIn key="bottom-navigation" duration={220} from="up">
+          <FadeIn key="bottom-navigation" duration={140} from="none">
             <BottomNav active={activeTab} onNavigate={handleNavigate} />
           </FadeIn>
         )}
@@ -285,34 +304,50 @@ export default function App() {
         {SHOW_DEV_TOOLS && screen.name === "home" && (
           <>
             {showDevTools && (
-              <View style={styles.devPanel}>
+              <View
+                style={[
+                  styles.devPanel,
+                  {
+                    backgroundColor: colors.plate,
+                    borderColor: colors.ruleStrong,
+                  },
+                ]}
+              >
                 <View style={styles.devHeader}>
-                  <Text style={styles.devTitle}>DEV TOOLS</Text>
+                  <Text style={[TYPO.label, { color: colors.accent }]}>
+                    Dev tools
+                  </Text>
                   <TouchableOpacity
                     accessibilityRole="button"
+                    accessibilityLabel="Close dev tools"
                     onPress={() => setShowDevTools(false)}
                     style={styles.devClose}
                   >
-                    <Text style={styles.devCloseText}>×</Text>
+                    <Text style={[TYPO.label, { color: colors.ink }]}>
+                      Close
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
-                <Text style={styles.devSubtitle}>Assessment testing</Text>
-                <Text style={styles.devLabel}>Open assessment</Text>
+                <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
+                  Open assessment
+                </Text>
 
                 {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
                   <TouchableOpacity
                     key={languageKey}
-                    style={[styles.devButton, { borderColor: lang.color }]}
+                    style={[styles.devButton, { borderColor: colors.rule }]}
                     onPress={() => openDevAssessment(languageKey)}
                   >
-                    <Text style={[styles.devButtonText, { color: lang.color }]}>
-                      Show {lang.data.intro?.title || languageKey} Assessment
+                    <Text style={[TYPO.small, { color: colors.ink }]}>
+                      {lang.data.intro?.title || languageKey} assessment
                     </Text>
                   </TouchableOpacity>
                 ))}
 
-                <Text style={styles.devLabel}>Reset assessment data</Text>
+                <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
+                  Reset assessment data
+                </Text>
 
                 {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
                   <TouchableOpacity
@@ -320,7 +355,7 @@ export default function App() {
                     style={styles.devResetButton}
                     onPress={() => resetDevAssessment(languageKey)}
                   >
-                    <Text style={styles.devResetText}>
+                    <Text style={[TYPO.tiny, { color: colors.accent }]}>
                       Reset {lang.data.intro?.title || languageKey}
                     </Text>
                   </TouchableOpacity>
@@ -330,10 +365,18 @@ export default function App() {
 
             {!showDevTools && (
               <TouchableOpacity
-                style={styles.devToggle}
+                style={[
+                  styles.devToggle,
+                  {
+                    backgroundColor: colors.plate,
+                    borderColor: colors.ruleStrong,
+                  },
+                ]}
                 onPress={() => setShowDevTools(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Open dev tools"
               >
-                <Text style={styles.devToggleText}>DEV</Text>
+                <Text style={[TYPO.label, { color: colors.accent }]}>Dev</Text>
               </TouchableOpacity>
             )}
           </>
@@ -343,67 +386,62 @@ export default function App() {
   );
 }
 
+export default function App() {
+  const [fontsLoaded, fontError] = useFonts(FONT_MAP);
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) return null;
+
+  return (
+    <ThemeProvider>
+      <Root />
+    </ThemeProvider>
+  );
+}
+
 const styles = StyleSheet.create({
-  app: { flex: 1, backgroundColor: "#0f0f14" },
+  app: { flex: 1 },
   shell: { flex: 1, width: "100%", maxWidth: 560, alignSelf: "center" },
   content: { flex: 1 },
   devToggle: {
     position: "absolute",
     right: 16,
     bottom: 96,
-    backgroundColor: "#2c2e3e",
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#45475a",
+    borderRadius: 2,
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  devToggleText: { color: "#f9e2af", fontSize: 12, fontWeight: "bold" },
   devPanel: {
     position: "absolute",
     left: 16,
     right: 16,
     bottom: 96,
-    backgroundColor: "#24273a",
-    borderRadius: 14,
+    borderRadius: 2,
     padding: 16,
-    borderWidth: 1,
-    borderColor: "#45475a",
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
+    borderWidth: StyleSheet.hairlineWidth,
   },
   devHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  devTitle: { color: "#f9e2af", fontSize: 16, fontWeight: "bold" },
-  devClose: { paddingHorizontal: 8, paddingVertical: 2 },
-  devCloseText: { color: "#c0caf5", fontSize: 24 },
-  devSubtitle: { color: "#9399b2", fontSize: 12, marginBottom: 14 },
-  devLabel: {
-    color: "#c0caf5",
-    fontSize: 13,
-    fontWeight: "bold",
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  devButton: {
-    padding: 11,
-    borderRadius: 8,
-    borderWidth: 1,
     marginBottom: 6,
-    backgroundColor: "#0f0f14",
   },
-  devButtonText: { fontSize: 13, fontWeight: "600" },
+  devClose: { paddingHorizontal: 6, paddingVertical: 4 },
+  devLabel: { marginTop: 12, marginBottom: 8 },
+  devButton: {
+    padding: 10,
+    borderRadius: 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: 6,
+  },
   devResetButton: {
     padding: 8,
-    borderRadius: 8,
-    backgroundColor: "#2a1e1e",
-    marginBottom: 5,
+    marginBottom: 4,
   },
-  devResetText: { color: "#f38ba8", fontSize: 12, textAlign: "center" },
 });

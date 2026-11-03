@@ -1,4 +1,3 @@
-import { COLORS } from "../theme";
 import css from "./css";
 import html from "./html";
 import java from "./java";
@@ -7,19 +6,16 @@ import php from "./php";
 import python from "./python";
 import sql from "./sql";
 
+// Colours live in the theme (`colors.lang[key]`) so each theme can use its own
+// print-safe swatch set.
 export const LANGUAGES = [
-  { key: "html", label: "HTML", color: COLORS.html, data: html },
-  { key: "css", label: "CSS", color: COLORS.css, data: css },
-  { key: "java", label: "Java", color: COLORS.java, data: java },
-  { key: "python", label: "Python", color: COLORS.python, data: python },
-  {
-    key: "javascript",
-    label: "JavaScript",
-    color: COLORS.javascript,
-    data: javascript,
-  },
-  { key: "php", label: "PHP", color: COLORS.php, data: php },
-  { key: "sql", label: "SQL", color: COLORS.sql, data: sql },
+  { key: "html", label: "HTML", data: html },
+  { key: "css", label: "CSS", data: css },
+  { key: "java", label: "Java", data: java },
+  { key: "python", label: "Python", data: python },
+  { key: "javascript", label: "JavaScript", data: javascript },
+  { key: "php", label: "PHP", data: php },
+  { key: "sql", label: "SQL", data: sql },
 ];
 
 export const getLanguage = (key) => LANGUAGES.find((l) => l.key === key);
@@ -34,7 +30,6 @@ export const getAllTopics = () => {
         all.push({
           languageKey: lang.key,
           languageLabel: lang.label,
-          color: lang.color,
           level: level.level,
           levelLabel: level.label,
           topic,
