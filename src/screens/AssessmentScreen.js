@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import Button from "../components/Button";
 import FieldLabel from "../components/FieldLabel";
@@ -9,6 +15,7 @@ import TopBar from "../components/TopBar";
 import { saveAssessmentResult } from "../data/progress";
 import { QUIZZES } from "../data/quiz";
 import { TYPO, useTheme } from "../theme";
+import { confirmAction } from "../utils/confirm";
 
 const shuffleQuestions = (questions) => {
   const shuffled = [...questions];
@@ -161,10 +168,38 @@ export default function AssessmentScreen({
       return;
     }
 
-    Alert.alert("Quit assessment?", "Your progress will be lost.", [
-      { text: "Keep going", style: "cancel" },
-      { text: "Quit", style: "destructive", onPress: () => onBack?.() },
-    ]);
+    confirmAction({
+      title: "Quit assessment?",
+      message: "Your progress will be lost.",
+      confirmText: "Quit",
+      cancelText: "Keep going",
+      destructive: true,
+      onConfirm: () => onBack?.(),
+    });
+  };
+
+  // Placement is optional: skipping records a completed, skipped assessment so
+  // "Start learning" opens Levels from now on instead of asking again.
+  const requestSkip = () => {
+    confirmAction({
+      title: "Skip the placement test?",
+      message:
+        "Your answers so far won't be saved. You'll start from Beginner — every level stays open, so you can jump ahead whenever you like.",
+      confirmText: "Skip",
+      cancelText: "Keep going",
+      onConfirm: async () => {
+        try {
+          await saveAssessmentResult(languageKey, {
+            skipped: true,
+            scores: {},
+            startingLevel: languageData.levels[0]?.level,
+          });
+        } catch (error) {
+          console.error("Error saving skipped assessment:", error);
+        }
+        onComplete?.();
+      },
+    });
   };
 
   if (result) {
@@ -234,7 +269,18 @@ export default function AssessmentScreen({
         left="← Quit"
         onLeft={requestQuit}
         leftLabel="Quit assessment"
-        right={languageLabel || "Placement"}
+        right={
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Skip placement test"
+            onPress={requestSkip}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={styles.skipTap}
+          >
+            <Text style={[TYPO.label, { color: colors.muted }]}>Skip</Text>
+          </TouchableOpacity>
+        }
       />
 
       <View
@@ -252,7 +298,9 @@ export default function AssessmentScreen({
             Question {String(currentQuestion + 1).padStart(2, "0")} /{" "}
             {String(questions.length).padStart(2, "0")}
           </Text>
-          <Text style={[TYPO.label, { color: colors.muted }]}>Placement</Text>
+          <Text style={[TYPO.label, { color: colors.muted }]}>
+            {languageLabel || "Placement"}
+          </Text>
         </View>
         <View style={[styles.track, { backgroundColor: colors.rule }]}>
           <View
@@ -317,6 +365,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
   },
+  skipTap: { minHeight: 44, justifyContent: "center" },
   track: { height: 2 },
   fill: { height: 2 },
   hint: { marginTop: 10 },

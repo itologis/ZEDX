@@ -36,6 +36,7 @@ require.cache[asyncStoragePath] = {
 };
 
 const { LANGUAGES } = require("../src/data/languages");
+const { LESSONS } = require("../src/data/lessons");
 const { PRACTICE } = require("../src/data/practice");
 const { getAllQuestions, QUIZZES } = require("../src/data/quiz");
 const {
@@ -107,6 +108,102 @@ async function checkContentCoverage() {
     assert.ok(languageKeys.has(languageKey), `Quiz data exists for unknown language ${languageKey}`);
   }
 
+  // A language listed in LESSONS opts its topics into the chapter layout, so
+  // every topic in that language must have lessons. Half-authored tracks fail
+  // the check instead of silently rendering the old single-page layout.
+  const topicIdsByLanguage = new Map(
+    LANGUAGES.map((language) => [
+      language.key,
+      new Set(
+        (language.data.levels ?? []).flatMap((level) =>
+          (level.topics ?? []).map((topic) => topic.id),
+        ),
+      ),
+    ]),
+  );
+
+  let lessonCount = 0;
+
+  for (const [languageKey, topics] of Object.entries(LESSONS)) {
+    assert.ok(
+      languageKeys.has(languageKey),
+      `Lesson data exists for unknown language ${languageKey}`,
+    );
+
+    const knownTopics = topicIdsByLanguage.get(languageKey);
+
+    for (const topicId of Object.keys(topics)) {
+      assert.ok(
+        knownTopics.has(topicId),
+        `Lessons for ${languageKey} reference unknown topic ${topicId}`,
+      );
+
+      const lessons = topics[topicId];
+      assert.ok(
+        Array.isArray(lessons) && lessons.length >= 2,
+        `${languageKey}/${topicId} needs at least two lessons`,
+      );
+
+      const titles = new Set();
+
+      lessons.forEach((lesson, index) => {
+        const label = `${languageKey}/${topicId} lesson ${index + 1}`;
+
+        assert.ok(
+          typeof lesson.title === "string" && lesson.title.trim(),
+          `${label} is missing a title`,
+        );
+        assert.ok(
+          !titles.has(lesson.title),
+          `${label} repeats the title "${lesson.title}"`,
+        );
+        titles.add(lesson.title);
+
+        const paragraphs = Array.isArray(lesson.body)
+          ? lesson.body
+          : [lesson.body];
+        assert.ok(
+          paragraphs.length > 0 &&
+            paragraphs.every(
+              (paragraph) => typeof paragraph === "string" && paragraph.trim(),
+            ),
+          `${label} needs body text`,
+        );
+
+        for (const paragraph of paragraphs) {
+          const opens = (paragraph.match(/\[\[/g) ?? []).length;
+          const closes = (paragraph.match(/\]\]/g) ?? []).length;
+          assert.equal(
+            opens,
+            closes,
+            `${label} has unbalanced [[ ]] inline-code markers`,
+          );
+        }
+
+        if (lesson.example != null) {
+          assert.ok(
+            typeof lesson.example.code === "string" &&
+              lesson.example.code.trim(),
+            `${label} example needs code`,
+          );
+        }
+
+        if (lesson.gotcha != null) {
+          assert.ok(
+            typeof lesson.gotcha === "string" && lesson.gotcha.trim(),
+            `${label} gotcha must be text`,
+          );
+        }
+
+        lessonCount += 1;
+      });
+    }
+
+    for (const topicId of knownTopics) {
+      assert.ok(topics[topicId], `Missing lessons for ${languageKey} topic ${topicId}`);
+    }
+  }
+
   for (const topicId of Object.keys(PRACTICE)) {
     assert.ok(
       LANGUAGES.some((language) =>
@@ -147,7 +244,7 @@ async function checkContentCoverage() {
   }
 
   console.log(
-    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, and quiz/progress/review flows.`,
+    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, ${lessonCount} lessons, and quiz/progress/review flows.`,
   );
 }
 

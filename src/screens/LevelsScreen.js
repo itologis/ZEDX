@@ -156,10 +156,20 @@ export default function LevelsScreen({
         </Text>
 
         {assessment?.completed ? (
-          <Text style={[TYPO.label, styles.recommended, { color: colors.accent }]}>
-            Recommended start ·{" "}
-            {languageData.levels.find((l) => l.level === recommendedLevel)
-              ?.label || recommendedLevel}
+          <Text
+            style={[
+              TYPO.label,
+              styles.recommended,
+              { color: assessment.skipped ? colors.muted : colors.accent },
+            ]}
+          >
+            {assessment.skipped
+              ? "Placement skipped · Every level is open"
+              : `Recommended start · ${
+                  languageData.levels.find(
+                    (l) => l.level === recommendedLevel,
+                  )?.label || recommendedLevel
+                }`}
           </Text>
         ) : null}
 

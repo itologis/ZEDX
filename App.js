@@ -9,7 +9,15 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import AssessmentScreen from "./src/screens/AssessmentScreen";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -53,6 +61,7 @@ const DATA_MAP = Object.fromEntries(LANGUAGES.map((l) => [l.key, l]));
 
 function Root() {
   const { colors, isDark } = useTheme();
+  const { height: windowHeight } = useWindowDimensions();
   const [screen, setScreen] = useState({ name: "home" });
   const [activeTab, setActiveTab] = useState("home");
   const [showDevTools, setShowDevTools] = useState(false);
@@ -246,6 +255,7 @@ function Root() {
         topic={screen.topic}
         languageKey={screen.languageKey}
         languageLabel={language.label}
+        backLabel={screen.from === "levels" ? "← Topics" : "← Back"}
         onBack={closeTopic}
       />
     );
@@ -271,9 +281,14 @@ function Root() {
     );
   }
 
-  const showBottomNavigation = ["home", "search", "saved", "quizzes"].includes(
+  const isTabScreen = ["home", "search", "saved", "quizzes"].includes(
     screen.name,
   );
+  // Browse screens keep the tabs one tap away, so going from a lesson back to
+  // Learn or Search never means walking the Back stack. The assessment and
+  // quiz keep the nav hidden: they are focused flows that confirm before exit.
+  const showBottomNavigation =
+    isTabScreen || ["intro", "levels", "topic"].includes(screen.name);
   const screenTransitionKey = [
     screen.name,
     screen.languageKey || "",
@@ -297,7 +312,10 @@ function Root() {
 
         {showBottomNavigation && (
           <FadeIn key="bottom-navigation" duration={140} from="none">
-            <BottomNav active={activeTab} onNavigate={handleNavigate} />
+            <BottomNav
+              active={isTabScreen ? activeTab : null}
+              onNavigate={handleNavigate}
+            />
           </FadeIn>
         )}
 
@@ -313,7 +331,9 @@ function Root() {
                   },
                 ]}
               >
-                <View style={styles.devHeader}>
+                <View
+                  style={[styles.devHeader, { borderBottomColor: colors.rule }]}
+                >
                   <Text style={[TYPO.label, { color: colors.accent }]}>
                     Dev tools
                   </Text>
@@ -321,6 +341,7 @@ function Root() {
                     accessibilityRole="button"
                     accessibilityLabel="Close dev tools"
                     onPress={() => setShowDevTools(false)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     style={styles.devClose}
                   >
                     <Text style={[TYPO.label, { color: colors.ink }]}>
@@ -329,37 +350,50 @@ function Root() {
                   </TouchableOpacity>
                 </View>
 
-                <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
-                  Open assessment
-                </Text>
+                {/* The panel is taller than a phone screen, and it is anchored
+                    to the bottom — the body scrolls under a pinned header so
+                    Close never leaves the viewport. */}
+                <ScrollView
+                  style={[
+                    styles.devBody,
+                    { maxHeight: Math.max(160, windowHeight - 200) },
+                  ]}
+                  contentContainerStyle={styles.devBodyContent}
+                  showsVerticalScrollIndicator
+                  nestedScrollEnabled
+                >
+                  <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
+                    Open assessment
+                  </Text>
 
-                {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
-                  <TouchableOpacity
-                    key={languageKey}
-                    style={[styles.devButton, { borderColor: colors.rule }]}
-                    onPress={() => openDevAssessment(languageKey)}
-                  >
-                    <Text style={[TYPO.small, { color: colors.ink }]}>
-                      {lang.data.intro?.title || languageKey} assessment
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                  {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
+                    <TouchableOpacity
+                      key={languageKey}
+                      style={[styles.devButton, { borderColor: colors.rule }]}
+                      onPress={() => openDevAssessment(languageKey)}
+                    >
+                      <Text style={[TYPO.small, { color: colors.ink }]}>
+                        {lang.data.intro?.title || languageKey} assessment
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
 
-                <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
-                  Reset assessment data
-                </Text>
+                  <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
+                    Reset assessment data
+                  </Text>
 
-                {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
-                  <TouchableOpacity
-                    key={`reset-${languageKey}`}
-                    style={styles.devResetButton}
-                    onPress={() => resetDevAssessment(languageKey)}
-                  >
-                    <Text style={[TYPO.tiny, { color: colors.accent }]}>
-                      Reset {lang.data.intro?.title || languageKey}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                  {Object.entries(DATA_MAP).map(([languageKey, lang]) => (
+                    <TouchableOpacity
+                      key={`reset-${languageKey}`}
+                      style={styles.devResetButton}
+                      onPress={() => resetDevAssessment(languageKey)}
+                    >
+                      <Text style={[TYPO.tiny, { color: colors.accent }]}>
+                        Reset {lang.data.intro?.title || languageKey}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
 
@@ -412,6 +446,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 96,
+    minHeight: 44,
+    justifyContent: "center",
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 2,
@@ -423,16 +459,29 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 96,
     borderRadius: 2,
-    padding: 16,
+    paddingTop: 4,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
     borderWidth: StyleSheet.hairlineWidth,
   },
   devHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  devClose: { paddingHorizontal: 6, paddingVertical: 4 },
+  // 44dp target: Close must stay reachable on a phone.
+  devClose: {
+    minHeight: 44,
+    minWidth: 44,
+    paddingLeft: 12,
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
+  // The body scrolls inside the bottom-anchored panel so the header never
+  // leaves the viewport on short screens.
+  devBody: { flexShrink: 1 },
+  devBodyContent: { paddingTop: 4, paddingBottom: 4 },
   devLabel: { marginTop: 12, marginBottom: 8 },
   devButton: {
     padding: 10,

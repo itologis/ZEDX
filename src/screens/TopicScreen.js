@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import Button from "../components/Button";
 import CodePlate from "../components/CodePlate";
 import FieldLabel from "../components/FieldLabel";
 import OptionRow from "../components/OptionRow";
+import RichText from "../components/RichText";
 import Screen from "../components/Screen";
 import TopBar from "../components/TopBar";
 import { getLanguage } from "../data/languages";
+import { getLessons } from "../data/lessons";
 import { PRACTICE } from "../data/practice";
 import {
   getPracticeDone,
@@ -132,6 +134,7 @@ export default function TopicScreen({
   topic,
   languageKey,
   languageLabel,
+  backLabel = "← Back",
   onBack,
 }) {
   const { colors } = useTheme();
@@ -139,6 +142,13 @@ export default function TopicScreen({
   const [showConfirm, setShowConfirm] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
+
+  const lessons = useMemo(
+    () => getLessons(languageKey, topic?.id),
+    [languageKey, topic?.id],
+  );
+  const [lessonIndex, setLessonIndex] = useState(0);
+  const scrollRef = useRef(null);
 
   const language = getLanguage(languageKey);
 
@@ -205,10 +215,27 @@ export default function TopicScreen({
     onBack();
   };
 
+  // Lessons turn a topic into a chapter. `lessonIndex` is clamped so a topic
+  // swap can never point past the end of the new lesson list.
+  const lesson = lessons
+    ? lessons[Math.min(lessonIndex, lessons.length - 1)]
+    : null;
+  const isLastLesson = !lessons || lessonIndex >= lessons.length - 1;
+
+  const goToLesson = (index) => {
+    if (!lessons) return;
+
+    const next = Math.max(0, Math.min(index, lessons.length - 1));
+    if (next === lessonIndex) return;
+
+    setLessonIndex(next);
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   if (!topic) {
     return (
       <Screen>
-        <TopBar left="← Index" onLeft={onBack} leftLabel="Go back" />
+        <TopBar left={backLabel} onLeft={onBack} leftLabel="Go back" />
         <View style={styles.emptyWrap}>
           <Text style={[TYPO.body, { color: colors.body }]}>
             This topic could not be found.
@@ -228,7 +255,7 @@ export default function TopicScreen({
   return (
     <Screen>
       <TopBar
-        left="← Index"
+        left={backLabel}
         onLeft={onBack}
         leftLabel="Go back"
         right={
@@ -257,6 +284,7 @@ export default function TopicScreen({
       />
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -277,79 +305,220 @@ export default function TopicScreen({
           {topic.title}
         </Text>
 
-        <Text style={[TYPO.lede, styles.description, { color: colors.body }]}>
-          {topic.description}
-        </Text>
-
-        {!!topic.syntax ? (
+        {lesson ? (
           <>
-            <FieldLabel>Syntax</FieldLabel>
-            <CodePlate>{topic.syntax}</CodePlate>
-          </>
-        ) : null}
-
-        {topic.variants?.length > 0 ? (
-          <>
-            <FieldLabel>Variants</FieldLabel>
-            {topic.variants.map((variant, index) => (
-              <View
-                key={`${variant.title}-${index}`}
-                style={[styles.variant, { borderBottomColor: colors.rule }]}
+            {lessonIndex === 0 ? (
+              <Text
+                style={[TYPO.lede, styles.description, { color: colors.body }]}
               >
-                <Text style={[TYPO.item, { color: colors.ink }]}>
-                  {variant.title}
-                </Text>
-                <Text style={[TYPO.small, styles.variantDesc, { color: colors.body }]}>
-                  {variant.description}
-                </Text>
-                {!!variant.syntax ? (
-                  <CodePlate>{variant.syntax}</CodePlate>
-                ) : null}
-              </View>
-            ))}
-          </>
-        ) : null}
+                {topic.description}
+              </Text>
+            ) : null}
 
-        <PracticeBlock topicId={topic.id} languageKey={languageKey} />
+            <View
+              style={[styles.lessonTabs, { borderBottomColor: colors.rule }]}
+            >
+              <Text style={[TYPO.label, { color: colors.muted }]}>
+                Lessons
+              </Text>
 
-        {showConfirm ? (
-          <View
-            style={[
-              styles.confirm,
-              {
-                borderTopColor: colors.ruleStrong,
-                borderBottomColor: colors.ruleStrong,
-              },
-            ]}
-          >
-            <Text style={[TYPO.section, { color: colors.ink }]}>Mark as read?</Text>
-            <Text style={[TYPO.small, styles.confirmText, { color: colors.body }]}>
-              Have you completed “{topic.title}”?
-            </Text>
-            <View style={styles.confirmButtons}>
-              <Button
-                variant="secondary"
-                onPress={() => setShowConfirm(false)}
-                style={styles.confirmButton}
-              >
-                Not yet
-              </Button>
-              <Button onPress={confirmComplete} style={styles.confirmButton}>
-                Yes
-              </Button>
+              {lessons.map((item, index) => {
+                const active = index === lessonIndex;
+
+                return (
+                  <TouchableOpacity
+                    key={item.title}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Lesson ${index + 1} of ${lessons.length}: ${item.title}`}
+                    accessibilityState={{ selected: active }}
+                    onPress={() => goToLesson(index)}
+                    activeOpacity={0.7}
+                    style={styles.lessonTab}
+                  >
+                    <Text
+                      style={[
+                        TYPO.meta,
+                        { color: active ? colors.accent : colors.muted },
+                      ]}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </Text>
+                    {active ? (
+                      <View
+                        style={[
+                          styles.lessonTabMark,
+                          { backgroundColor: colors.accent },
+                        ]}
+                      />
+                    ) : null}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          </View>
-        ) : null}
 
-        {showConfirm ? null : (
-          <Button
-            onPress={() => setShowConfirm(true)}
-            disabled={completed}
-            style={styles.complete}
-          >
-            {completed ? "Completed ✓" : "Mark as read"}
-          </Button>
+            <Text
+              style={[TYPO.section, styles.lessonTitle, { color: colors.ink }]}
+            >
+              {lesson.title}
+            </Text>
+
+            {(Array.isArray(lesson.body) ? lesson.body : [lesson.body]).map(
+              (paragraph, index) => (
+                <RichText
+                  key={index}
+                  text={paragraph}
+                  style={[
+                    TYPO.body,
+                    index === 0 ? styles.firstParagraph : styles.paragraph,
+                    { color: colors.body },
+                  ]}
+                />
+              ),
+            )}
+
+            {lesson.example ? (
+              <>
+                <FieldLabel>Example</FieldLabel>
+                <CodePlate>{lesson.example.code}</CodePlate>
+                {lesson.example.caption ? (
+                  <Text
+                    style={[TYPO.tiny, styles.caption, { color: colors.muted }]}
+                  >
+                    {lesson.example.caption}
+                  </Text>
+                ) : null}
+              </>
+            ) : null}
+
+            {lesson.gotcha ? (
+              <View
+                style={[styles.gotcha, { borderLeftColor: colors.accent }]}
+              >
+                <Text style={[TYPO.label, { color: colors.accent }]}>
+                  Watch out
+                </Text>
+                <RichText
+                  text={lesson.gotcha}
+                  style={[
+                    TYPO.small,
+                    styles.gotchaText,
+                    { color: colors.body },
+                  ]}
+                />
+              </View>
+            ) : null}
+
+            {lessons.length > 1 ? (
+              <View style={styles.lessonNav}>
+                {lessonIndex > 0 ? (
+                  <Button
+                    variant="secondary"
+                    onPress={() => goToLesson(lessonIndex - 1)}
+                  >
+                    Previous
+                  </Button>
+                ) : (
+                  <View />
+                )}
+                {isLastLesson ? null : (
+                  <Button onPress={() => goToLesson(lessonIndex + 1)}>
+                    Next lesson
+                  </Button>
+                )}
+              </View>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <Text style={[TYPO.lede, styles.description, { color: colors.body }]}>
+              {topic.description}
+            </Text>
+
+            {!!topic.syntax ? (
+              <>
+                <FieldLabel>Syntax</FieldLabel>
+                <CodePlate>{topic.syntax}</CodePlate>
+              </>
+            ) : null}
+
+            {topic.variants?.length > 0 ? (
+              <>
+                <FieldLabel>Variants</FieldLabel>
+                {topic.variants.map((variant, index) => (
+                  <View
+                    key={`${variant.title}-${index}`}
+                    style={[styles.variant, { borderBottomColor: colors.rule }]}
+                  >
+                    <Text style={[TYPO.item, { color: colors.ink }]}>
+                      {variant.title}
+                    </Text>
+                    <Text
+                      style={[
+                        TYPO.small,
+                        styles.variantDesc,
+                        { color: colors.body },
+                      ]}
+                    >
+                      {variant.description}
+                    </Text>
+                    {!!variant.syntax ? (
+                      <CodePlate>{variant.syntax}</CodePlate>
+                    ) : null}
+                  </View>
+                ))}
+              </>
+            ) : null}
+          </>
         )}
+
+        {isLastLesson ? (
+          <>
+            <PracticeBlock topicId={topic.id} languageKey={languageKey} />
+
+            {showConfirm ? (
+              <View
+                style={[
+                  styles.confirm,
+                  {
+                    borderTopColor: colors.ruleStrong,
+                    borderBottomColor: colors.ruleStrong,
+                  },
+                ]}
+              >
+                <Text style={[TYPO.section, { color: colors.ink }]}>
+                  Mark as read?
+                </Text>
+                <Text
+                  style={[TYPO.small, styles.confirmText, { color: colors.body }]}
+                >
+                  Have you completed “{topic.title}”?
+                </Text>
+                <View style={styles.confirmButtons}>
+                  <Button
+                    variant="secondary"
+                    onPress={() => setShowConfirm(false)}
+                    style={styles.confirmButton}
+                  >
+                    Not yet
+                  </Button>
+                  <Button onPress={confirmComplete} style={styles.confirmButton}>
+                    Yes
+                  </Button>
+                </View>
+              </View>
+            ) : null}
+
+            {showConfirm ? null : (
+              <Button
+                onPress={() => setShowConfirm(true)}
+                disabled={completed}
+                style={styles.complete}
+              >
+                {completed ? "Completed ✓" : "Mark as read"}
+              </Button>
+            )}
+          </>
+        ) : null}
       </ScrollView>
     </Screen>
   );
@@ -365,6 +534,43 @@ const styles = StyleSheet.create({
   },
   title: { marginTop: 14 },
   description: { marginTop: 16 },
+  lessonTabs: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 22,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  lessonTab: {
+    minHeight: 44,
+    minWidth: 34,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lessonTabMark: {
+    position: "absolute",
+    left: 4,
+    right: 4,
+    bottom: 0,
+    height: 2,
+  },
+  lessonTitle: { marginTop: 18 },
+  firstParagraph: { marginTop: 14 },
+  paragraph: { marginTop: 12 },
+  caption: { marginTop: 8 },
+  gotcha: {
+    marginTop: 24,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
+  },
+  gotchaText: { marginTop: 6 },
+  lessonNav: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+    marginTop: 26,
+  },
   variant: {
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,

@@ -139,8 +139,7 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
             Syntax Library
           </Text>
           <Text style={[TYPO.lede, styles.lede, { color: colors.body }]}>
-            Seven languages, three levels each. Read a page, answer one
-            question, keep going.
+            The library you would need
           </Text>
         </View>
 

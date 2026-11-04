@@ -7,6 +7,7 @@ Built with [Expo](https://docs.expo.dev/) (SDK 58) and React Native — runs on 
 ## How the content fits together
 
 - `src/data/<language>.js` — one file per language. Each has three levels, and each level holds topics (`id`, `title`, `syntax`, `description`).
+- `src/data/lessons/<language>.js` — optional chapter content, keyed by topic id. A topic with lessons becomes a multi-step chapter (`title`, `body`, `example`, `gotcha`); topics without an entry keep the single-page layout. HTML is authored end-to-end (15 topics × 3 lessons) as the model for other languages.
 - `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
 - `src/data/quiz.js` — per-language, per-level quizzes (four options per question, a passing score) and the question pool the initial assessment draws from.
 - `src/data/languages.js` — the registry the screens read from; topics are discovered automatically, so adding a topic needs no screen changes.
@@ -17,7 +18,7 @@ After any content change, run the coverage checker:
 npm run check:content
 ```
 
-It verifies that every topic has a practice exercise, every level has a quiz with four-option questions and a valid passing score, quiz levels match content levels, and every practice entry belongs to a real topic — and it exercises the progress/review flows.
+It verifies that every topic has a practice exercise, every level has a quiz with four-option questions and a valid passing score, quiz levels match content levels, every practice entry belongs to a real topic, and every lessons entry covers a real topic with well-formed steps — and it exercises the progress/review flows.
 
 ## Design
 
@@ -25,7 +26,9 @@ The UI follows the "Manual" direction: IBM Plex Sans + Mono, paper/ink palettes 
 
 ## Screens
 
-Home · Intro (language overview) · Levels · Topic · Quiz · Quizzes · Assessment · Search · Saved
+Home · Intro (language overview) · Levels · Topic (chapter with lessons) · Quiz · Quizzes · Assessment · Search · Saved
+
+The bottom tabs stay available on browse screens (Home, Intro, Levels, Topic) so any lesson is one tap from Learn, Search, Quizzes, or Saved. The assessment and quiz keep the nav hidden; they are focused flows that confirm before leaving.
 
 ## Getting started
 
