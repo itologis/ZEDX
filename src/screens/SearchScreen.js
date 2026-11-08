@@ -1,6 +1,15 @@
-import { useMemo } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  Keyboard,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
+import ColophonFlash from "../components/ColophonFlash";
 import Screen from "../components/Screen";
 import TopBar from "../components/TopBar";
 import { LANGUAGES, getAllTopics } from "../data/languages";
@@ -15,8 +24,11 @@ export default function SearchScreen({
   onOpenLanguage,
 }) {
   const { colors } = useTheme();
+  const [colophonVisible, setColophonVisible] = useState(false);
   const index = useMemo(() => getAllTopics(), []);
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  // The maker's mark is not in the index; it answers only to its own name.
+  const showColophon = query.trim().toLowerCase() === "ryuu";
   const results =
     terms.length === 0
       ? []
@@ -119,7 +131,8 @@ export default function SearchScreen({
 
         {terms.length > 0 &&
         results.length === 0 &&
-        languageMatches.length === 0 ? (
+        languageMatches.length === 0 &&
+        !showColophon ? (
           <Text style={[TYPO.small, styles.hint, { color: colors.muted }]}>
             No topics match “{query}”.
           </Text>
@@ -145,6 +158,37 @@ export default function SearchScreen({
             <Text style={[TYPO.label, { color: colors.accent }]}>→</Text>
           </TouchableOpacity>
         ))}
+
+        {showColophon && (
+          <TouchableOpacity
+            testID="search-colophon-row"
+            accessibilityRole="button"
+            accessibilityLabel="Colophon. Ryuu. The maker's mark."
+            onPress={() => {
+              Keyboard.dismiss();
+              setColophonVisible(true);
+            }}
+            activeOpacity={0.65}
+            style={[styles.row, { borderBottomColor: colors.rule }]}
+          >
+            <View style={[styles.swatch, { backgroundColor: colors.accent }]} />
+            <View style={styles.rowBody}>
+              <Text style={[TYPO.label, { color: colors.muted }]}>
+                Colophon
+              </Text>
+              <Text style={[TYPO.item, styles.rowTitle, { color: colors.ink }]}>
+                Ryuu
+              </Text>
+              <Text
+                style={[TYPO.small, styles.rowDesc, { color: colors.muted }]}
+                numberOfLines={1}
+              >
+                The maker&apos;s mark.
+              </Text>
+            </View>
+            <Text style={[TYPO.label, { color: colors.accent }]}>→</Text>
+          </TouchableOpacity>
+        )}
 
         {results.map((item) => (
           <TouchableOpacity
@@ -181,6 +225,11 @@ export default function SearchScreen({
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      <ColophonFlash
+        visible={colophonVisible}
+        onClose={() => setColophonVisible(false)}
+      />
     </Screen>
   );
 }
