@@ -26,6 +26,13 @@ export default {
         caption: `The smallest complete page — lang tells screen readers and search engines which language it is.`,
       },
       gotcha: `A page that starts with [[<html>]] but no [[<!DOCTYPE html>]] runs in quirks mode, where old box-model rules apply. Keep the DOCTYPE first, always.`,
+      wrong: {
+        code: `<html>
+  <head><title>Hello</title></head>
+  <body><h1>Hello</h1></body>
+</html>`,
+        why: `Without [[<!DOCTYPE html>]] the page renders in quirks mode, where the old box model applies.`,
+      },
     },
     {
       title: "Head and body have different jobs",
@@ -44,6 +51,13 @@ export default {
         caption: `title is the tab label and the default title in search results.`,
       },
       gotcha: `Text inside [[<head>]] is not displayed. Putting a heading there makes it disappear, and a [[<meta charset>]] placed too late in the file can be ignored.`,
+      wrong: {
+        code: `<head>
+  <h1>Hello</h1>
+  <meta charset="utf-8">
+</head>`,
+        why: `The heading sits inside the head, so it never appears on the page.`,
+      },
     },
     {
       title: "What you can leave out",
@@ -57,6 +71,13 @@ export default {
 <p>This renders — the browser supplies
 html, head, and body for you.</p>`,
         caption: `Technically valid, but real pages keep the full skeleton for clarity.`,
+      },
+      wrong: {
+        code: `<DOCTYPE html>
+<html>
+  <body><p>Hello</p></body>
+</html>`,
+        why: `[[<DOCTYPE>]] is not the DOCTYPE declaration; the browser treats it as an unknown element and stays in quirks mode.`,
       },
     },
   ],
@@ -76,6 +97,12 @@ html, head, and body for you.</p>`,
 <h2>Reference</h2>`,
         caption: `One h1; each h2 starts a section; h3 sits inside an h2.`,
       },
+      wrong: {
+        code: `<h1>Field Guide</h1>
+<h3>Install</h3>
+<h3>First project</h3>`,
+        why: `Jumping from [[<h1>]] to [[<h3>]] leaves a hole in the outline — readers hear a level that was never opened.`,
+      },
     },
     {
       title: "Nest, don't skip",
@@ -92,6 +119,11 @@ html, head, and body for you.</p>`,
         caption: `Heading order is structure; font size is a design decision.`,
       },
       gotcha: `Headings are not a styling tool. If text should simply be large, style it with CSS; if it introduces a section, keep the level honest.`,
+      wrong: {
+        code: `<h2>Recipes</h2>
+<h4>Sourdough</h4>`,
+        why: `The step from h2 to h4 skips h3, so the subsection hangs off a level that does not exist.`,
+      },
     },
     {
       title: "When a heading is the right tool",
@@ -108,6 +140,12 @@ html, head, and body for you.</p>`,
         caption: `The first is a section title; the second is emphasis inside a sentence.`,
       },
       gotcha: `A run of headings with no content between them gives screen-reader users a list of empty stops.`,
+      wrong: {
+        code: `<h2>Shipping</h2>
+<h2>Returns</h2>
+<h2>Contact</h2>`,
+        why: `Three headings with nothing between them become three empty stops in a screen reader's heading list.`,
+      },
     },
   ],
 
@@ -122,6 +160,12 @@ html, head, and body for you.</p>`,
         code: `<p>HTML describes structure.</p>
 <p>CSS describes presentation.</p>`,
         caption: `Two thoughts, two paragraphs.`,
+      },
+      wrong: {
+        code: `<p>
+  <div>Not inside a paragraph</div>
+</p>`,
+        why: `A block element closes the paragraph early, so the browser produces an empty p followed by a div.`,
       },
     },
     {
@@ -139,6 +183,10 @@ html, head, and body for you.</p>`,
         caption: `One paragraph, four inline elements, one idea.`,
       },
       gotcha: `[[<strong>]] is not just bold, and [[<b>]] is not a heading. If the text is a title, use the matching heading element.`,
+      wrong: {
+        code: `<p>Please <b>do not</b> delete the file.</p>`,
+        why: `[[<b>]] only changes weight; it tells assistive tech nothing about importance.`,
+      },
     },
     {
       title: "Paragraphs vs. line breaks",
@@ -155,6 +203,12 @@ html, head, and body for you.</p>`,
         caption: `A br separates lines within a paragraph, not ideas.`,
       },
       gotcha: `A paragraph inside a paragraph is invalid — the browser closes the first one early. Use a [[<div>]] to group blocks, never a [[<p>]].`,
+      wrong: {
+        code: `<p>First line</p>
+<p>&nbsp;</p>
+<p>Second line</p>`,
+        why: `The empty paragraph is real content to a screen reader — it announces a blank line instead of creating space.`,
+      },
     },
   ],
 
@@ -170,6 +224,10 @@ html, head, and body for you.</p>`,
         caption: `The visible text should describe where the link goes.`,
       },
       gotcha: `A link needs a destination. [[<a>]] without href looks like a link but does nothing when clicked or focused.`,
+      wrong: {
+        code: `<a>Read the guide</a>`,
+        why: `An anchor without [[href]] is not focusable and is not announced as a link.`,
+      },
     },
     {
       title: "Absolute, relative, and in-page",
@@ -185,6 +243,11 @@ html, head, and body for you.</p>`,
         caption: `Four destinations: site root, same folder, same page, mail app.`,
       },
       gotcha: `When a link opens a new tab, add [[rel="noopener"]] (or [[noreferrer]]) — it stops the new page from reaching back through window.opener.`,
+      wrong: {
+        code: `<a href="#pricing">Pricing</a>
+<!-- no element with id="pricing" on the page -->`,
+        why: `A fragment link with no matching id scrolls nowhere and still changes the URL.`,
+      },
     },
     {
       title: "Links vs. buttons",
@@ -198,6 +261,12 @@ html, head, and body for you.</p>`,
         caption: `Navigation is a link; an in-page action is a button.`,
       },
       gotcha: `Do not wrap a button in a link or put interactive elements inside [[<a>]] — nested interactive controls are invalid and difficult to operate.`,
+      wrong: {
+        code: `<a href="/settings">
+  <button>Settings</button>
+</a>`,
+        why: `A button inside a link nests two interactive controls in one — invalid, and awkward to operate by keyboard.`,
+      },
     },
   ],
 
@@ -211,6 +280,10 @@ html, head, and body for you.</p>`,
       example: {
         code: `<img src="cat.jpg" alt="A tabby cat asleep on a keyboard">`,
         caption: `The alt text describes the content, not the filename.`,
+      },
+      wrong: {
+        code: `<img src="cat.jpg">`,
+        why: `With no alt, a screen reader reads the file name aloud instead of describing the picture.`,
       },
     },
     {
@@ -230,6 +303,10 @@ html, head, and body for you.</p>`,
         caption: `Width and height are layout hints; CSS can still resize the image.`,
       },
       gotcha: `Without alt, screen readers read the file URL out loud. Decorative images need an explicit empty alt — [[alt=""]] — so they are skipped.`,
+      wrong: {
+        code: `<img src="hero.jpg" alt="Team photo" style="width: 100%">`,
+        why: `With no width and height attributes the browser cannot reserve space, so the page jumps when the image loads.`,
+      },
     },
     {
       title: "When an image is the right tool",
@@ -245,6 +322,13 @@ html, head, and body for you.</p>`,
         caption: `figure ties an image to its caption without merging them.`,
       },
       gotcha: `Writing alt text with an image of text is a red flag: real text belongs in HTML, where it scales, selects, and translates.`,
+      wrong: {
+        code: `<figure>
+  <img src="team.jpg" alt="Support, 2026.">
+  <figcaption>Support, 2026.</figcaption>
+</figure>`,
+        why: `The alt repeats the caption word for word, so the image adds nothing when read aloud.`,
+      },
     },
   ],
 
@@ -268,6 +352,13 @@ html, head, and body for you.</p>`,
         caption: `Same items, different meaning.`,
       },
       gotcha: `A list must contain only list items. Text or a [[<div>]] directly inside [[<ul>]] is invalid — wrap it in an [[<li>]] or move it out.`,
+      wrong: {
+        code: `<ul>
+  Choose one:
+  <li>Milk</li>
+</ul>`,
+        why: `Text directly inside [[<ul>]] is invalid; only [[<li>]] elements may be children.`,
+      },
     },
     {
       title: "Nesting lists",
@@ -287,6 +378,15 @@ html, head, and body for you.</p>`,
   <li>Bread</li>
 </ul>`,
         caption: `The sub-list belongs to the item it expands.`,
+      },
+      wrong: {
+        code: `<ul>
+  <li>Fruit</li>
+  <ul>
+    <li>Apple</li>
+  </ul>
+</ul>`,
+        why: `The nested list is a sibling of the item, not inside it — the browser reads two lists, not a sub-list.`,
       },
     },
     {
@@ -310,6 +410,11 @@ html, head, and body for you.</p>`,
         caption: `Navigation is a list of links; a glossary is a description list.`,
       },
       gotcha: `A stack of divs with bullet characters is invisible as a list to screen readers, and copying it hands the reader stray bullets.`,
+      wrong: {
+        code: `<div>• Home</div>
+<div>• Docs</div>`,
+        why: `Bullet characters in divs are just text: no list semantics, no item count, and they copy as stray characters.`,
+      },
     },
   ],
 
@@ -333,6 +438,13 @@ html, head, and body for you.</p>`,
 </table>`,
         caption: `Header cells in the first row; data cells below.`,
       },
+      wrong: {
+        code: `<table>
+  <tr><td>Logo</td><td>Menu</td></tr>
+  <tr><td>Content</td><td>Sidebar</td></tr>
+</table>`,
+        why: `A layout table turns visual positions into data coordinates that screen readers announce cell by cell.`,
+      },
     },
     {
       title: "Captions and headers",
@@ -353,6 +465,13 @@ html, head, and body for you.</p>`,
         caption: `A caption and scoped headers make the grid readable aloud.`,
       },
       gotcha: `A header cell with no scope forces screen readers to guess the relationship. If the first row or column is a header, say so explicitly.`,
+      wrong: {
+        code: `<table>
+  <tr><th>Region</th><th>Revenue</th></tr>
+  <tr><td>North</td><td>$12k</td></tr>
+</table>`,
+        why: `The header cells have no [[scope]], so assistive tech has to guess which column they describe.`,
+      },
     },
     {
       title: "When a table is the right tool",
@@ -367,6 +486,10 @@ html, head, and body for you.</p>`,
         caption: `Let the table scroll inside its own box.`,
       },
       gotcha: `Layout tables confuse screen readers — every cell becomes an announced coordinate. If the content is not tabular data, it is not a table.`,
+      wrong: {
+        code: `<table style="width: 1200px">…</table>`,
+        why: `A fixed-width table wider than the screen forces the whole page to scroll sideways.`,
+      },
     },
   ],
 
@@ -386,6 +509,13 @@ html, head, and body for you.</p>`,
         caption: `Label, input, submit — the minimum useful form.`,
       },
       gotcha: `A form control with no name looks fine and sends nothing. The server sees an empty request.`,
+      wrong: {
+        code: `<form action="/subscribe" method="post">
+  <label for="email">Email</label>
+  <input id="email" type="email">
+</form>`,
+        why: `The input has no [[name]], so the browser sends nothing for it.`,
+      },
     },
     {
       title: "Labels, types, and names",
@@ -404,6 +534,10 @@ html, head, and body for you.</p>`,
         caption: `for/id pairs the label; wrapping the input is the other valid pattern.`,
       },
       gotcha: `Clicking a label focuses its control only when the pairing is correct. A label with no for and no wrapped input looks fine but does nothing.`,
+      wrong: {
+        code: `<input name="email" placeholder="Email address">`,
+        why: `A placeholder is not a label: it disappears as soon as the user types, and it is not announced as the field's name.`,
+      },
     },
     {
       title: "Buttons inside forms",
@@ -417,6 +551,10 @@ html, head, and body for you.</p>`,
         caption: `Submit is the default inside a form — opt out when you mean something else.`,
       },
       gotcha: `A link styled as a submit button does not submit, does not validate, and is not announced as a button.`,
+      wrong: {
+        code: `<a href="#" onclick="save()">Save</a>`,
+        why: `A link styled as a submit button does not submit, does not validate, and is not announced as a button.`,
+      },
     },
   ],
 
@@ -433,6 +571,12 @@ html, head, and body for you.</p>`,
 </div>`,
         caption: `The div groups a block; the span marks a piece of the sentence.`,
       },
+      wrong: {
+        code: `<span class="card">
+  <p>Order shipped.</p>
+</span>`,
+        why: `A span may only contain inline content; a paragraph inside it is invalid and the browser breaks the wrapper.`,
+      },
     },
     {
       title: "Using them as hooks",
@@ -448,6 +592,11 @@ html, head, and body for you.</p>`,
         caption: `Layout wrappers are the honest use of a div.`,
       },
       gotcha: `A span around a whole paragraph is invalid inline wrapping. Use the element that matches the content instead.`,
+      wrong: {
+        code: `<div id="cell">A</div>
+<div id="cell">B</div>`,
+        why: `[[id]] must be unique — a second one is invalid, and [[getElementById]] returns only the first match.`,
+      },
     },
     {
       title: "When not to reach for a div",
@@ -465,6 +614,11 @@ html, head, and body for you.</p>`,
         caption: `Semantic element when one exists; div when none does.`,
       },
       gotcha: `Class names like header or nav do not give a div meaning — screen readers still see an anonymous box.`,
+      wrong: {
+        code: `<div class="header">Site name</div>
+<div class="nav">Links</div>`,
+        why: `Class names give a div no meaning; these are still anonymous boxes, not landmarks.`,
+      },
     },
   ],
 
@@ -481,6 +635,12 @@ html, head, and body for you.</p>`,
 <main>Article</main>
 <footer>Copyright</footer>`,
         caption: `Five landmarks instead of five divs.`,
+      },
+      wrong: {
+        code: `<div class="header">Site name</div>
+<div class="nav">Links</div>
+<div class="main">Article</div>`,
+        why: `The page has no landmarks at all, so screen readers cannot jump to navigation or main content.`,
       },
     },
     {
@@ -502,6 +662,11 @@ html, head, and body for you.</p>`,
         caption: `main → article → section, each with a matching heading.`,
       },
       gotcha: `More than one [[<main>]] is invalid. It is the one landmark that must be unique per page.`,
+      wrong: {
+        code: `<main>First article</main>
+<main>Second article</main>`,
+        why: `Only one [[<main>]] is allowed per page; the second is ignored as a landmark.`,
+      },
     },
     {
       title: "When semantics pay off",
@@ -515,6 +680,12 @@ html, head, and body for you.</p>`,
         caption: `Label navigation blocks when there is more than one.`,
       },
       gotcha: `A [[<section>]] with no heading and no styling behaves like a div but announces a region — screen-reader users get an unlabeled stop.`,
+      wrong: {
+        code: `<section>
+  <p>Some text.</p>
+</section>`,
+        why: `The section has no heading, so it announces an unlabeled region that gives no clue what it contains.`,
+      },
     },
   ],
 
@@ -530,6 +701,10 @@ html, head, and body for you.</p>`,
   A bar chart of sales.
 </canvas>`,
         caption: `Width and height set the drawing buffer; CSS can scale it.`,
+      },
+      wrong: {
+        code: `<canvas id="chart" style="width: 600px"></canvas>`,
+        why: `CSS stretches the default 300×150 buffer to 600px, so every line is drawn at double size and blurred.`,
       },
     },
     {
@@ -547,6 +722,12 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `Fill style, then a rectangle at (10, 10) sized 120×60.`,
       },
       gotcha: `Setting the canvas size with CSS stretches the bitmap and blurs it. Set width and height attributes for the buffer, CSS for the layout size.`,
+      wrong: {
+        code: `const ctx = canvas.getContext("2d");
+ctx.fillRect(10, 10, 120, 60);
+ctx.fillStyle = "#e2542f";`,
+        why: `The fill style is set after the rectangle — the shape already painted keeps the old colour.`,
+      },
     },
     {
       title: "When canvas is the right choice",
@@ -560,6 +741,10 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `The canvas needs a name or a text alternative.`,
       },
       gotcha: `A canvas with no fallback content and no label is a blank space to assistive tech — announce what it shows.`,
+      wrong: {
+        code: `<canvas id="chart" width="300" height="150"></canvas>`,
+        why: `No fallback text and no label: assistive tech sees an empty box with nothing to announce.`,
+      },
     },
   ],
 
@@ -575,6 +760,10 @@ ctx.fillRect(10, 10, 120, 60);`,
   <source src="clip.mp4" type="video/mp4">
 </video>`,
         caption: `Controls first — the user decides when it plays.`,
+      },
+      wrong: {
+        code: `<video src="clip.mp4"></video>`,
+        why: `Without [[controls]] there is no way to start, pause, or seek the video.`,
       },
     },
     {
@@ -592,6 +781,10 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `Formats, a poster frame, and captions.`,
       },
       gotcha: `Captions are not optional for spoken content. A transcript or track is the only way deaf and hard-of-hearing users get the audio.`,
+      wrong: {
+        code: `<video controls src="clip.mp4"></video>`,
+        why: `The spoken audio has no captions, so deaf and hard-of-hearing viewers get nothing.`,
+      },
     },
     {
       title: "When to use media",
@@ -606,6 +799,10 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `Autoplay is only acceptable muted — and still not for everyone.`,
       },
       gotcha: `Autoplay without muted is blocked by every major browser, so the video silently never starts. On iOS, playsinline is also required to avoid fullscreen.`,
+      wrong: {
+        code: `<video autoplay src="ad.mp4"></video>`,
+        why: `Unmuted autoplay is blocked by browsers, and where it is not, it starts talking without warning.`,
+      },
     },
   ],
 
@@ -622,6 +819,12 @@ ctx.fillRect(10, 10, 120, 60);`,
 <meta name="description" content="Short lessons on HTML syntax.">`,
         caption: `Charset, viewport, description — the three that matter most.`,
       },
+      wrong: {
+        code: `<head>
+  <title>Page</title>
+</head>`,
+        why: `No charset and no viewport: the browser guesses the encoding, and phones render the page zoomed out.`,
+      },
     },
     {
       title: "What each tag does",
@@ -636,6 +839,10 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `Open Graph tags build the link preview.`,
       },
       gotcha: `Duplicates do not override: the first valid meta tag wins, so a second description is silently ignored.`,
+      wrong: {
+        code: `<meta name="viewport" content="width=980">`,
+        why: `A fixed viewport width forces phones to scale a desktop layout down instead of adapting it.`,
+      },
     },
     {
       title: "When meta tags help",
@@ -648,6 +855,10 @@ ctx.fillRect(10, 10, 120, 60);`,
 <meta name="keywords" content="html, learn, code">
 <meta http-equiv="refresh" content="0; url=/new-page">`,
         caption: `Both are legacy patterns with better replacements.`,
+      },
+      wrong: {
+        code: `<meta http-equiv="refresh" content="0; url=/new-page">`,
+        why: `A meta refresh breaks the back button and is ignored by many crawlers; redirect at the server instead.`,
       },
     },
   ],
@@ -665,6 +876,12 @@ ctx.fillRect(10, 10, 120, 60);`,
 </svg>`,
         caption: `A circle in a 100×100 coordinate system.`,
       },
+      wrong: {
+        code: `<svg width="80" height="80">
+  <circle cx="50" cy="50" r="40" />
+</svg>`,
+        why: `With no [[viewBox]] the units are pixels, so the circle at (50, 50) with radius 40 is clipped by the frame.`,
+      },
     },
     {
       title: "Shapes and accessible names",
@@ -680,6 +897,12 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `A title element names the graphic for assistive tech.`,
       },
       gotcha: `A viewBox with no width and height can collapse to zero in some layouts — size the element in CSS or in attributes.`,
+      wrong: {
+        code: `<svg viewBox="0 0 24 24">
+  <path d="M12 2 L22 20 H2 Z" />
+</svg>`,
+        why: `The icon has no [[<title>]] or label, so a meaningful graphic is silent to assistive tech.`,
+      },
     },
     {
       title: "When SVG beats a bitmap",
@@ -692,6 +915,10 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `Image form when you do not need to style or script the shapes.`,
       },
       gotcha: `An SVG loaded as an image cannot be styled from the page, and its internal title may not be announced — put the alt on the img.`,
+      wrong: {
+        code: `<img src="icon.jpg" alt="Menu" width="24" height="24">`,
+        why: `A bitmap icon blurs on high-density screens; SVG stays sharp at every size.`,
+      },
     },
   ],
 
@@ -708,6 +935,11 @@ ctx.fillRect(10, 10, 120, 60);`,
 <h3>HTML</h3>
 <h2>About</h2>`,
         caption: `One h1 names the page; h2s divide it; h3s subdivide.`,
+      },
+      wrong: {
+        code: `<h2>ZEDX</h2>
+<h3>Languages</h3>`,
+        why: `Starting at h2 leaves the page with no h1, so its name never appears at the top of the outline.`,
       },
     },
     {
@@ -727,6 +959,13 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `Landmarks plus a skip link: the standard accessible skeleton.`,
       },
       gotcha: `A skip link needs a real target. Without an element with that id, it jumps nowhere and the keyboard user is no better off.`,
+      wrong: {
+        code: `<header>Site name</header>
+<nav>Links</nav>
+<div id="main">Article</div>
+<footer>Copyright</footer>`,
+        why: `No [[<main>]] landmark means the "skip to content" target does not exist.`,
+      },
     },
     {
       title: "When structure needs labels",
@@ -740,6 +979,11 @@ ctx.fillRect(10, 10, 120, 60);`,
         caption: `Two navigation blocks, two distinct names.`,
       },
       gotcha: `A page without main has no skip-to-content target, and a div-only layout reads as one long unlabeled block.`,
+      wrong: {
+        code: `<nav>Main links</nav>
+<nav>Breadcrumb</nav>`,
+        why: `Two navigation landmarks with no names are indistinguishable in a landmark list.`,
+      },
     },
   ],
 };

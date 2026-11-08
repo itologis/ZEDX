@@ -7,7 +7,8 @@ Built with [Expo](https://docs.expo.dev/) (SDK 58) and React Native — runs on 
 ## How the content fits together
 
 - `src/data/<language>.js` — one file per language. Each has three levels, and each level holds topics (`id`, `title`, `syntax`, `description`).
-- `src/data/lessons/<language>.js` — optional chapter content, keyed by topic id. A topic with lessons becomes a multi-step chapter (`title`, `body`, `example`, `gotcha`); topics without an entry keep the single-page layout. HTML is authored end-to-end (15 topics × 3 lessons) as the model for other languages.
+- `src/data/lessons/<language>.js` — chapter content, keyed by topic id. Every topic in every track is a three-step chapter (`title`, `body`, `example`, `wrong`, `gotcha`). `wrong` is the counter-example: the broken version of the snippet, with a line of prose saying what fails. All seven languages are authored end-to-end (108 topics × 3 lessons, 324 lessons total).
+- `src/data/lessons/index.js` — the lesson registry. A language listed there must cover every one of its topics; half-authored tracks fail the content check.
 - `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
 - `src/data/quiz.js` — per-language, per-level quizzes (four options per question, a passing score) and the question pool the initial assessment draws from.
 - `src/data/languages.js` — the registry the screens read from; topics are discovered automatically, so adding a topic needs no screen changes.
@@ -18,7 +19,7 @@ After any content change, run the coverage checker:
 npm run check:content
 ```
 
-It verifies that every topic has a practice exercise, every level has a quiz with four-option questions and a valid passing score, quiz levels match content levels, every practice entry belongs to a real topic, and every lessons entry covers a real topic with well-formed steps — and it exercises the progress/review flows.
+It verifies that every topic has a practice exercise, every level has a quiz with four-option questions and a valid passing score, quiz levels match content levels, every practice entry belongs to a real topic, every lessons entry covers a real topic with three well-formed steps and a wrong-code comparison — and it exercises the progress/review flows.
 
 ## Design
 

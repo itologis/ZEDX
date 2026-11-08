@@ -39,6 +39,7 @@ const { LANGUAGES } = require("../src/data/languages");
 const { LESSONS } = require("../src/data/lessons");
 const { PRACTICE } = require("../src/data/practice");
 const { getAllQuestions, QUIZZES } = require("../src/data/quiz");
+const { parseInlineCode } = require("../src/utils/inlineCode");
 const {
   getMissedQuestions,
   getPracticeDone,
@@ -123,6 +124,7 @@ async function checkContentCoverage() {
   );
 
   let lessonCount = 0;
+  let wrongCount = 0;
 
   for (const [languageKey, topics] of Object.entries(LESSONS)) {
     assert.ok(
@@ -171,12 +173,11 @@ async function checkContentCoverage() {
         );
 
         for (const paragraph of paragraphs) {
-          const opens = (paragraph.match(/\[\[/g) ?? []).length;
-          const closes = (paragraph.match(/\]\]/g) ?? []).length;
+          const { unclosed } = parseInlineCode(paragraph);
           assert.equal(
-            opens,
-            closes,
-            `${label} has unbalanced [[ ]] inline-code markers`,
+            unclosed,
+            0,
+            `${label} has an unclosed [[ ]] inline-code marker`,
           );
         }
 
@@ -194,6 +195,20 @@ async function checkContentCoverage() {
             `${label} gotcha must be text`,
           );
         }
+
+        // Every lesson carries a counter-example: the broken version of the
+        // snippet above plus a line of prose saying what breaks.
+        assert.ok(
+          lesson.wrong &&
+            typeof lesson.wrong.code === "string" &&
+            lesson.wrong.code.trim(),
+          `${label} needs a wrong-code comparison`,
+        );
+        assert.ok(
+          typeof lesson.wrong.why === "string" && lesson.wrong.why.trim(),
+          `${label} wrong-code comparison needs an explanation`,
+        );
+        wrongCount += 1;
 
         lessonCount += 1;
       });
@@ -244,7 +259,7 @@ async function checkContentCoverage() {
   }
 
   console.log(
-    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, ${lessonCount} lessons, and quiz/progress/review flows.`,
+    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, ${lessonCount} lessons (${wrongCount} wrong-code comparisons), and quiz/progress/review flows.`,
   );
 }
 

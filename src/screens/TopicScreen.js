@@ -8,6 +8,7 @@ import OptionRow from "../components/OptionRow";
 import RichText from "../components/RichText";
 import Screen from "../components/Screen";
 import TopBar from "../components/TopBar";
+import WrongCode from "../components/WrongCode";
 import { getLanguage } from "../data/languages";
 import { getLessons } from "../data/lessons";
 import { PRACTICE } from "../data/practice";
@@ -390,6 +391,10 @@ export default function TopicScreen({
               </>
             ) : null}
 
+            {lesson.wrong ? (
+              <WrongCode code={lesson.wrong.code} why={lesson.wrong.why} />
+            ) : null}
+
             {lesson.gotcha ? (
               <View
                 style={[styles.gotcha, { borderLeftColor: colors.accent }]}
@@ -519,6 +524,12 @@ export default function TopicScreen({
             )}
           </>
         ) : null}
+
+        <View style={[styles.bottomNav, { borderTopColor: colors.rule }]}>
+          <Button variant="secondary" onPress={onBack} style={styles.bottomBack}>
+            {backLabel}
+          </Button>
+        </View>
       </ScrollView>
     </Screen>
   );
@@ -600,6 +611,12 @@ const styles = StyleSheet.create({
   confirmButtons: { flexDirection: "row", gap: 10, marginTop: 18 },
   confirmButton: { flex: 1 },
   complete: { marginTop: 26 },
+  bottomNav: {
+    marginTop: 36,
+    paddingTop: 24,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  bottomBack: { width: "100%" },
   saveTap: { minHeight: 44, justifyContent: "center" },
   emptyWrap: { flex: 1, justifyContent: "center", padding: 24 },
 });
