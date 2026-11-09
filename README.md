@@ -1,37 +1,29 @@
 # ZEDX
 
-A mobile app for learning programming-language syntax in short sessions. ZEDX covers **seven languages** — HTML, CSS, Java, Python, JavaScript, PHP, and SQL — each organized into three levels (L1–L3) of topics, fill-in-the-blank practice, and quizzes, plus an initial assessment, progress tracking, saved topics, and search.
+A mobile app for learning programming syntax in short sessions.
 
-Built with [Expo](https://docs.expo.dev/) (SDK 58) and React Native — runs on Android, iOS, and web. Content is bundled with the app, so it works offline.
+ZEDX covers **seven languages** — HTML, CSS, Java, Python, JavaScript, PHP, and SQL. Each language has three levels (L1–L3), and each level has topics you can read, practice, and take a quiz on. All the content is bundled in the app, so it works offline.
 
-## How the content fits together
+Built with Expo (SDK 58) and React Native. Runs on Android, iOS, and web.
 
-- `src/data/<language>.js` — one file per language. Each has three levels, and each level holds topics (`id`, `title`, `syntax`, `description`).
-- `src/data/lessons/<language>.js` — chapter content, keyed by topic id. Every topic in every track is a three-step chapter (`title`, `body`, `example`, `wrong`, `gotcha`). `wrong` is the counter-example: the broken version of the snippet, with a line of prose saying what fails. All seven languages are authored end-to-end (108 topics × 3 lessons, 324 lessons total).
-- `src/data/lessons/index.js` — the lesson registry. A language listed there must cover every one of its topics; half-authored tracks fail the content check.
-- `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
-- `src/data/quiz.js` — per-language, per-level quizzes (four options per question, a passing score) and the question pool the initial assessment draws from.
-- `src/data/languages.js` — the registry the screens read from; topics are discovered automatically, so adding a topic needs no screen changes.
+## What's inside
 
-After any content change, run the coverage checker:
-
-```bash
-npm run check:content
-```
-
-It verifies that every topic has a practice exercise, every level has a quiz with four-option questions and a valid passing score, quiz levels match content levels, every practice entry belongs to a real topic, every lessons entry covers a real topic with three well-formed steps and a wrong-code comparison — and it exercises the progress/review flows.
-
-## Design
-
-The UI follows the "Manual" direction: IBM Plex Sans + Mono, paper/ink palettes with dark as the default, one vermilion accent, 7px language swatches, 2px radius, and rules instead of cards. Type carries the hierarchy; there are no gradients, shadows, or blur.
+- **108 topics** across the seven languages.
+- **Lessons** — every topic is a short chapter with three steps: the syntax, a working example, and the broken version that shows what goes wrong.
+- **Practice** — one fill-in-the-blank exercise per topic, with an explanation.
+- **Quizzes** — per language and per level, four options per question, with a passing score.
+- **Initial assessment** — a starting test to see where a student is.
+- **Progress** — finished practice, quiz passes, and missed questions, saved on the device.
+- **Saved topics** and **search** — so any lesson is one tap away.
+- **Offline** — no internet needed, nothing leaves the phone.
 
 ## Screens
 
-Home · Intro (language overview) · Levels · Topic (chapter with lessons) · Quiz · Quizzes · Assessment · Search · Saved
+Home · Intro · Levels · Topic · Quiz · Quizzes · Assessment · Search · Saved
 
-The bottom tabs stay available on browse screens (Home, Intro, Levels, Topic) so any lesson is one tap from Learn, Search, Quizzes, or Saved. The assessment and quiz keep the nav hidden; they are focused flows that confirm before leaving.
+The bottom tabs stay visible on browse screens (Home, Intro, Levels, Topic). The assessment and quiz hide the tabs and confirm before you leave, since they're focused flows.
 
-## Getting started
+## How to run
 
 ```bash
 npm install
@@ -41,11 +33,16 @@ npm run android    # or: npm run ios / npm run web
 
 ## Project layout
 
-- `App.js` — app shell, navigation, and the Home dev-tools panel (`SHOW_DEV_TOOLS`, kept for testing builds until store release).
+- `App.js` — app shell, navigation, and the Home dev-tools panel (`SHOW_DEV_TOOLS`).
 - `src/screens/` — one file per screen.
-- `src/components/` — shared UI: `TopBar`, `Screen`, `BottomNav`, `FadeIn`, `SectionHead`, `FieldLabel`, `Rule`, `CodePlate`, `OptionRow`, `Button`, `IndexRow`, `ContinueStrip`, `ThemeToggle`.
-- `src/theme.js` — light/dark palettes, Plex type scale, spacing, and the 7px language swatches; `ThemeProvider`/`useTheme` persist the theme in AsyncStorage (`zedx_theme`).
-- `src/data/progress.js` — local progress (quiz passes, completed practice, missed questions) stored with AsyncStorage; nothing leaves the device.
+- `src/components/` — shared UI pieces: `TopBar`, `Screen`, `BottomNav`, `FadeIn`, `SectionHead`, `FieldLabel`, `Rule`, `CodePlate`, `OptionRow`, `Button`, `IndexRow`, `ContinueStrip`, `ThemeToggle`.
+- `src/theme.js` — light and dark palettes, IBM Plex type scale, spacing, and the 7px language swatches. The chosen theme is saved with AsyncStorage (`zedx_theme`).
+- `src/data/<language>.js` — the topics for each language. Every language has three levels, and every level has topics with an `id`, `title`, `syntax`, and `description`.
+- `src/data/lessons/<language>.js` — the chapter content for each topic, keyed by topic id. Every chapter has three steps (`title`, `body`, `example`, `wrong`, `gotcha`).
+- `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
+- `src/data/quiz.js` — the per-language, per-level quizzes and the question pool the assessment draws from.
+- `src/data/languages.js` — the list of languages the screens read from. Topics are picked up automatically, so adding a topic needs no screen changes.
+- `src/data/progress.js` — progress stored with AsyncStorage. Nothing leaves the device.
 - `scripts/check-content-coverage.cjs` — the coverage checker behind `npm run check:content`.
 
 ## Scripts
@@ -55,9 +52,13 @@ npm run android    # or: npm run ios / npm run web
 | `npm start` | Start the Expo dev server |
 | `npm run android` / `npm run ios` / `npm run web` | Start on a specific platform |
 | `npm run lint` | ESLint via `expo lint` |
-| `npm run check:content` | Validate content coverage + progress/review flows |
+| `npm run check:content` | Check that the content is complete and the progress flows work |
+
+## Design
+
+Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur.
 
 ## Notes
 
-- The project was renamed from **SyntaxLibrary** to **ZEDX** on 2026-11-02 (app name/slug, package name, folder, in-app brand, icon/favicon/splash assets). The `app.json` URL scheme, Android package, and EAS `projectId` still use the old identifiers; changing them affects deep links, Play identity, and EAS linkage, so that is a separate decision.
-- `src/data/render_test.js` is a stale scratch file (old absolute paths, not wired to any script) — safe to ignore; most current `expo lint` warnings trace to it.
+- The project was renamed from **SyntaxLibrary** to **ZEDX** on 2026-11-02 — app name, slug, package name, folder, brand, and the icon, favicon, and splash assets. The `app.json` URL scheme, the Android package, and the EAS `projectId` still use the old identifiers. Changing those affects deep links, the Play identity, and the EAS link, so it's kept as a separate decision.
+- `src/data/render_test.js` is an old scratch file that isn't wired to anything — safe to ignore. Most `expo lint` warnings come from it.
