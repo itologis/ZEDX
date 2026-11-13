@@ -9,6 +9,7 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Alert,
   ScrollView,
@@ -55,6 +56,7 @@ const FONT_MAP = {
 };
 
 const SHOW_DEV_TOOLS = true;
+const LOCAL_RECORD_KEY = "zedx_snapshot_cache_v2";
 
 // { html: { key, label, data }, css: {...}, ... }
 const DATA_MAP = Object.fromEntries(LANGUAGES.map((l) => [l.key, l]));
@@ -67,6 +69,8 @@ function Root() {
   const [showDevTools, setShowDevTools] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFilter, setSearchFilter] = useState("all");
+  const [localRecordInput, setLocalRecordInput] = useState("");
+  const [localRecordStatus, setLocalRecordStatus] = useState("");
 
   const handleNavigate = useCallback((tab) => {
     const next = tab === "learn" ? "home" : tab;
@@ -169,6 +173,59 @@ function Root() {
       await resetAssessment(languageKey);
     } catch (error) {
       console.error("Error resetting assessment:", error);
+    }
+  };
+
+  // This record is intentionally separate from all learning and quiz data.
+  const saveLocalRecord = async () => {
+    const value = localRecordInput.trim();
+
+    if (!value) {
+      setLocalRecordStatus("Enter a value first.");
+      return;
+    }
+
+    try {
+      const existing = await AsyncStorage.getItem(LOCAL_RECORD_KEY);
+
+      if (existing !== null) {
+        setLocalRecordStatus("A local record already exists. Remove it before replacing it.");
+        return;
+      }
+
+      await AsyncStorage.setItem(
+        LOCAL_RECORD_KEY,
+        JSON.stringify({
+          payload: value,
+          kind: "device-note",
+          version: 1,
+          createdAt: new Date().toISOString(),
+        }),
+      );
+
+      setLocalRecordInput("");
+      setLocalRecordStatus("Saved on this device.");
+    } catch (error) {
+      console.error("Error saving local record:", error);
+      setLocalRecordStatus("Could not save the record.");
+    }
+  };
+
+  const removeLocalRecord = async () => {
+    try {
+      const existing = await AsyncStorage.getItem(LOCAL_RECORD_KEY);
+
+      if (existing === null) {
+        setLocalRecordStatus("No local record was found.");
+        return;
+      }
+
+      await AsyncStorage.removeItem(LOCAL_RECORD_KEY);
+      setLocalRecordInput("");
+      setLocalRecordStatus("Local record removed.");
+    } catch (error) {
+      console.error("Error removing local record:", error);
+      setLocalRecordStatus("Could not remove the record.");
     }
   };
 
@@ -393,6 +450,60 @@ function Root() {
                       </Text>
                     </TouchableOpacity>
                   ))}
+
+                  <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
+                    Local test record
+                  </Text>
+                  <Text style={[TYPO.tiny, { color: colors.muted, marginBottom: 8 }]}>
+                    Saves one separate value on this device. Learning progress and quiz data are not changed.
+                  </Text>
+                  <TextInput
+                    value={localRecordInput}
+                    onChangeText={(value) => {
+                      setLocalRecordInput(value);
+                      if (localRecordStatus) setLocalRecordStatus("");
+                    }}
+                    placeholder="Enter a value to store locally"
+                    placeholderTextColor={colors.muted}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    maxLength={80}
+                    style={[
+                      styles.devInput,
+                      {
+                        color: colors.ink,
+                        backgroundColor: colors.paper,
+                        borderColor: colors.rule,
+                      },
+                    ]}
+                    accessibilityLabel="Local test record value"
+                  />
+                  <TouchableOpacity
+                    style={[styles.devButton, { borderColor: colors.rule }]}
+                    onPress={saveLocalRecord}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[TYPO.small, { color: colors.ink }]}>
+                      Save to device
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.devResetButton}
+                    onPress={removeLocalRecord}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[TYPO.tiny, { color: colors.accent }]}>
+                      Remove local record
+                    </Text>
+                  </TouchableOpacity>
+                  {!!localRecordStatus && (
+                    <Text
+                      accessibilityLiveRegion="polite"
+                      style={[TYPO.tiny, { color: colors.muted, marginTop: 4 }]}
+                    >
+                      {localRecordStatus}
+                    </Text>
+                  )}
                 </ScrollView>
               </View>
             )}
@@ -492,5 +603,12 @@ const styles = StyleSheet.create({
   devResetButton: {
     padding: 8,
     marginBottom: 4,
+  },
+  devInput: {
+    minHeight: 44,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 2,
+    paddingHorizontal: 10,
+    marginBottom: 8,
   },
 });
