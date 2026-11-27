@@ -180,27 +180,32 @@ if ("1" == "01") {
       },
     },
     {
-      title: "match expressions",
+      title: "Combining conditions",
       body: [
-        `[[match]] compares with strict equality and returns a value. Each arm is [[condition => result]].`,
-        `match throws UnhandledMatchError when nothing matches, so a default arm is often required.`,
+        `[[&&]] requires both conditions to be true. [[||]] allows either condition to be true, and [[!]] reverses a boolean value.`,
+        `Use parentheses when a condition mixes [[&&]] and [[||]]. They make the intended groups easier to read and help prevent logic mistakes.`,
       ],
       example: {
         code: `<?php
-$label = match ($status) {
-    "new" => "New order",
-    "paid" => "Paid",
-    default => "Unknown",
-};`,
-        caption: `One value per status, with a fallback.`,
+$age = 20;
+$hasTicket = true;
+
+if ($age >= 18 && $hasTicket) {
+    echo "Entry allowed";
+} else {
+    echo "Entry denied";
+}`,
+        caption: `The visitor must be old enough and have a ticket.`,
       },
       wrong: {
         code: `<?php
-$label = match ($status) {
-    "new" => "New order",
-    "paid" => "Paid",
-};`,
-        why: `Any other status throws UnhandledMatchError. Add a default arm.`,
+$age = 16;
+$hasPermission = true;
+
+if ($age >= 18 || $hasPermission) {
+    echo "Entry allowed";
+}`,
+        why: `The [[||]] operator needs only one side to be true, so permission alone allows entry. Use [[&&]] when both requirements must be met.`,
       },
     },
   ],
@@ -254,25 +259,28 @@ while ($count > 0) {
       },
     },
     {
-      title: "foreach by value and by reference",
+      title: "foreach loops",
       body: [
-        `[[foreach ($items as $item)]] gives a copy of each value. Changing $item does not change the array.`,
-        `Add [[&]] to change the array: [[foreach ($items as &$item)]]. Unset the reference afterwards.`,
+        `[[foreach]] visits each item in an array without needing a counter. PHP assigns the current item to the variable after [[as]] on each pass.`,
+        `Use it when you want to process every item in a collection. If you need the position as well, use a counted [[for]] loop or learn key/value iteration with associative arrays.`,
       ],
       example: {
         code: `<?php
-foreach ($prices as &$price) {
-    $price = $price * 2;
-}
-unset($price);`,
-        caption: `Reference each element, then drop the reference.`,
+$colors = ["red", "blue", "green"];
+
+foreach ($colors as $color) {
+    echo $color . "\\n";
+}`,
+        caption: `Each color is handled once, in its original order.`,
       },
       wrong: {
         code: `<?php
-foreach ($prices as $price) {
-    $price = $price * 2;
+$colors = ["red", "blue", "green"];
+
+foreach ($colors as $color) {
+    echo $colour . "\\n";
 }`,
-        why: `The loop only changes its copy. The array still holds the old prices.`,
+        why: `The loop assigns each item to [[$color]], but the body tries to read [[$colour]]. Those are different variable names, so PHP cannot find the value being printed. Use the same spelling in both places.`,
       },
     },
   ],
@@ -321,26 +329,30 @@ greet(null);`,
       },
     },
     {
-      title: "Variadics and arrow functions",
+      title: "Using a returned value",
       body: [
-        `[[...$numbers]] collects extra arguments as an array. It must be the last parameter.`,
-        `[[fn($x) => $x * 2]] is a short closure that captures outer variables by value automatically.`,
+        `Calling a function runs its body and gives you the value sent back by [[return]]. You can store that result in a variable, display it, or use it in another calculation.`,
+        `The parameters inside the function are local names. Each call can pass different arguments, while the function keeps the calculation in one reusable place.`,
       ],
       example: {
         code: `<?php
-function sum(int ...$numbers): int {
-    return array_sum($numbers);
+function lineTotal(int $price, int $quantity): int {
+    return $price * $quantity;
 }
 
-sum(1, 2, 3);`,
-        caption: `Any number of integers, summed.`,
+$cartTotal = lineTotal(25, 3);
+echo "Total: " . $cartTotal;`,
+        caption: `The same function can calculate the total for any price and quantity.`,
       },
       wrong: {
         code: `<?php
-function sum(int ...$numbers, int $extra): int {
-    return array_sum($numbers) + $extra;
-}`,
-        why: `A variadic parameter must be last, so this declaration is a fatal error.`,
+function lineTotal(int $price, int $quantity): int {
+    echo $price * $quantity;
+}
+
+$cartTotal = lineTotal(25, 3);
+echo $cartTotal;`,
+        why: `echo displays the result but does not send it back. The function returns null, so [[$cartTotal]] does not contain the calculated total. Use [[return]].`,
       },
     },
   ],

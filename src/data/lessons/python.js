@@ -226,26 +226,26 @@ while count > 0:
       },
     },
     {
-      title: "break, continue, and loop else",
+      title: "break and continue",
       body: [
-        `[[break]] leaves the nearest loop; [[continue]] skips to the next iteration. [[break]] only exits one level, even inside nested loops.`,
-        `A loop's [[else]] runs when the loop finishes without break — useful for search loops, easy to misread.`,
+        `[[break]] leaves the nearest loop immediately. [[continue]] skips the rest of the current pass and moves to the next item.`,
+        `Use them when a loop needs a clear stopping point or should ignore certain values. Both affect only the nearest loop when loops are nested.`,
       ],
       example: {
-        code: `for n in numbers:
-    if n < 0:
+        code: `for score in [82, -1, 95, 100, 68]:
+    if score < 0:
+        continue
+    if score == 100:
         break
-else:
-    print("all positive")`,
-        caption: `else runs only when no break happened.`,
+    print(score)`,
+        caption: `The negative value is skipped, and the loop stops when it reaches 100.`,
       },
       wrong: {
-        code: `for row in rows:
-    for cell in row:
-        if cell is None:
-            break
-    print("row done")`,
-        why: `break stops the inner loop only; the outer loop continues and prints regardless. Use a flag or return from a function.`,
+        code: `for score in [82, -1, 95, 100, 68]:
+    if score < 0:
+        break
+    print(score)`,
+        why: `break ends the whole loop at the first negative value, so 95 and later scores are never checked. Use [[continue]] when you only want to skip one item.`,
       },
     },
   ],
@@ -294,26 +294,28 @@ result = double(21) + 1`,
       },
     },
     {
-      title: "*args and **kwargs",
+      title: "Local variables and reusable results",
       body: [
-        `[[*args]] collects extra positional arguments into a tuple. [[**kwargs]] collects extra keyword arguments into a dictionary.`,
-        `At the call site the same stars unpack: [[f(*items)]] spreads a list, [[f(**config)]] spreads a dictionary.`,
+        `A variable created inside a function is local to that function. It helps the function do its work, but it is not available by that name after the function finishes.`,
+        `Return the value the caller needs. Keep temporary calculations inside the function so the caller only has to understand the input and the result.`,
       ],
       example: {
-        code: `def total(*numbers):
-    return sum(numbers)
+        code: `def make_label(name):
+    greeting = "Hello"
+    return f"{greeting}, {name}!"
 
-print(total(1, 2, 3))
-print(total(*[4, 5]))`,
-        caption: `Pack in the definition, unpack at the call.`,
+message = make_label("Mina")
+print(message)`,
+        caption: `greeting is local; the returned message is available outside.`,
       },
       wrong: {
-        code: `def total(*numbers):
-    return sum(numbers)
+        code: `def make_label(name):
+    greeting = "Hello"
+    return f"{greeting}, {name}!"
 
-values = [1, 2, 3]
-print(total(values))`,
-        why: `Without the star the whole list is one argument, so sum receives a list of one list and fails.`,
+message = make_label("Mina")
+print(greeting)`,
+        why: `[[greeting]] is local to make_label, so code outside the function cannot read it. Use the returned [[message]] instead.`,
       },
     },
   ],

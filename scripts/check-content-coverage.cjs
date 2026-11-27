@@ -256,17 +256,16 @@ async function checkContentCoverage() {
     }
   }
 
-  const expectedGuidedTopics = [
-    ["html", "h1"], ["css", "c1"], ["java", "j1"],
-    ["python", "p1"], ["javascript", "js1"], ["php", "php1"], ["sql", "sql1"],
-    ["html", "h2"], ["css", "c2"], ["java", "j2"],
-    ["python", "p2"], ["javascript", "js2"], ["php", "php2"], ["sql", "sql2"],
-  ];
+  const expectedGuidedTopics = LANGUAGES.flatMap((language) =>
+    (language.data.levels ?? [])
+      .filter((level) => level.level === "L1")
+      .flatMap((level) => (level.topics ?? []).map((topic) => [language.key, topic.id])),
+  );
   for (const [languageKey, topicId] of expectedGuidedTopics) {
     assert.equal(
       LESSON_GUIDES[languageKey]?.[topicId]?.length,
       LESSONS[languageKey]?.[topicId]?.length,
-      `${languageKey}/${topicId} must guide every lesson in its introductory topic`,
+      `${languageKey}/${topicId} must guide every lesson in its Beginner topic`,
     );
     const mergedLessons = getLessons(languageKey, topicId);
     assert.ok(
@@ -274,7 +273,16 @@ async function checkContentCoverage() {
       `${languageKey}/${topicId} guide metadata must reach the lesson screen`,
     );
   }
-  assert.equal(guidedLessonCount, 42, "All lessons in the first two beginner topics must include guided teaching content");
+  const expectedGuidedLessonCount = expectedGuidedTopics.reduce(
+    (count, [languageKey, topicId]) =>
+      count + LESSONS[languageKey][topicId].length,
+    0,
+  );
+  assert.equal(
+    guidedLessonCount,
+    expectedGuidedLessonCount,
+    "Every lesson in every Beginner topic must include guided teaching content",
+  );
 
   for (const topicId of Object.keys(PRACTICE)) {
     assert.ok(
@@ -316,7 +324,7 @@ async function checkContentCoverage() {
   }
 
   console.log(
-    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, ${lessonCount} lessons (${wrongCount} wrong-code comparisons), ${guidedLessonCount} guided intro lessons, and quiz/progress/review flows.`,
+    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, ${lessonCount} lessons (${wrongCount} wrong-code comparisons), ${guidedLessonCount} guided Beginner lesson steps, and quiz/progress/review flows.`,
   );
 }
 

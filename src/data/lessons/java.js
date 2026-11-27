@@ -165,29 +165,31 @@ static double value(int n) { return n; }`,
       },
     },
     {
-      title: "Pass by value, varargs",
+      title: "Local variables inside a method",
       body: [
-        `Java always passes by value. For objects, the value is a reference, so the method can change the object but cannot reseat the caller's variable.`,
-        `[[int... numbers]] accepts any number of arguments and receives them as an array. It must be the last parameter.`,
+        `A variable declared inside a method is local to that method. It can help break a calculation into readable steps, but code outside the method cannot use that local name.`,
+        `Return the result that the caller needs. The caller does not need to know every temporary variable used to calculate it.`,
       ],
       example: {
-        code: `static int sum(int... numbers) {
-    int total = 0;
-    for (int n : numbers) total += n;
+        code: `static int totalWithTax(int price) {
+    int tax = price / 10;
+    int total = price + tax;
     return total;
 }
 
-sum(1, 2, 3);`,
-        caption: `Varargs collect the arguments into an int array.`,
+int bill = totalWithTax(100);
+System.out.println(bill);`,
+        caption: `tax and total are local. The caller receives the returned value 110.`,
       },
       wrong: {
-        code: `static void addOne(int n) {
-    n = n + 1;
+        code: `static int totalWithTax(int price) {
+    int tax = price / 10;
+    return price + tax;
 }
 
-int x = 1;
-addOne(x);`,
-        why: `The method changes its own copy; x stays 1. Return the new value or pass a mutable object.`,
+int bill = totalWithTax(100);
+System.out.println(tax);`,
+        why: `The local variable [[tax]] exists only inside the method. Return a value for the caller to use, or calculate it in the caller's scope.`,
       },
     },
   ],

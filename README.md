@@ -9,7 +9,7 @@ Built with Expo (SDK 58) and React Native. Runs on Android, iOS, and web.
 ## What's inside
 
 - **108 topics** across the seven languages.
-- **Lessons** — every topic is a short chapter with three steps: the syntax, a working example, and the broken version that shows what goes wrong.
+- **Lessons** — every topic is a short chapter with three steps: the syntax, a working example, and the broken version that shows what goes wrong. All 35 Beginner topics now include guided goals, plain-language explanations, worked examples, and quick understanding checks.
 - **Practice** — one fill-in-the-blank exercise per topic, with an explanation.
 - **Quizzes** — per language and per level, four options per question, with a passing score.
 - **Initial assessment** — a starting test to see where a student is.
@@ -39,6 +39,7 @@ npm run android    # or: npm run ios / npm run web
 - `src/theme.js` — light and dark palettes, IBM Plex type scale, spacing, and the 7px language swatches. The chosen theme is saved with AsyncStorage (`zedx_theme`).
 - `src/data/<language>.js` — the topics for each language. Every language has three levels, and every level has topics with an `id`, `title`, `syntax`, and `description`.
 - `src/data/lessons/<language>.js` — the chapter content for each topic, keyed by topic id. Every chapter has three steps (`title`, `body`, `example`, `wrong`, `gotcha`).
+- `src/data/lessonGuides*.js` — guided teaching notes for Beginner lessons: learning goals, explanations, worked walkthroughs, and comprehension checks.
 - `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
 - `src/data/quiz.js` — the per-language, per-level quizzes and the question pool the assessment draws from.
 - `src/data/languages.js` — the list of languages the screens read from. Topics are picked up automatically, so adding a topic needs no screen changes.
