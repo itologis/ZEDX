@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import Button from "../components/Button";
+import EmptyState from "../components/EmptyState";
 import FadeIn from "../components/FadeIn";
 import OptionRow from "../components/OptionRow";
 import Screen from "../components/Screen";
@@ -39,11 +40,13 @@ export default function QuizScreen({
     return (
       <Screen>
         <TopBar left="← Back" onLeft={onBack} leftLabel="Go back" />
-        <View style={styles.center}>
-          <Text style={[TYPO.body, { color: colors.muted }]}>
-            No quiz available here yet.
-          </Text>
-        </View>
+        <EmptyState
+          eyebrow="Quiz"
+          title="No quiz here yet"
+          body="This level's questions are still being written."
+          actionLabel="Go back"
+          onAction={onBack}
+        />
       </Screen>
     );
   }

@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+import Breadcrumbs from "../components/Breadcrumbs";
 import Button from "../components/Button";
 import FieldLabel from "../components/FieldLabel";
 import Screen from "../components/Screen";
@@ -16,6 +17,7 @@ export default function IntroScreen({
   languageLabel,
   languageData,
   onBack,
+  onHome,
   onStart,
 }) {
   const { colors } = useTheme();
@@ -25,6 +27,7 @@ export default function IntroScreen({
     return (
       <Screen>
         <TopBar left="← Index" onLeft={onBack} leftLabel="Back to contents" />
+        <Breadcrumbs items={[{ label: "Home", onPress: onHome }, { label: languageLabel || languageKey }]} />
         <View style={styles.errorWrap}>
           <Text style={[TYPO.body, { color: colors.body }]}>
             Introduction data unavailable.
@@ -42,6 +45,7 @@ export default function IntroScreen({
         leftLabel="Back to contents"
         right={`${countTopics(languageData)} topics`}
       />
+      <Breadcrumbs items={[{ label: "Home", onPress: onHome }, { label: languageLabel || languageKey }]} />
 
       <ScrollView
         style={styles.scroll}

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import Breadcrumbs from "../components/Breadcrumbs";
 import Button from "../components/Button";
+import EmptyState from "../components/EmptyState";
 import CodePlate from "../components/CodePlate";
 import FieldLabel from "../components/FieldLabel";
 import OptionRow from "../components/OptionRow";
@@ -137,6 +139,9 @@ export default function TopicScreen({
   languageLabel,
   backLabel = "← Back",
   onBack,
+  onHome,
+  onIntro,
+  onLevels,
 }) {
   const { colors } = useTheme();
   const [completed, setCompleted] = useState(false);
@@ -237,11 +242,20 @@ export default function TopicScreen({
     return (
       <Screen>
         <TopBar left={backLabel} onLeft={onBack} leftLabel="Go back" />
-        <View style={styles.emptyWrap}>
-          <Text style={[TYPO.body, { color: colors.body }]}>
-            This topic could not be found.
-          </Text>
-        </View>
+        <Breadcrumbs
+          items={[
+            { label: "Home", onPress: onHome },
+            { label: languageLabel || language?.label || languageKey, onPress: onIntro },
+            { label: placement?.levelLabel || "Level", onPress: onLevels },
+          ]}
+        />
+        <EmptyState
+          eyebrow="Topic"
+          title="This page is missing"
+          body="The topic you followed is no longer in the index."
+          actionLabel="Go back"
+          onAction={onBack}
+        />
       </Screen>
     );
   }
@@ -282,6 +296,13 @@ export default function TopicScreen({
             </Text>
           </TouchableOpacity>
         }
+      />
+      <Breadcrumbs
+        items={[
+          { label: "Home", onPress: onHome },
+          { label: languageLabel || language?.label || languageKey, onPress: onIntro },
+          { label: placement?.levelLabel || "Level", onPress: onLevels },
+        ]}
       />
 
       <ScrollView

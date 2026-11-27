@@ -1,5 +1,14 @@
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
+import { DURATION, SPRING } from "../motion";
 import { TYPO, useTheme } from "../theme";
 
 const TABS = [
@@ -9,12 +18,59 @@ const TABS = [
   { key: "saved", label: "Saved" },
 ];
 
-// Edge-to-edge index tabs: hairline top rule, mono labels, 2px accent marker.
 export default function BottomNav({ active, onNavigate }) {
   const { colors } = useTheme();
+  const [barWidth, setBarWidth] = useState(0);
+  const previousActiveIndex = useRef(null);
+  const translateX = useSharedValue(0);
+  const opacity = useSharedValue(0);
+  const activeIndex = TABS.findIndex((tab) => tab.key === active);
+
+  useEffect(() => {
+    if (barWidth === 0) return;
+
+    if (activeIndex < 0) {
+      opacity.value = withTiming(0, {
+        duration: DURATION.fast,
+        reduceMotion: ReduceMotion.System,
+      });
+      previousActiveIndex.current = activeIndex;
+      return;
+    }
+
+    const tabWidth = barWidth / TABS.length;
+    const targetX = activeIndex * tabWidth + tabWidth * 0.22;
+    const cameFromNoTab =
+      previousActiveIndex.current === null || previousActiveIndex.current < 0;
+
+    if (cameFromNoTab) {
+      translateX.value = targetX;
+      opacity.value = withTiming(1, {
+        duration: DURATION.fast,
+        reduceMotion: ReduceMotion.System,
+      });
+    } else {
+      translateX.value = withSpring(targetX, {
+        ...SPRING.settle,
+        reduceMotion: ReduceMotion.System,
+      });
+      opacity.value = withTiming(1, {
+        duration: DURATION.fast,
+        reduceMotion: ReduceMotion.System,
+      });
+    }
+
+    previousActiveIndex.current = activeIndex;
+  }, [activeIndex, barWidth, opacity, translateX]);
+
+  const indicatorStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateX: translateX.value }],
+  }));
 
   return (
     <View
+      onLayout={(event) => setBarWidth(event.nativeEvent.layout.width)}
       style={[
         styles.bar,
         { backgroundColor: colors.paper, borderTopColor: colors.ruleStrong },
@@ -33,11 +89,6 @@ export default function BottomNav({ active, onNavigate }) {
             accessibilityState={{ selected: on }}
             accessibilityLabel={tab.label}
           >
-            {on ? (
-              <View
-                style={[styles.indicator, { backgroundColor: colors.accent }]}
-              />
-            ) : null}
             <Text
               style={[
                 TYPO.label,
@@ -49,6 +100,20 @@ export default function BottomNav({ active, onNavigate }) {
           </TouchableOpacity>
         );
       })}
+
+      {barWidth > 0 ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.indicator,
+            {
+              width: (barWidth / TABS.length) * 0.56,
+              backgroundColor: colors.accent,
+            },
+            indicatorStyle,
+          ]}
+        />
+      ) : null}
     </View>
   );
 }
@@ -57,19 +122,18 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: "row",
     borderTopWidth: StyleSheet.hairlineWidth,
+    position: "relative",
   },
   item: {
     flex: 1,
     minHeight: 56,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
   },
   indicator: {
     position: "absolute",
     top: 0,
-    left: "22%",
-    right: "22%",
+    left: 0,
     height: 2,
   },
 });

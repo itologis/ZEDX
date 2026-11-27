@@ -1,11 +1,18 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
+import { SPRING } from "../motion";
 import { TYPO, useTheme } from "../theme";
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
-// Examination option row: letter + answer on a hairline, 52dp tall.
-// state: "idle" | "selected" | "correct" | "wrong"
 export default function OptionRow({
   index,
   label,
@@ -15,20 +22,50 @@ export default function OptionRow({
   disabled = false,
 }) {
   const { colors } = useTheme();
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
   const letter = LETTERS[index] || String(index + 1);
   const isSelected = selected || state === "selected";
   const letterColor =
     state === "idle" ? colors.muted : state === "correct" ? colors.ink : colors.accent;
   const labelColor = isSelected ? colors.accent : colors.ink;
 
+  const pressIn = () => {
+    // Reanimated shared values are intentionally updated from press callbacks.
+    // eslint-disable-next-line react-hooks/immutability
+    scale.value = withSpring(1.01, {
+      ...SPRING.press,
+      reduceMotion: ReduceMotion.System,
+    });
+  };
+
+  const pressOut = () => {
+    // Reanimated shared values are intentionally updated from press callbacks.
+    // eslint-disable-next-line react-hooks/immutability
+    scale.value = withSpring(1, {
+      ...SPRING.press,
+      reduceMotion: ReduceMotion.System,
+    });
+  };
+
+  const handlePress = () => {
+    if (Platform.OS !== "web") {
+      Haptics.selectionAsync().catch(() => {});
+    }
+    onPress?.();
+  };
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityState={{ disabled, selected: isSelected }}
       disabled={disabled}
-      onPress={onPress}
-      activeOpacity={0.7}
-      style={[styles.row, { borderBottomColor: colors.rule }]}
+      onPress={handlePress}
+      onPressIn={pressIn}
+      onPressOut={pressOut}
+      style={[styles.row, { borderBottomColor: colors.rule }, animatedStyle]}
     >
       <Text style={[TYPO.label, styles.letter, { color: letterColor }]}>
         {letter}
@@ -44,7 +81,7 @@ export default function OptionRow({
           <Text style={[TYPO.label, { color: colors.accent }]}>✕</Text>
         ) : null}
       </View>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 

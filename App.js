@@ -9,11 +9,13 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Alert,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
@@ -31,6 +33,7 @@ import TopicScreen from "./src/screens/TopicScreen";
 
 import BottomNav from "./src/components/BottomNav";
 import FadeIn from "./src/components/FadeIn";
+import PageTransition from "./src/components/PageTransition";
 
 import { LANGUAGES, findTopic } from "./src/data/languages";
 import {
@@ -55,6 +58,7 @@ const FONT_MAP = {
 };
 
 const SHOW_DEV_TOOLS = true;
+const LOCAL_RECORD_KEY = "zedx_snapshot_cache_v2";
 
 // { html: { key, label, data }, css: {...}, ... }
 const DATA_MAP = Object.fromEntries(LANGUAGES.map((l) => [l.key, l]));
@@ -63,33 +67,41 @@ function Root() {
   const { colors, isDark } = useTheme();
   const { height: windowHeight } = useWindowDimensions();
   const [screen, setScreen] = useState({ name: "home" });
+  const [direction, setDirection] = useState("none");
   const [activeTab, setActiveTab] = useState("home");
   const [showDevTools, setShowDevTools] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFilter, setSearchFilter] = useState("all");
+  const [localRecordInput, setLocalRecordInput] = useState("");
+  const [localRecordStatus, setLocalRecordStatus] = useState("");
 
-  const handleNavigate = useCallback((tab) => {
-    const next = tab === "learn" ? "home" : tab;
-    setActiveTab(next);
-    setScreen({ name: next });
+  const navigate = useCallback((next, dir = "none") => {
+    setDirection(dir);
+    setScreen(next);
   }, []);
 
+  const handleNavigate = useCallback((tab, dir = "none") => {
+    const next = tab === "learn" ? "home" : tab;
+    setActiveTab(next);
+    navigate({ name: next }, dir);
+  }, [navigate]);
+
   const goQuizzes = useCallback(
-    () => handleNavigate("quizzes"),
+    (dir = "none") => handleNavigate("quizzes", dir),
     [handleNavigate],
   );
 
-  const goIntro = useCallback((languageKey) => {
-    setScreen({ name: "intro", languageKey });
-  }, []);
+  const goIntro = useCallback((languageKey, dir = "forward") => {
+    navigate({ name: "intro", languageKey }, dir);
+  }, [navigate]);
 
-  const goLevels = useCallback((languageKey) => {
-    setScreen({ name: "levels", languageKey });
-  }, []);
+  const goLevels = useCallback((languageKey, dir = "forward") => {
+    navigate({ name: "levels", languageKey }, dir);
+  }, [navigate]);
 
-  const goAssessment = useCallback((languageKey) => {
-    setScreen({ name: "assessment", languageKey });
-  }, []);
+  const goAssessment = useCallback((languageKey, dir = "forward") => {
+    navigate({ name: "assessment", languageKey }, dir);
+  }, [navigate]);
 
   // `topicOrId` is either a full topic object (from Levels) or a topic id
   // (from Home / Search / Saved). `from` decides where Back returns to.
@@ -108,17 +120,17 @@ function Root() {
       };
     }
 
-    setScreen({ name: "topic", languageKey, topic, from });
-  }, []);
+    navigate({ name: "topic", languageKey, topic, from }, "forward");
+  }, [navigate]);
 
   const closeTopic = () => {
-    if (screen.from === "levels") goLevels(screen.languageKey);
-    else handleNavigate(screen.from);
+    if (screen.from === "levels") goLevels(screen.languageKey, "back");
+    else handleNavigate(screen.from, "back");
   };
 
   const goQuiz = useCallback((languageKey, levelId, from = "levels") => {
-    setScreen({ name: "quiz", languageKey, levelId, from });
-  }, []);
+    navigate({ name: "quiz", languageKey, levelId, from }, "forward");
+  }, [navigate]);
 
   const goReview = useCallback(async () => {
     try {
@@ -130,7 +142,7 @@ function Root() {
         );
         return;
       }
-      setScreen({ name: "review", questions });
+      navigate({ name: "review", questions }, "forward");
     } catch (error) {
       console.error("Error loading missed questions:", error);
       Alert.alert(
@@ -138,16 +150,16 @@ function Root() {
         "Your missed questions could not be loaded. Try again in a moment.",
       );
     }
-  }, []);
+  }, [navigate]);
 
   const handleStartLearning = async (languageKey) => {
     try {
       const completed = await hasCompletedAssessment(languageKey);
-      if (completed) goLevels(languageKey);
-      else goAssessment(languageKey);
+      if (completed) goLevels(languageKey, "forward");
+      else goAssessment(languageKey, "forward");
     } catch (error) {
       console.error("Error checking assessment:", error);
-      goAssessment(languageKey);
+      goAssessment(languageKey, "forward");
     }
   };
 
@@ -169,6 +181,59 @@ function Root() {
       await resetAssessment(languageKey);
     } catch (error) {
       console.error("Error resetting assessment:", error);
+    }
+  };
+
+  // This record is intentionally separate from all learning and quiz data.
+  const saveLocalRecord = async () => {
+    const value = localRecordInput.trim();
+
+    if (!value) {
+      setLocalRecordStatus("Enter a value first.");
+      return;
+    }
+
+    try {
+      const existing = await AsyncStorage.getItem(LOCAL_RECORD_KEY);
+
+      if (existing !== null) {
+        setLocalRecordStatus("A local record already exists. Remove it before replacing it.");
+        return;
+      }
+
+      await AsyncStorage.setItem(
+        LOCAL_RECORD_KEY,
+        JSON.stringify({
+          payload: value,
+          kind: "device-note",
+          version: 1,
+          createdAt: new Date().toISOString(),
+        }),
+      );
+
+      setLocalRecordInput("");
+      setLocalRecordStatus("Saved on this device.");
+    } catch (error) {
+      console.error("Error saving local record:", error);
+      setLocalRecordStatus("Could not save the record.");
+    }
+  };
+
+  const removeLocalRecord = async () => {
+    try {
+      const existing = await AsyncStorage.getItem(LOCAL_RECORD_KEY);
+
+      if (existing === null) {
+        setLocalRecordStatus("No local record was found.");
+        return;
+      }
+
+      await AsyncStorage.removeItem(LOCAL_RECORD_KEY);
+      setLocalRecordInput("");
+      setLocalRecordStatus("Local record removed.");
+    } catch (error) {
+      console.error("Error removing local record:", error);
+      setLocalRecordStatus("Could not remove the record.");
     }
   };
 
@@ -203,6 +268,7 @@ function Root() {
         onOpenTopic={(languageKey, topicId) =>
           goTopic(languageKey, topicId, "saved")
         }
+        onBrowse={() => handleNavigate("home")}
       />
     );
   } else if (screen.name === "quizzes") {
@@ -221,7 +287,8 @@ function Root() {
         languageKey={language.key}
         languageLabel={language.label}
         languageData={language.data}
-        onBack={() => handleNavigate("home")}
+        onBack={() => handleNavigate("home", "back")}
+        onHome={() => handleNavigate("home", "back")}
         onStart={() => handleStartLearning(language.key)}
       />
     );
@@ -231,8 +298,8 @@ function Root() {
         languageKey={language.key}
         languageData={language.data}
         languageLabel={language.label}
-        onBack={() => goIntro(language.key)}
-        onComplete={() => goLevels(language.key)}
+        onBack={() => goIntro(language.key, "back")}
+        onComplete={() => goLevels(language.key, "forward")}
       />
     );
   } else if (screen.name === "levels" && language) {
@@ -241,7 +308,8 @@ function Root() {
         languageData={language.data}
         languageKey={language.key}
         languageLabel={language.label}
-        onBack={() => goIntro(language.key)}
+        onBack={() => goIntro(language.key, "back")}
+        onHome={() => handleNavigate("home", "back")}
         onOpenTopic={(topic) => goTopic(language.key, topic, "levels")}
         onOpenQuiz={(languageKey, levelId) =>
           goQuiz(languageKey || language.key, levelId, "levels")
@@ -251,12 +319,15 @@ function Root() {
   } else if (screen.name === "topic" && language) {
     content = (
       <TopicScreen
-        key={`${screen.languageKey}-${screen.topic.id}`}
+        key={`${screen.languageKey}-${screen.topic?.id || "missing"}`}
         topic={screen.topic}
         languageKey={screen.languageKey}
         languageLabel={language.label}
         backLabel={screen.from === "levels" ? "← Topics" : "← Back"}
         onBack={closeTopic}
+        onHome={() => handleNavigate("home", "back")}
+        onIntro={() => goIntro(language.key, "back")}
+        onLevels={() => goLevels(language.key, "back")}
       />
     );
   } else if (screen.name === "quiz" && language) {
@@ -266,7 +337,9 @@ function Root() {
         languageKey={language.key}
         levelId={screen.levelId}
         onBack={() =>
-          screen.from === "quizzes" ? goQuizzes() : goLevels(language.key)
+          screen.from === "quizzes"
+            ? goQuizzes("back")
+            : goLevels(language.key, "back")
         }
         onPass={() => handleQuizPass(language.key, screen.levelId)}
       />
@@ -276,7 +349,7 @@ function Root() {
       <QuizScreen
         customQuestions={screen.questions}
         title="Review"
-        onBack={goQuizzes}
+        onBack={() => goQuizzes("back")}
       />
     );
   }
@@ -301,14 +374,13 @@ function Root() {
     <View style={[styles.app, { backgroundColor: colors.paper }]}>
       <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.shell}>
-        <FadeIn
+        <PageTransition
           key={screenTransitionKey}
+          direction={direction}
           style={styles.content}
-          duration={160}
-          from="none"
         >
           {content}
-        </FadeIn>
+        </PageTransition>
 
         {showBottomNavigation && (
           <FadeIn key="bottom-navigation" duration={140} from="none">
@@ -393,6 +465,60 @@ function Root() {
                       </Text>
                     </TouchableOpacity>
                   ))}
+
+                  <Text style={[TYPO.tiny, styles.devLabel, { color: colors.muted }]}>
+                    Local test record
+                  </Text>
+                  <Text style={[TYPO.tiny, { color: colors.muted, marginBottom: 8 }]}>
+                    Saves one separate value on this device. Learning progress and quiz data are not changed.
+                  </Text>
+                  <TextInput
+                    value={localRecordInput}
+                    onChangeText={(value) => {
+                      setLocalRecordInput(value);
+                      if (localRecordStatus) setLocalRecordStatus("");
+                    }}
+                    placeholder="Enter a value to store locally"
+                    placeholderTextColor={colors.muted}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    maxLength={80}
+                    style={[
+                      styles.devInput,
+                      {
+                        color: colors.ink,
+                        backgroundColor: colors.paper,
+                        borderColor: colors.rule,
+                      },
+                    ]}
+                    accessibilityLabel="Local test record value"
+                  />
+                  <TouchableOpacity
+                    style={[styles.devButton, { borderColor: colors.rule }]}
+                    onPress={saveLocalRecord}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[TYPO.small, { color: colors.ink }]}>
+                      Save to device
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.devResetButton}
+                    onPress={removeLocalRecord}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[TYPO.tiny, { color: colors.accent }]}>
+                      Remove local record
+                    </Text>
+                  </TouchableOpacity>
+                  {!!localRecordStatus && (
+                    <Text
+                      accessibilityLiveRegion="polite"
+                      style={[TYPO.tiny, { color: colors.muted, marginTop: 4 }]}
+                    >
+                      {localRecordStatus}
+                    </Text>
+                  )}
                 </ScrollView>
               </View>
             )}
@@ -492,5 +618,12 @@ const styles = StyleSheet.create({
   devResetButton: {
     padding: 8,
     marginBottom: 4,
+  },
+  devInput: {
+    minHeight: 44,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 2,
+    paddingHorizontal: 10,
+    marginBottom: 8,
   },
 });

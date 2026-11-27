@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import Breadcrumbs from "../components/Breadcrumbs";
 import Button from "../components/Button";
 import Screen from "../components/Screen";
 import TopBar from "../components/TopBar";
@@ -18,6 +19,7 @@ export default function LevelsScreen({
   languageKey,
   languageLabel,
   onBack,
+  onHome,
   onOpenTopic,
   onOpenQuiz,
 }) {
@@ -96,6 +98,7 @@ export default function LevelsScreen({
           leftLabel={`Back to ${languageName}`}
           right="Contents"
         />
+        <Breadcrumbs items={[{ label: "Home", onPress: onHome }, { label: languageName }]} />
         <View style={styles.stateWrap}>
           <Text style={[TYPO.small, { color: colors.muted }]}>
             Loading your progress…
@@ -114,6 +117,7 @@ export default function LevelsScreen({
           leftLabel={`Back to ${languageName}`}
           right="Contents"
         />
+        <Breadcrumbs items={[{ label: "Home", onPress: onHome }, { label: languageName }]} />
         <View style={styles.stateWrap}>
           <Text style={[TYPO.body, styles.stateText, { color: colors.body }]}>
             {error}
@@ -134,6 +138,7 @@ export default function LevelsScreen({
         leftLabel={`Back to ${languageName}`}
         right="Contents"
       />
+      <Breadcrumbs items={[{ label: "Home", onPress: onHome }, { label: languageName }]} />
 
       <ScrollView
         style={styles.scroll}
