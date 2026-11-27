@@ -72,7 +72,7 @@ export default function OptionRow({
   }));
 
   const letter = LETTERS[index] || String(index + 1);
-  const isSelected = selected || state === "selected";
+  const isSelected = selected || state === "selected" || state === "wrong";
   const letterColor =
     state === "idle" ? colors.muted : state === "correct" ? colors.ink : colors.accent;
   const labelColor = isSelected ? colors.accent : colors.ink;

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import AnswerFeedback from "../components/AnswerFeedback";
 import Breadcrumbs from "../components/Breadcrumbs";
 import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
@@ -116,21 +117,13 @@ function PracticeBlock({ topicId, languageKey }) {
       </View>
 
       {choice !== null ? (
-        <View style={[styles.feedback, { borderLeftColor: solved ? colors.ink : colors.accent }]}>
-          <Text
-            style={[
-              TYPO.label,
-              { color: solved ? colors.ink : colors.accent },
-            ]}
-          >
-            {solved ? "Correct" : "Not quite, try another"}
-          </Text>
-          {item.why ? (
-            <Text style={[TYPO.small, styles.feedbackText, { color: colors.body }]}>
-              {solved ? item.why : `Concept to remember: ${item.why}`}
-            </Text>
-          ) : null}
-        </View>
+        <FadeIn key={choice} from={solved ? "up" : "down"} duration={170}>
+          <AnswerFeedback
+            correct={solved}
+            explanation={item.why}
+            retryHint="That choice doesn't fit. Try another option."
+          />
+        </FadeIn>
       ) : null}
     </>
   );
@@ -709,12 +702,6 @@ const styles = StyleSheet.create({
   },
   practiceQ: { flex: 1 },
   options: { marginTop: 18 },
-  feedback: {
-    marginTop: 18,
-    paddingLeft: 12,
-    borderLeftWidth: 2,
-  },
-  feedbackText: { marginTop: 6 },
   confirm: {
     marginTop: 26,
     paddingVertical: 18,
