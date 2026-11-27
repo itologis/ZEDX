@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import PressableScale from "../components/PressableScale";
 
 import EmptyState from "../components/EmptyState";
 import Screen from "../components/Screen";
@@ -80,7 +81,7 @@ export default function SavedScreen({ onOpenTopic, onBrowse }) {
             <Text style={[TYPO.small, styles.stateText, { color: colors.body }]}>
               Saved topics could not be loaded.
             </Text>
-            <TouchableOpacity
+            <PressableScale
               accessibilityRole="button"
               onPress={load}
               style={styles.retry}
@@ -88,7 +89,7 @@ export default function SavedScreen({ onOpenTopic, onBrowse }) {
               <Text style={[TYPO.label, { color: colors.accent }]}>
                 Try again
               </Text>
-            </TouchableOpacity>
+            </PressableScale>
           </View>
         ) : null}
 
@@ -111,10 +112,9 @@ export default function SavedScreen({ onOpenTopic, onBrowse }) {
             {/* The remove action stays outside the row's pressable area: on
                 web, react-native-web renders role="button" as a real <button>,
                 and nesting one button inside another is invalid DOM. */}
-            <TouchableOpacity
+            <PressableScale
               accessibilityRole="button"
               onPress={() => onOpenTopic(item.languageKey, item.topic.id)}
-              activeOpacity={0.65}
               style={[styles.row, { borderBottomColor: colors.rule }]}
             >
               <View
@@ -137,9 +137,9 @@ export default function SavedScreen({ onOpenTopic, onBrowse }) {
                   {item.topic.description}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </PressableScale>
 
-            <TouchableOpacity
+            <PressableScale
               accessibilityRole="button"
               accessibilityLabel={`Remove ${item.topic.title} from saved`}
               accessibilityState={{ disabled: busyId === item.topic.id }}
@@ -148,7 +148,7 @@ export default function SavedScreen({ onOpenTopic, onBrowse }) {
               style={styles.remove}
             >
               <Text style={[TYPO.label, { color: colors.accent }]}>Remove</Text>
-            </TouchableOpacity>
+            </PressableScale>
           </View>
         ))}
       </ScrollView>

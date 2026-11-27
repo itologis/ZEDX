@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import PressableScale from "./PressableScale";
 
 import { TYPO, useTheme } from "../theme";
 
@@ -27,16 +28,15 @@ export default function TopBar({
       <View style={styles.left}>
         {left ? (
           onLeft ? (
-            <TouchableOpacity
+            <PressableScale
               accessibilityRole="button"
               accessibilityLabel={leftLabel}
               onPress={onLeft}
-              activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
               style={styles.tap}
             >
               <Text style={[TYPO.label, { color: colors.ink }]}>{left}</Text>
-            </TouchableOpacity>
+            </PressableScale>
           ) : (
             <Text style={[TYPO.label, { color: colors.ink }]}>{left}</Text>
           )

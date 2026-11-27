@@ -120,57 +120,73 @@ console.log(total);`,
 
   js3: [
     {
-      title: "Primitive types",
+      title: "Strings, numbers, and booleans",
       body: [
-        `The primitives are [[string]], [[number]], [[boolean]], [[bigint]], [[symbol]], [[undefined]], and [[null]]. Everything else is an object.`,
-        `[[typeof]] returns a string describing the type — with one famous exception.`,
+        `A [[string]] stores text, a [[number]] stores numeric values, and a [[boolean]] stores either [[true]] or [[false]]. JavaScript uses one number type for whole and decimal values.`,
+        `Use [[typeof]] to inspect a value while learning or debugging. The result is a string such as "string", "number", or "boolean".`,
       ],
       example: {
-        code: `console.log(typeof "Ada");
-console.log(typeof 42);`,
-        caption: `"string" and "number".`,
-      },
-      wrong: {
-        code: `console.log(typeof null);`,
-        why: `This prints "object" because of a bug preserved from the first version of JavaScript. Test null with [[value === null]].`,
-      },
-    },
-    {
-      title: "Objects and references",
-      body: [
-        `An object holds properties. Assigning an object to another variable copies the reference, not the contents.`,
-        `[[===]] compares references for objects, so two identical-looking objects are different values.`,
-      ],
-      example: {
-        code: `const a = { name: "Ada" };
-const b = a;
+        code: `const name = "Ada";
+const score = 42;
+const isReady = true;
 
-b.name = "Grace";
-console.log(a.name);`,
-        caption: `a and b point at the same object.`,
+console.log(typeof name);
+console.log(typeof score);
+console.log(typeof isReady);`,
+        caption: `The console reports string, number, and boolean.`,
       },
       wrong: {
-        code: `const a = { id: 1 };
-const b = { id: 1 };
-console.log(a === b);`,
-        why: `Two separate objects are never === even with the same properties; this prints false. Compare their fields instead.`,
+        code: `const score = "42";
+console.log(score + 1);`,
+        why: `The quotes make 42 text, not a number, so + joins the values and produces "421". Remove the quotes or convert the input with [[Number()]].`,
       },
     },
     {
-      title: "Coercion and NaN",
+      title: "null and undefined",
       body: [
-        `[[+]] concatenates when either side is a string. Other operators convert strings to numbers.`,
-        `[[Number()]] and [[parseInt()]] convert explicitly. [[NaN]] means "not a number" and is not equal to itself.`,
+        `[[undefined]] often means a value has not been assigned. [[null]] is a value you can set deliberately to represent "nothing here yet". They both describe an absent value, but they are not the same.`,
+        `One historical JavaScript quirk is that [[typeof null]] returns "object". To test for null, compare the value directly with [[=== null]].`,
       ],
       example: {
-        code: `const input = "5";
-console.log(Number(input) + 1);`,
-        caption: `Convert before doing arithmetic.`,
+        code: `let searchResult;
+const selectedUser = null;
+
+console.log(searchResult);
+console.log(selectedUser);
+console.log(selectedUser === null);`,
+        caption: `The first value is undefined; the second is explicitly null.`,
       },
       wrong: {
-        code: `const input = "5";
-console.log(input + 1);`,
-        why: `The plus sees a string and joins, giving "51". Use Number(input) or [[input - 0]].`,
+        code: `const selectedUser = null;
+
+if (typeof selectedUser === "null") {
+    console.log("No user selected");
+}`,
+        why: `typeof null returns "object", not "null", so this condition never passes. Compare directly with [[selectedUser === null]].`,
+      },
+    },
+    {
+      title: "Converting values and checking NaN",
+      body: [
+        `Input often arrives as text. [[Number()]] can convert numeric text before a calculation, while [[String()]] converts a value into text for display.`,
+        `A failed numeric conversion can produce [[NaN]], which is still a number value but does not represent a usable numeric result. Check it with [[Number.isNaN()]], not [[=== NaN]].`,
+      ],
+      example: {
+        code: `const rawQuantity = "3";
+const quantity = Number(rawQuantity);
+const total = quantity * 4;
+
+console.log(total);
+console.log(Number.isNaN(quantity));`,
+        caption: `The text "3" becomes the number 3, so the total is 12.`,
+      },
+      wrong: {
+        code: `const quantity = Number("three");
+
+if (quantity === NaN) {
+    console.log("Enter a number");
+}`,
+        why: `NaN is not equal to itself, so [[quantity === NaN]] is always false. Use [[Number.isNaN(quantity)]].`,
       },
     },
   ],
@@ -184,6 +200,7 @@ console.log(input + 1);`,
       ],
       example: {
         code: `const score = 72;
+let grade;
 
 if (score >= 90) {
     grade = "A";
@@ -191,15 +208,19 @@ if (score >= 90) {
     grade = "B";
 } else {
     grade = "C";
-}`,
-        caption: `One branch runs.`,
+}
+
+console.log(grade);`,
+        caption: `grade is declared before the branches. With a score of 72, the program prints B.`,
       },
       wrong: {
         code: `let score = 72;
+let grade;
+
 if (score = 90) {
     grade = "A";
 }`,
-        why: `A single [[=]] assigns 90 and returns it, which is truthy. The branch runs regardless of the intended comparison.`,
+        why: `The assignment changes score to 90 and the expression evaluates to 90, which is truthy. The branch runs even though the original score was 72. Use [[===]] when comparing values.`,
       },
     },
     {

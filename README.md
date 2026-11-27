@@ -9,7 +9,7 @@ Built with Expo (SDK 58) and React Native. Runs on Android, iOS, and web.
 ## What's inside
 
 - **108 topics** across the seven languages.
-- **Lessons** — every topic is a short chapter with three steps: the syntax, a working example, and the broken version that shows what goes wrong.
+- **Lessons** — every topic is a short chapter with three steps: the syntax, a working example, and the broken version that shows what goes wrong. All 35 Beginner topics now include guided goals, plain-language explanations, worked examples, and quick understanding checks.
 - **Practice** — one fill-in-the-blank exercise per topic, with an explanation.
 - **Quizzes** — per language and per level, four options per question, with a passing score.
 - **Initial assessment** — a starting test to see where a student is.
@@ -35,10 +35,11 @@ npm run android    # or: npm run ios / npm run web
 
 - `App.js` — app shell, navigation, and the Home dev-tools panel (`SHOW_DEV_TOOLS`).
 - `src/screens/` — one file per screen.
-- `src/components/` — shared UI pieces: `TopBar`, `Screen`, `BottomNav`, `FadeIn`, `SectionHead`, `FieldLabel`, `Rule`, `CodePlate`, `OptionRow`, `Button`, `IndexRow`, `ContinueStrip`, `ThemeToggle`.
+- `src/components/` — shared UI pieces: `TopBar`, `Screen`, `BottomNav`, `FadeIn`, `SectionHead`, `FieldLabel`, `Rule`, `CodePlate`, `OptionRow`, `Button`, `PressableScale`, `IndexRow`, `ContinueStrip`, `ThemeToggle`.
 - `src/theme.js` — light and dark palettes, IBM Plex type scale, spacing, and the 7px language swatches. The chosen theme is saved with AsyncStorage (`zedx_theme`).
 - `src/data/<language>.js` — the topics for each language. Every language has three levels, and every level has topics with an `id`, `title`, `syntax`, and `description`.
 - `src/data/lessons/<language>.js` — the chapter content for each topic, keyed by topic id. Every chapter has three steps (`title`, `body`, `example`, `wrong`, `gotcha`).
+- `src/data/lessonGuides*.js` — guided teaching notes for Beginner lessons: learning goals, explanations, worked walkthroughs, and comprehension checks.
 - `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
 - `src/data/quiz.js` — the per-language, per-level quizzes and the question pool the assessment draws from.
 - `src/data/languages.js` — the list of languages the screens read from. Topics are picked up automatically, so adding a topic needs no screen changes.
@@ -53,10 +54,15 @@ npm run android    # or: npm run ios / npm run web
 | `npm run android` / `npm run ios` / `npm run web` | Start on a specific platform |
 | `npm run lint` | ESLint via `expo lint` |
 | `npm run check:content` | Check that the content is complete and the progress flows work |
+| `npm run check:answers` | Check correct/wrong feedback wiring, retry resets, and assessment answer visibility |
 
 ## Design
 
-Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur. Motion is spring-based and typographic: pages set, lines rise, rules draw. A compact running head on Intro, Levels, and Topic keeps the hierarchy visible.
+Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur. Motion is spring-based and typographic: pages set, lines rise, rules draw. Shared press-scale feedback keeps navigation, topic rows, lesson tabs, and saved-topic actions responsive without stacking extra effects on answer choices or buttons. A compact running head on Intro, Levels, and Topic keeps the hierarchy visible.
+
+## License
+
+ZEDX is distributed under the [MIT License](LICENSE). You may use, modify, and redistribute the project, provided the copyright and license notice is retained in redistributed copies. Third-party libraries, fonts, and assets remain subject to their own licenses.
 
 ## Notes
 

@@ -237,7 +237,7 @@ VALUES ('Ada', NULL);`,
       title: "UPDATE",
       body: [
         `[[UPDATE table SET column = value]] changes matching rows. [[WHERE]] decides which rows.`,
-        `Without WHERE, every row in the table is changed. Write the WHERE clause before the SET.`,
+        `Without WHERE, every row in the table is changed. SQL places SET first and WHERE afterwards; keep the condition in that final clause to limit which rows change.`,
       ],
       example: {
         code: `UPDATE users

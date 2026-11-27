@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import PressableScale from "./PressableScale";
 
 import { TYPO, useTheme } from "../theme";
 
@@ -8,12 +9,11 @@ export default function ThemeToggle() {
   const next = scheme === "dark" ? "light" : "dark";
 
   return (
-    <TouchableOpacity
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={`Switch to ${next} theme`}
       accessibilityState={{ selected: scheme === "light" }}
       onPress={toggle}
-      activeOpacity={0.7}
       hitSlop={{ top: 12, bottom: 12, left: 10, right: 10 }}
       style={styles.row}
     >
@@ -36,7 +36,7 @@ export default function ThemeToggle() {
           </View>
         );
       })}
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 

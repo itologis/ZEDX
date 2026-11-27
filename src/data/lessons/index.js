@@ -7,6 +7,7 @@ import python from "./python";
 import sql from "./sql";
 import { LESSON_GUIDES as INTRO_LESSON_GUIDES } from "../lessonGuides";
 import { FOUNDATION_LESSON_GUIDES } from "../lessonGuidesFoundations";
+import { BEGINNER_REMAINDER_GUIDES } from "../lessonGuidesBeginnerRemainder";
 
 // One file per language, keyed by topic id. A language listed here must cover
 // every one of its topics — the content check enforces it.
@@ -18,6 +19,7 @@ export const LESSON_GUIDES = Object.fromEntries(
     {
       ...INTRO_LESSON_GUIDES[languageKey],
       ...FOUNDATION_LESSON_GUIDES[languageKey],
+      ...BEGINNER_REMAINDER_GUIDES[languageKey],
     },
   ]),
 );

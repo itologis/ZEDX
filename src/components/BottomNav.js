@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import PressableScale from "./PressableScale";
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
@@ -80,11 +81,10 @@ export default function BottomNav({ active, onNavigate }) {
         const on = tab.key === active;
 
         return (
-          <TouchableOpacity
+          <PressableScale
             key={tab.key}
             style={styles.item}
             onPress={() => !on && onNavigate(tab.key)}
-            activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityState={{ selected: on }}
             accessibilityLabel={tab.label}
@@ -97,7 +97,7 @@ export default function BottomNav({ active, onNavigate }) {
             >
               {tab.label}
             </Text>
-          </TouchableOpacity>
+          </PressableScale>
         );
       })}
 

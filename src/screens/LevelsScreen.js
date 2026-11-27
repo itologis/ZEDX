@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import PressableScale from "../components/PressableScale";
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
@@ -252,7 +253,7 @@ export default function LevelsScreen({
               const isActive = level.level === activeLevel;
 
               return (
-                <TouchableOpacity
+                <PressableScale
                   key={level.level}
                   style={[
                     styles.levelTab,
@@ -267,7 +268,6 @@ export default function LevelsScreen({
                     );
                     setActiveLevel(level.level);
                   }}
-                  activeOpacity={0.7}
                   accessibilityRole="button"
                   accessibilityLabel={level.label + ", " + completedCount + " of " + topics.length + " topics completed"}
                   accessibilityState={{ selected: isActive }}
@@ -294,7 +294,7 @@ export default function LevelsScreen({
                   >
                     {level.label}
                   </Text>
-                </TouchableOpacity>
+                </PressableScale>
               );
             })}
             <Animated.View
@@ -346,14 +346,13 @@ export default function LevelsScreen({
                 const isCompleted = activeCompletedTopics.includes(topic.id);
 
                 return (
-                  <TouchableOpacity
+                  <PressableScale
                     key={topic.id}
                     style={[
                       styles.topicRow,
                       { borderBottomColor: colors.rule },
                     ]}
                     onPress={() => handleTopicPress(activeLevelData, topic)}
-                    activeOpacity={0.65}
                     accessibilityRole="button"
                     accessibilityLabel={topic.title + (isCompleted ? ", completed" : "")}
                   >
@@ -399,16 +398,15 @@ export default function LevelsScreen({
                     >
                       {isCompleted ? "✓" : "→"}
                     </Text>
-                  </TouchableOpacity>
+                  </PressableScale>
                 );
               })}
 
               {onOpenQuiz && activeQuiz ? (
-                <TouchableOpacity
+                <PressableScale
                   accessibilityRole="button"
                   style={styles.quizRow}
                   onPress={() => onOpenQuiz(languageKey, activeLevelData.level)}
-                  activeOpacity={0.65}
                 >
                   <View style={styles.quizBody}>
                     <Text
@@ -437,7 +435,7 @@ export default function LevelsScreen({
                     </Text>
                   </View>
                   <Text style={[TYPO.label, { color: colors.accent }]}>→</Text>
-                </TouchableOpacity>
+                </PressableScale>
               ) : null}
             </FadeIn>
           ) : null}

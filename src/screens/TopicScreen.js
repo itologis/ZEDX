@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import PressableScale from "../components/PressableScale";
 
 import AnswerFeedback from "../components/AnswerFeedback";
 import Breadcrumbs from "../components/Breadcrumbs";
@@ -272,7 +273,7 @@ export default function TopicScreen({
         onLeft={onBack}
         leftLabel="Go back"
         right={
-          <TouchableOpacity
+          <PressableScale
             accessibilityRole="button"
             accessibilityLabel={
               bookmarked ? "Remove saved topic" : "Save topic"
@@ -280,7 +281,6 @@ export default function TopicScreen({
             accessibilityState={{ selected: bookmarked, disabled: bookmarkBusy }}
             onPress={handleBookmark}
             disabled={bookmarkBusy}
-            activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             style={styles.saveTap}
           >
@@ -292,7 +292,7 @@ export default function TopicScreen({
             >
               {bookmarked ? "★ Saved" : "Save"}
             </Text>
-          </TouchableOpacity>
+          </PressableScale>
         }
       />
       <Breadcrumbs
@@ -346,13 +346,12 @@ export default function TopicScreen({
                 const active = index === lessonIndex;
 
                 return (
-                  <TouchableOpacity
+                  <PressableScale
                     key={item.title}
                     accessibilityRole="button"
                     accessibilityLabel={`Lesson ${index + 1} of ${lessons.length}: ${item.title}`}
                     accessibilityState={{ selected: active }}
                     onPress={() => goToLesson(index)}
-                    activeOpacity={0.7}
                     style={styles.lessonTab}
                   >
                     <Text
@@ -371,7 +370,7 @@ export default function TopicScreen({
                         ]}
                       />
                     ) : null}
-                  </TouchableOpacity>
+                  </PressableScale>
                 );
               })}
             </View>

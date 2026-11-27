@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import PressableScale from "./PressableScale";
 
 import { TYPO, useTheme } from "../theme";
 
@@ -29,7 +30,7 @@ export default function Breadcrumbs({ items = [], style }) {
             ) : null}
 
             {typeof item.onPress === "function" ? (
-              <TouchableOpacity
+              <PressableScale
                 accessibilityRole="link"
                 accessibilityLabel={item.label}
                 onPress={item.onPress}
@@ -43,7 +44,7 @@ export default function Breadcrumbs({ items = [], style }) {
                 >
                   {item.label}
                 </Text>
-              </TouchableOpacity>
+              </PressableScale>
             ) : (
               <Text
                 numberOfLines={1}
