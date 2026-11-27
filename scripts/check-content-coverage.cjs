@@ -36,8 +36,7 @@ require.cache[asyncStoragePath] = {
 };
 
 const { LANGUAGES } = require("../src/data/languages");
-const { LESSONS, getLessons } = require("../src/data/lessons");
-const { LESSON_GUIDES } = require("../src/data/lessonGuides");
+const { LESSONS, LESSON_GUIDES, getLessons } = require("../src/data/lessons");
 const { PRACTICE } = require("../src/data/practice");
 const { getAllQuestions, QUIZZES } = require("../src/data/quiz");
 const { parseInlineCode } = require("../src/utils/inlineCode");
@@ -260,6 +259,8 @@ async function checkContentCoverage() {
   const expectedGuidedTopics = [
     ["html", "h1"], ["css", "c1"], ["java", "j1"],
     ["python", "p1"], ["javascript", "js1"], ["php", "php1"], ["sql", "sql1"],
+    ["html", "h2"], ["css", "c2"], ["java", "j2"],
+    ["python", "p2"], ["javascript", "js2"], ["php", "php2"], ["sql", "sql2"],
   ];
   for (const [languageKey, topicId] of expectedGuidedTopics) {
     assert.equal(
@@ -273,7 +274,7 @@ async function checkContentCoverage() {
       `${languageKey}/${topicId} guide metadata must reach the lesson screen`,
     );
   }
-  assert.equal(guidedLessonCount, 21, "All 21 introductory lessons must include guided teaching content");
+  assert.equal(guidedLessonCount, 42, "All lessons in the first two beginner topics must include guided teaching content");
 
   for (const topicId of Object.keys(PRACTICE)) {
     assert.ok(

@@ -26,4 +26,6 @@ ZEDX is a learning app, not a glossary. A lesson is only useful when a learner c
 
 ## Current rollout
 
-The first topic in each of the seven language tracks is the initial guided-content pilot. Those 21 lessons use the structured `goal`, `body`, `walkthrough`, and `check` fields in `src/data/lessonGuides.js`. The content coverage script enforces that structure for the pilot. Remaining topics still need to be rewritten to this standard; do not mark a topic as fully upgraded until its lessons have guided examples and checks too.
+The first two Beginner topics in each of the seven language tracks now have guided teaching content: 14 topics and 42 lessons. The first-topic guides live in `src/data/lessonGuides.js`; the next-topic guides live in `src/data/lessonGuidesFoundations.js`. Both are merged by `src/data/lessons/index.js`, and the content coverage script checks their goals, explanations, walkthroughs, and comprehension checks. The remaining 94 topics still need to be rewritten to this standard. That includes the other 21 Beginner topics and all Intermediate and Advanced topics. Do not mark a topic as fully upgraded until all its lessons have guided examples and checks too.
+
+The language contents screen uses level tabs. Only the selected level's topic list is shown, while the other levels stay collapsed behind their tabs. Each tab shows its completion count, and a completed placement assessment opens the recommended starting level.
