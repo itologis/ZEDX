@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import AnswerFeedback from "./AnswerFeedback";
 import FadeIn from "./FadeIn";
 import FieldLabel from "./FieldLabel";
 import OptionRow from "./OptionRow";
@@ -44,29 +45,11 @@ export default function LessonCheck({ check }) {
       </View>
       {hasAnswered ? (
         <FadeIn key={selected} from={isCorrect ? "up" : "down"} duration={170}>
-          <View
-            style={[
-              styles.feedback,
-              { borderLeftColor: isCorrect ? colors.ink : colors.accent },
-            ]}
-          >
-            <Text
-              style={[
-                TYPO.label,
-                { color: isCorrect ? colors.ink : colors.accent },
-              ]}
-            >
-              {isCorrect ? "You got it" : "Not quite yet"}
-            </Text>
-            <Text style={[TYPO.small, styles.explanation, { color: colors.body }]}>
-              {check.explanation}
-            </Text>
-            {!isCorrect ? (
-              <Text style={[TYPO.tiny, styles.retry, { color: colors.muted }]}>
-                The correct choice is marked. Try selecting it to lock in the idea.
-              </Text>
-            ) : null}
-          </View>
+          <AnswerFeedback
+            correct={isCorrect}
+            explanation={check.explanation}
+            retryHint="The correct choice is marked. Try selecting it to lock in the idea."
+          />
         </FadeIn>
       ) : null}
     </View>
@@ -79,12 +62,4 @@ const styles = StyleSheet.create({
   question: { marginTop: 10, lineHeight: 25 },
   instruction: { marginTop: 6 },
   options: { marginTop: 8 },
-  feedback: {
-    marginTop: 16,
-    paddingLeft: 12,
-    paddingVertical: 10,
-    borderLeftWidth: 2,
-  },
-  explanation: { marginTop: 6, lineHeight: 21 },
-  retry: { marginTop: 8, lineHeight: 18 },
 });

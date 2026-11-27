@@ -1,10 +1,13 @@
+import { useEffect } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import Animated, {
   ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 import { SPRING } from "../motion";
@@ -22,10 +25,52 @@ export default function OptionRow({
   disabled = false,
 }) {
   const { colors } = useTheme();
-  const scale = useSharedValue(1);
+  const pressScale = useSharedValue(1);
+  const wobbleScale = useSharedValue(1);
+  const shakeX = useSharedValue(0);
+  const tilt = useSharedValue(0);
+
+  useEffect(() => {
+    const motion = { reduceMotion: ReduceMotion.System };
+
+    if (state === "wrong") {
+      // Give a wrong choice a quick, exaggerated wobble without lingering.
+      shakeX.value = withSequence(
+        withTiming(-11, { duration: 55, ...motion }),
+        withTiming(11, { duration: 70, ...motion }),
+        withTiming(-8, { duration: 60, ...motion }),
+        withTiming(8, { duration: 55, ...motion }),
+        withTiming(-3, { duration: 45, ...motion }),
+        withSpring(0, { ...SPRING.settle, ...motion }),
+      );
+      tilt.value = withSequence(
+        withTiming(-2.8, { duration: 55, ...motion }),
+        withTiming(2.8, { duration: 70, ...motion }),
+        withTiming(-1.8, { duration: 60, ...motion }),
+        withTiming(1.2, { duration: 55, ...motion }),
+        withSpring(0, { damping: 8, stiffness: 340, ...motion }),
+      );
+      wobbleScale.value = withSequence(
+        withTiming(1.035, { duration: 70, ...motion }),
+        withTiming(0.985, { duration: 65, ...motion }),
+        withSpring(1, { ...SPRING.settle, ...motion }),
+      );
+      return;
+    }
+
+    shakeX.value = withSpring(0, { ...SPRING.settle, ...motion });
+    tilt.value = withSpring(0, { ...SPRING.settle, ...motion });
+    wobbleScale.value = withSpring(1, { ...SPRING.settle, ...motion });
+  }, [shakeX, state, tilt, wobbleScale]);
+
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [
+      { translateX: shakeX.value },
+      { rotate: `${tilt.value}deg` },
+      { scale: pressScale.value * wobbleScale.value },
+    ],
   }));
+
   const letter = LETTERS[index] || String(index + 1);
   const isSelected = selected || state === "selected";
   const letterColor =
@@ -34,8 +79,7 @@ export default function OptionRow({
 
   const pressIn = () => {
     // Reanimated shared values are intentionally updated from press callbacks.
-    // eslint-disable-next-line react-hooks/immutability
-    scale.value = withSpring(1.01, {
+    pressScale.value = withSpring(1.01, {
       ...SPRING.press,
       reduceMotion: ReduceMotion.System,
     });
@@ -43,8 +87,7 @@ export default function OptionRow({
 
   const pressOut = () => {
     // Reanimated shared values are intentionally updated from press callbacks.
-    // eslint-disable-next-line react-hooks/immutability
-    scale.value = withSpring(1, {
+    pressScale.value = withSpring(1, {
       ...SPRING.press,
       reduceMotion: ReduceMotion.System,
     });
