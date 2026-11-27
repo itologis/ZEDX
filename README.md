@@ -35,7 +35,7 @@ npm run android    # or: npm run ios / npm run web
 
 - `App.js` — app shell, navigation, and the Home dev-tools panel (`SHOW_DEV_TOOLS`).
 - `src/screens/` — one file per screen.
-- `src/components/` — shared UI pieces: `TopBar`, `Screen`, `BottomNav`, `FadeIn`, `SectionHead`, `FieldLabel`, `Rule`, `CodePlate`, `OptionRow`, `Button`, `IndexRow`, `ContinueStrip`, `ThemeToggle`.
+- `src/components/` — shared UI pieces: `TopBar`, `Screen`, `BottomNav`, `FadeIn`, `SectionHead`, `FieldLabel`, `Rule`, `CodePlate`, `OptionRow`, `Button`, `PressableScale`, `IndexRow`, `ContinueStrip`, `ThemeToggle`.
 - `src/theme.js` — light and dark palettes, IBM Plex type scale, spacing, and the 7px language swatches. The chosen theme is saved with AsyncStorage (`zedx_theme`).
 - `src/data/<language>.js` — the topics for each language. Every language has three levels, and every level has topics with an `id`, `title`, `syntax`, and `description`.
 - `src/data/lessons/<language>.js` — the chapter content for each topic, keyed by topic id. Every chapter has three steps (`title`, `body`, `example`, `wrong`, `gotcha`).
@@ -56,7 +56,7 @@ npm run android    # or: npm run ios / npm run web
 
 ## Design
 
-Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur. Motion is spring-based and typographic: pages set, lines rise, rules draw. A compact running head on Intro, Levels, and Topic keeps the hierarchy visible.
+Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur. Motion is spring-based and typographic: pages set, lines rise, rules draw. Shared press-scale feedback keeps navigation, topic rows, lesson tabs, and saved-topic actions responsive without stacking extra effects on answer choices or buttons. A compact running head on Intro, Levels, and Topic keeps the hierarchy visible.
 
 ## Notes
 

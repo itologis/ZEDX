@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import PressableScale from "./PressableScale";
 
 import { FONTS, TYPO, useTheme } from "../theme";
 
@@ -7,11 +8,10 @@ export default function ContinueStrip({ title, meta, onPress, style }) {
   const { colors } = useTheme();
 
   return (
-    <TouchableOpacity
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={`Continue reading ${title}, ${meta}`}
       onPress={onPress}
-      activeOpacity={0.7}
       style={[
         styles.strip,
         {
@@ -33,7 +33,7 @@ export default function ContinueStrip({ title, meta, onPress, style }) {
         </Text>
       </View>
       <Text style={[styles.arrow, { color: colors.accent }]}>→</Text>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 

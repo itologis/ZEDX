@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import PressableScale from "./PressableScale";
 
 import { TYPO, useTheme } from "../theme";
 
@@ -16,11 +17,10 @@ export default function IndexRow({
   const unread = percent === 0;
 
   return (
-    <TouchableOpacity
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={`${name}, ${meta}, ${percent}% complete`}
       onPress={onPress}
-      activeOpacity={0.65}
       style={[styles.row, { borderBottomColor: colors.rule }, style]}
     >
       <View style={styles.top}>
@@ -55,7 +55,7 @@ export default function IndexRow({
           ]}
         />
       </View>
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
