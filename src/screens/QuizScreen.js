@@ -227,7 +227,7 @@ export default function QuizScreen({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <FadeIn key={current} from="none" duration={140}>
+        <FadeIn key={current} from={current % 2 === 0 ? "left" : "right"} duration={190}>
           {isReview ? (
             <Text style={[TYPO.label, { color: colors.accent }]}>
               {(question._lang || "").toUpperCase()} · {question._level}
@@ -265,7 +265,7 @@ export default function QuizScreen({
           </View>
 
           {answered ? (
-            <FadeIn from="none" duration={130}>
+            <FadeIn from={gotItRight ? "up" : "down"} duration={170}>
               <View
                 style={[
                   styles.explain,

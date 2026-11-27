@@ -4,6 +4,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import Breadcrumbs from "../components/Breadcrumbs";
 import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
+import FadeIn from "../components/FadeIn";
+import LessonCheck from "../components/LessonCheck";
 import CodePlate from "../components/CodePlate";
 import FieldLabel from "../components/FieldLabel";
 import OptionRow from "../components/OptionRow";
@@ -23,6 +25,7 @@ import {
   toggleBookmark,
 } from "../data/progress";
 import { shuffle } from "../data/quiz";
+import { DURATION, MAX_STAGGERED, STAGGER } from "../motion";
 import { FONTS, TYPO, useTheme } from "../theme";
 
 function PracticeBlock({ topicId, languageKey }) {
@@ -122,9 +125,9 @@ function PracticeBlock({ topicId, languageKey }) {
           >
             {solved ? "Correct" : "Not quite, try another"}
           </Text>
-          {solved && item.why ? (
+          {item.why ? (
             <Text style={[TYPO.small, styles.feedbackText, { color: colors.body }]}>
-              {item.why}
+              {solved ? item.why : `Concept to remember: ${item.why}`}
             </Text>
           ) : null}
         </View>
@@ -378,28 +381,89 @@ export default function TopicScreen({
               })}
             </View>
 
-            <Text
-              style={[TYPO.section, styles.lessonTitle, { color: colors.ink }]}
+            <FadeIn
+              key={`${lesson.title}-heading`}
+              from={lessonIndex % 2 === 0 ? "up" : "left"}
+              duration={DURATION.base}
             >
-              {lesson.title}
-            </Text>
+              <Text
+                style={[TYPO.section, styles.lessonTitle, { color: colors.ink }]}
+              >
+                {lesson.title}
+              </Text>
+            </FadeIn>
+
+            {lesson.goal ? (
+              <FadeIn
+                key={`${lesson.title}-goal`}
+                from="right"
+                delay={STAGGER}
+                duration={DURATION.base}
+              >
+                <View style={[styles.goal, { borderLeftColor: colors.ruleStrong }]}>
+                  <FieldLabel>What you will learn</FieldLabel>
+                  <RichText
+                    text={lesson.goal}
+                    style={[TYPO.small, styles.goalText, { color: colors.body }]}
+                  />
+                </View>
+              </FadeIn>
+            ) : null}
 
             {(Array.isArray(lesson.body) ? lesson.body : [lesson.body]).map(
               (paragraph, index) => (
-                <RichText
-                  key={index}
-                  text={paragraph}
-                  style={[
-                    TYPO.body,
-                    index === 0 ? styles.firstParagraph : styles.paragraph,
-                    { color: colors.body },
-                  ]}
-                />
+                <FadeIn
+                  key={`${lesson.title}-body-${index}`}
+                  from={index % 2 === 0 ? "up" : "left"}
+                  delay={Math.min(index, MAX_STAGGERED) * STAGGER}
+                  duration={190}
+                >
+                  <RichText
+                    text={paragraph}
+                    style={[
+                      TYPO.body,
+                      index === 0 ? styles.firstParagraph : styles.paragraph,
+                      { color: colors.body },
+                    ]}
+                  />
+                </FadeIn>
               ),
             )}
 
+            {lesson.walkthrough?.length ? (
+              <View style={styles.walkthrough}>
+                <FadeIn key={`${lesson.title}-walk-title`} from="left" delay={STAGGER}>
+                  <FieldLabel>Follow the example</FieldLabel>
+                </FadeIn>
+                {lesson.walkthrough.map((step, index) => (
+                  <FadeIn
+                    key={`${lesson.title}-step-${index}`}
+                    from={["up", "left", "scale"][index % 3]}
+                    delay={Math.min(index, MAX_STAGGERED) * STAGGER}
+                    duration={190}
+                  >
+                    <View style={styles.walkStep}>
+                      <View style={styles.walkHeading}>
+                        <Text style={[TYPO.meta, { color: colors.accent }]}>
+                          {String(index + 1).padStart(2, "0")}
+                        </Text>
+                        <Text style={[TYPO.label, styles.walkLabel, { color: colors.ink }]}>
+                          {step.label}
+                        </Text>
+                      </View>
+                      {step.code ? <CodePlate>{step.code}</CodePlate> : null}
+                      <RichText
+                        text={step.detail}
+                        style={[TYPO.small, styles.walkDetail, { color: colors.body }]}
+                      />
+                    </View>
+                  </FadeIn>
+                ))}
+              </View>
+            ) : null}
+
             {lesson.example ? (
-              <>
+              <FadeIn key={`${lesson.title}-example`} from="scale" delay={STAGGER} duration={190}>
                 <FieldLabel>Example</FieldLabel>
                 <CodePlate>{lesson.example.code}</CodePlate>
                 {lesson.example.caption ? (
@@ -409,29 +473,37 @@ export default function TopicScreen({
                     {lesson.example.caption}
                   </Text>
                 ) : null}
-              </>
+              </FadeIn>
             ) : null}
 
             {lesson.wrong ? (
-              <WrongCode code={lesson.wrong.code} why={lesson.wrong.why} />
+              <FadeIn key={`${lesson.title}-wrong`} from="right" delay={STAGGER} duration={190}>
+                <WrongCode code={lesson.wrong.code} why={lesson.wrong.why} />
+              </FadeIn>
             ) : null}
 
             {lesson.gotcha ? (
-              <View
-                style={[styles.gotcha, { borderLeftColor: colors.accent }]}
-              >
-                <Text style={[TYPO.label, { color: colors.accent }]}>
-                  Watch out
-                </Text>
-                <RichText
-                  text={lesson.gotcha}
-                  style={[
-                    TYPO.small,
-                    styles.gotchaText,
-                    { color: colors.body },
-                  ]}
-                />
-              </View>
+              <FadeIn key={`${lesson.title}-gotcha`} from="down" duration={190}>
+                <View
+                  style={[styles.gotcha, { borderLeftColor: colors.accent }]}
+                >
+                  <Text style={[TYPO.label, { color: colors.accent }]}>
+                    Watch out
+                  </Text>
+                  <RichText
+                    text={lesson.gotcha}
+                    style={[
+                      TYPO.small,
+                      styles.gotchaText,
+                      { color: colors.body },
+                    ]}
+                  />
+                </View>
+              </FadeIn>
+            ) : null}
+
+            {lesson.check ? (
+              <LessonCheck key={`${lesson.title}-check`} check={lesson.check} />
             ) : null}
 
             {lessons.length > 1 ? (
@@ -588,6 +660,19 @@ const styles = StyleSheet.create({
     height: 2,
   },
   lessonTitle: { marginTop: 18 },
+  goal: {
+    marginTop: 12,
+    marginBottom: 10,
+    paddingLeft: 12,
+    paddingVertical: 10,
+    borderLeftWidth: 2,
+  },
+  goalText: { lineHeight: 21, marginTop: 4 },
+  walkthrough: { marginTop: 24 },
+  walkStep: { marginTop: 16 },
+  walkHeading: { flexDirection: "row", alignItems: "baseline", gap: 10 },
+  walkLabel: { flex: 1 },
+  walkDetail: { lineHeight: 21, marginTop: 8 },
   firstParagraph: { marginTop: 14 },
   paragraph: { marginTop: 12 },
   caption: { marginTop: 8 },

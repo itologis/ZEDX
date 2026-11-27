@@ -36,7 +36,8 @@ require.cache[asyncStoragePath] = {
 };
 
 const { LANGUAGES } = require("../src/data/languages");
-const { LESSONS } = require("../src/data/lessons");
+const { LESSONS, getLessons } = require("../src/data/lessons");
+const { LESSON_GUIDES } = require("../src/data/lessonGuides");
 const { PRACTICE } = require("../src/data/practice");
 const { getAllQuestions, QUIZZES } = require("../src/data/quiz");
 const { parseInlineCode } = require("../src/utils/inlineCode");
@@ -125,6 +126,7 @@ async function checkContentCoverage() {
 
   let lessonCount = 0;
   let wrongCount = 0;
+  let guidedLessonCount = 0;
 
   for (const [languageKey, topics] of Object.entries(LESSONS)) {
     assert.ok(
@@ -208,8 +210,35 @@ async function checkContentCoverage() {
           typeof lesson.wrong.why === "string" && lesson.wrong.why.trim(),
           `${label} wrong-code comparison needs an explanation`,
         );
-        wrongCount += 1;
+        const guide = LESSON_GUIDES[languageKey]?.[topicId]?.[index];
+        if (guide) {
+          assert.ok(
+            typeof guide.goal === "string" && guide.goal.trim().length >= 35,
+            `${label} guided lesson needs a useful learning goal`,
+          );
+          assert.ok(
+            Array.isArray(guide.body) && guide.body.length >= 2 &&
+              guide.body.every((paragraph) => typeof paragraph === "string" && paragraph.trim().length >= 80),
+            `${label} guided lesson needs two substantial plain-language explanations`,
+          );
+          assert.ok(
+            Array.isArray(guide.walkthrough) && guide.walkthrough.length >= 2 &&
+              guide.walkthrough.every((step) => step.label?.trim() && step.code?.trim() && step.detail?.trim().length >= 35),
+            `${label} guided lesson needs concrete worked-example steps`,
+          );
+          assert.ok(
+            guide.check?.question?.trim() && Array.isArray(guide.check.options) &&
+              guide.check.options.length >= 3 &&
+              new Set(guide.check.options).size === guide.check.options.length &&
+              Number.isInteger(guide.check.correct) &&
+              guide.check.correct >= 0 && guide.check.correct < guide.check.options.length &&
+              guide.check.explanation?.trim().length >= 60,
+            `${label} guided lesson needs a valid comprehension check and explanation`,
+          );
+          guidedLessonCount += 1;
+        }
 
+        wrongCount += 1;
         lessonCount += 1;
       });
     }
@@ -218,6 +247,33 @@ async function checkContentCoverage() {
       assert.ok(topics[topicId], `Missing lessons for ${languageKey} topic ${topicId}`);
     }
   }
+
+  for (const [languageKey, topics] of Object.entries(LESSON_GUIDES)) {
+    assert.ok(languageKeys.has(languageKey), `Guides exist for unknown language ${languageKey}`);
+    for (const [topicId, guides] of Object.entries(topics)) {
+      assert.ok(LESSONS[languageKey]?.[topicId], `Guides reference missing lesson topic ${languageKey}/${topicId}`);
+      assert.ok(Array.isArray(guides), `${languageKey}/${topicId} guides must be an array`);
+      assert.ok(guides.length <= LESSONS[languageKey][topicId].length, `${languageKey}/${topicId} has more guides than lessons`);
+    }
+  }
+
+  const expectedGuidedTopics = [
+    ["html", "h1"], ["css", "c1"], ["java", "j1"],
+    ["python", "p1"], ["javascript", "js1"], ["php", "php1"], ["sql", "sql1"],
+  ];
+  for (const [languageKey, topicId] of expectedGuidedTopics) {
+    assert.equal(
+      LESSON_GUIDES[languageKey]?.[topicId]?.length,
+      LESSONS[languageKey]?.[topicId]?.length,
+      `${languageKey}/${topicId} must guide every lesson in its introductory topic`,
+    );
+    const mergedLessons = getLessons(languageKey, topicId);
+    assert.ok(
+      mergedLessons.every((lesson) => lesson.goal && lesson.walkthrough?.length && lesson.check),
+      `${languageKey}/${topicId} guide metadata must reach the lesson screen`,
+    );
+  }
+  assert.equal(guidedLessonCount, 21, "All 21 introductory lessons must include guided teaching content");
 
   for (const topicId of Object.keys(PRACTICE)) {
     assert.ok(
@@ -259,7 +315,7 @@ async function checkContentCoverage() {
   }
 
   console.log(
-    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, ${lessonCount} lessons (${wrongCount} wrong-code comparisons), and quiz/progress/review flows.`,
+    `Content coverage passed: ${LANGUAGES.length} languages, ${Object.keys(PRACTICE).length} practice exercises, ${lessonCount} lessons (${wrongCount} wrong-code comparisons), ${guidedLessonCount} guided intro lessons, and quiz/progress/review flows.`,
   );
 }
 
