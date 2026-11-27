@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+import AnswerFeedback from "../components/AnswerFeedback";
 import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
 import FadeIn from "../components/FadeIn";
@@ -227,7 +228,7 @@ export default function QuizScreen({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <FadeIn key={current} from="none" duration={140}>
+        <FadeIn key={current} from={current % 2 === 0 ? "left" : "right"} duration={190}>
           {isReview ? (
             <Text style={[TYPO.label, { color: colors.accent }]}>
               {(question._lang || "").toUpperCase()} · {question._level}
@@ -265,31 +266,11 @@ export default function QuizScreen({
           </View>
 
           {answered ? (
-            <FadeIn from="none" duration={130}>
-              <View
-                style={[
-                  styles.explain,
-                  {
-                    borderLeftColor: gotItRight ? colors.ink : colors.accent,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    TYPO.label,
-                    { color: gotItRight ? colors.ink : colors.accent },
-                  ]}
-                >
-                  {gotItRight ? "Correct" : "Not quite"}
-                </Text>
-                {!!question.explanation ? (
-                  <Text
-                    style={[TYPO.small, styles.explainText, { color: colors.body }]}
-                  >
-                    {question.explanation}
-                  </Text>
-                ) : null}
-              </View>
+            <FadeIn from={gotItRight ? "up" : "down"} duration={170}>
+              <AnswerFeedback
+                correct={gotItRight}
+                explanation={question.explanation}
+              />
             </FadeIn>
           ) : null}
 
@@ -336,11 +317,5 @@ const styles = StyleSheet.create({
   questionText: { marginTop: 16 },
   questionTextReview: { marginTop: 10 },
   options: { marginTop: 22 },
-  explain: {
-    marginTop: 20,
-    paddingLeft: 12,
-    borderLeftWidth: 2,
-  },
-  explainText: { marginTop: 8 },
   next: { marginTop: 24 },
 });

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import AnswerFeedback from "../components/AnswerFeedback";
 import Breadcrumbs from "../components/Breadcrumbs";
 import Button from "../components/Button";
 import EmptyState from "../components/EmptyState";
+import FadeIn from "../components/FadeIn";
+import LessonCheck from "../components/LessonCheck";
 import CodePlate from "../components/CodePlate";
 import FieldLabel from "../components/FieldLabel";
 import OptionRow from "../components/OptionRow";
@@ -23,6 +26,7 @@ import {
   toggleBookmark,
 } from "../data/progress";
 import { shuffle } from "../data/quiz";
+import { DURATION, MAX_STAGGERED, STAGGER } from "../motion";
 import { FONTS, TYPO, useTheme } from "../theme";
 
 function PracticeBlock({ topicId, languageKey }) {
@@ -113,21 +117,13 @@ function PracticeBlock({ topicId, languageKey }) {
       </View>
 
       {choice !== null ? (
-        <View style={[styles.feedback, { borderLeftColor: solved ? colors.ink : colors.accent }]}>
-          <Text
-            style={[
-              TYPO.label,
-              { color: solved ? colors.ink : colors.accent },
-            ]}
-          >
-            {solved ? "Correct" : "Not quite, try another"}
-          </Text>
-          {solved && item.why ? (
-            <Text style={[TYPO.small, styles.feedbackText, { color: colors.body }]}>
-              {item.why}
-            </Text>
-          ) : null}
-        </View>
+        <FadeIn key={choice} from={solved ? "up" : "down"} duration={170}>
+          <AnswerFeedback
+            correct={solved}
+            explanation={item.why}
+            retryHint="That choice doesn't fit. Try another option."
+          />
+        </FadeIn>
       ) : null}
     </>
   );
@@ -154,6 +150,7 @@ export default function TopicScreen({
     [languageKey, topic?.id],
   );
   const [lessonIndex, setLessonIndex] = useState(0);
+  const [lessonDirection, setLessonDirection] = useState("up");
   const scrollRef = useRef(null);
 
   const language = getLanguage(languageKey);
@@ -234,6 +231,7 @@ export default function TopicScreen({
     const next = Math.max(0, Math.min(index, lessons.length - 1));
     if (next === lessonIndex) return;
 
+    setLessonDirection(next > lessonIndex ? "slide-right" : "slide-left");
     setLessonIndex(next);
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
@@ -378,16 +376,49 @@ export default function TopicScreen({
               })}
             </View>
 
-            <Text
-              style={[TYPO.section, styles.lessonTitle, { color: colors.ink }]}
+            <FadeIn
+              key={`lesson-panel-${topic.id}-${lesson.title}`}
+              from={lessonDirection}
+              duration={DURATION.base}
             >
-              {lesson.title}
-            </Text>
+              <FadeIn
+                key={`${lesson.title}-heading`}
+                from="none"
+                duration={DURATION.base}
+              >
+                <Text
+                  style={[TYPO.section, styles.lessonTitle, { color: colors.ink }]}
+                >
+                  {lesson.title}
+                </Text>
+              </FadeIn>
 
-            {(Array.isArray(lesson.body) ? lesson.body : [lesson.body]).map(
-              (paragraph, index) => (
+              {lesson.goal ? (
+                <FadeIn
+                  key={`${lesson.title}-goal`}
+                  from="none"
+                  delay={STAGGER}
+                  duration={DURATION.base}
+                >
+                  <View style={[styles.goal, { borderLeftColor: colors.ruleStrong }]}>
+                    <FieldLabel>What you will learn</FieldLabel>
+                    <RichText
+                      text={lesson.goal}
+                      style={[TYPO.small, styles.goalText, { color: colors.body }]}
+                    />
+              </View>
+            </FadeIn>
+          ) : null}
+
+          {(Array.isArray(lesson.body) ? lesson.body : [lesson.body]).map(
+            (paragraph, index) => (
+              <FadeIn
+                key={`${lesson.title}-body-${index}`}
+                from="none"
+                delay={Math.min(index, MAX_STAGGERED) * STAGGER}
+                duration={190}
+              >
                 <RichText
-                  key={index}
                   text={paragraph}
                   style={[
                     TYPO.body,
@@ -395,28 +426,64 @@ export default function TopicScreen({
                     { color: colors.body },
                   ]}
                 />
-              ),
-            )}
+              </FadeIn>
+            ),
+          )}
 
-            {lesson.example ? (
-              <>
-                <FieldLabel>Example</FieldLabel>
-                <CodePlate>{lesson.example.code}</CodePlate>
-                {lesson.example.caption ? (
-                  <Text
-                    style={[TYPO.tiny, styles.caption, { color: colors.muted }]}
-                  >
-                    {lesson.example.caption}
-                  </Text>
-                ) : null}
-              </>
-            ) : null}
+          {lesson.walkthrough?.length ? (
+            <View style={styles.walkthrough}>
+              <FadeIn key={`${lesson.title}-walk-title`} from="none" delay={STAGGER}>
+                <FieldLabel>Follow the example</FieldLabel>
+              </FadeIn>
+              {lesson.walkthrough.map((step, index) => (
+                <FadeIn
+                  key={`${lesson.title}-step-${index}`}
+                  from="none"
+                  delay={Math.min(index, MAX_STAGGERED) * STAGGER}
+                  duration={190}
+                >
+                  <View style={styles.walkStep}>
+                    <View style={styles.walkHeading}>
+                      <Text style={[TYPO.meta, { color: colors.accent }]}>
+                        {String(index + 1).padStart(2, "0")}
+                      </Text>
+                      <Text style={[TYPO.label, styles.walkLabel, { color: colors.ink }]}>
+                        {step.label}
+                      </Text>
+                    </View>
+                    {step.code ? <CodePlate>{step.code}</CodePlate> : null}
+                    <RichText
+                      text={step.detail}
+                      style={[TYPO.small, styles.walkDetail, { color: colors.body }]}
+                    />
+                  </View>
+                </FadeIn>
+              ))}
+            </View>
+          ) : null}
 
-            {lesson.wrong ? (
+          {lesson.example ? (
+            <FadeIn key={`${lesson.title}-example`} from="none" delay={STAGGER} duration={190}>
+              <FieldLabel>Example</FieldLabel>
+              <CodePlate>{lesson.example.code}</CodePlate>
+              {lesson.example.caption ? (
+                <Text
+                  style={[TYPO.tiny, styles.caption, { color: colors.muted }]}
+                >
+                  {lesson.example.caption}
+                </Text>
+              ) : null}
+            </FadeIn>
+          ) : null}
+
+          {lesson.wrong ? (
+            <FadeIn key={`${lesson.title}-wrong`} from="none" delay={STAGGER} duration={190}>
               <WrongCode code={lesson.wrong.code} why={lesson.wrong.why} />
-            ) : null}
+            </FadeIn>
+          ) : null}
 
-            {lesson.gotcha ? (
+          {lesson.gotcha ? (
+            <FadeIn key={`${lesson.title}-gotcha`} from="none" duration={190}>
               <View
                 style={[styles.gotcha, { borderLeftColor: colors.accent }]}
               >
@@ -432,27 +499,33 @@ export default function TopicScreen({
                   ]}
                 />
               </View>
-            ) : null}
+            </FadeIn>
+          ) : null}
 
-            {lessons.length > 1 ? (
-              <View style={styles.lessonNav}>
-                {lessonIndex > 0 ? (
-                  <Button
-                    variant="secondary"
-                    onPress={() => goToLesson(lessonIndex - 1)}
-                  >
-                    Previous
-                  </Button>
-                ) : (
-                  <View />
-                )}
-                {isLastLesson ? null : (
-                  <Button onPress={() => goToLesson(lessonIndex + 1)}>
-                    Next lesson
-                  </Button>
-                )}
-              </View>
-            ) : null}
+          {lesson.check ? (
+            <LessonCheck key={`${lesson.title}-check`} check={lesson.check} />
+          ) : null}
+
+          {lessons.length > 1 ? (
+            <View style={styles.lessonNav}>
+              {lessonIndex > 0 ? (
+                <Button
+                  variant="secondary"
+                  onPress={() => goToLesson(lessonIndex - 1)}
+                >
+                  Previous
+                </Button>
+              ) : (
+                <View />
+              )}
+              {isLastLesson ? null : (
+                <Button onPress={() => goToLesson(lessonIndex + 1)}>
+                  Next lesson
+                </Button>
+              )}
+            </View>
+          ) : null}
+            </FadeIn>
           </>
         ) : (
           <>
@@ -588,6 +661,19 @@ const styles = StyleSheet.create({
     height: 2,
   },
   lessonTitle: { marginTop: 18 },
+  goal: {
+    marginTop: 12,
+    marginBottom: 10,
+    paddingLeft: 12,
+    paddingVertical: 10,
+    borderLeftWidth: 2,
+  },
+  goalText: { lineHeight: 21, marginTop: 4 },
+  walkthrough: { marginTop: 24 },
+  walkStep: { marginTop: 16 },
+  walkHeading: { flexDirection: "row", alignItems: "baseline", gap: 10 },
+  walkLabel: { flex: 1 },
+  walkDetail: { lineHeight: 21, marginTop: 8 },
   firstParagraph: { marginTop: 14 },
   paragraph: { marginTop: 12 },
   caption: { marginTop: 8 },
@@ -616,12 +702,6 @@ const styles = StyleSheet.create({
   },
   practiceQ: { flex: 1 },
   options: { marginTop: 18 },
-  feedback: {
-    marginTop: 18,
-    paddingLeft: 12,
-    borderLeftWidth: 2,
-  },
-  feedbackText: { marginTop: 6 },
   confirm: {
     marginTop: 26,
     paddingVertical: 18,

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import ContinueStrip from "../components/ContinueStrip";
+import FadeIn from "../components/FadeIn";
 import IndexRow from "../components/IndexRow";
 import Screen from "../components/Screen";
 import SectionHead from "../components/SectionHead";
@@ -9,6 +10,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import TopBar from "../components/TopBar";
 import { LANGUAGES } from "../data/languages";
 import { getLastTopic, getProgress } from "../data/progress";
+import { MAX_STAGGERED, STAGGER } from "../motion";
 import { TYPO, useTheme } from "../theme";
 
 const levelsLabel = (data) => {
@@ -176,16 +178,24 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
         {LANGUAGES.map((lang, index) => {
           const percent = percents[lang.key] ?? 0;
 
+          const entrances = ["up", "left", "scale", "right", "down"];
+
           return (
-            <IndexRow
+            <FadeIn
               key={lang.key}
-              number={String(index + 1).padStart(2, "0")}
-              swatch={colors.lang[lang.key]}
-              name={lang.label}
-              meta={`${levelsLabel(lang.data)} · ${topicsLabel(lang.data)} topics`}
-              percent={percent}
-              onPress={() => onSelectLanguage(lang.key)}
-            />
+              from={entrances[index % entrances.length]}
+              delay={Math.min(index, MAX_STAGGERED) * STAGGER}
+              duration={190}
+            >
+              <IndexRow
+                number={String(index + 1).padStart(2, "0")}
+                swatch={colors.lang[lang.key]}
+                name={lang.label}
+                meta={`${levelsLabel(lang.data)} · ${topicsLabel(lang.data)} topics`}
+                percent={percent}
+                onPress={() => onSelectLanguage(lang.key)}
+              />
+            </FadeIn>
           );
         })}
 

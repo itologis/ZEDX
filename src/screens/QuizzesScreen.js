@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import FadeIn from "../components/FadeIn";
+import { MAX_STAGGERED, STAGGER } from "../motion";
 import Screen from "../components/Screen";
 import SectionHead from "../components/SectionHead";
 import TopBar from "../components/TopBar";
@@ -208,9 +209,9 @@ export default function QuizzesScreen({ onOpenQuiz, onOpenReview }) {
               return (
                 <FadeIn
                   key={`${selectedLanguage}-${lang.key}`}
-                  delay={index * 40}
-                  duration={160}
-                  from="none"
+                  delay={Math.min(index, MAX_STAGGERED) * STAGGER}
+                  duration={190}
+                  from={index % 2 === 0 ? "left" : "right"}
                 >
                   <View style={styles.section}>
                     <View
