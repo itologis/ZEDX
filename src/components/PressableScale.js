@@ -4,6 +4,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 import { SPRING } from "../motion";
@@ -22,10 +23,14 @@ export default function PressableScale({
   hitSlop,
   testID,
   style,
-  pressedScale = 0.985,
+  pressedScale = 0.975,
+  pressedOpacity = 0.8,
 }) {
   const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+  const motion = { reduceMotion: ReduceMotion.System };
   const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
     transform: [{ scale: scale.value }],
   }));
 
@@ -34,7 +39,13 @@ export default function PressableScale({
     // eslint-disable-next-line react-hooks/immutability
     scale.value = withSpring(pressedScale, {
       ...SPRING.press,
-      reduceMotion: ReduceMotion.System,
+      ...motion,
+    });
+    // Reanimated shared values are intentionally updated from press callbacks.
+    // eslint-disable-next-line react-hooks/immutability
+    opacity.value = withTiming(pressedOpacity, {
+      duration: 75,
+      ...motion,
     });
   };
 
@@ -43,7 +54,13 @@ export default function PressableScale({
     // eslint-disable-next-line react-hooks/immutability
     scale.value = withSpring(1, {
       ...SPRING.press,
-      reduceMotion: ReduceMotion.System,
+      ...motion,
+    });
+    // Reanimated shared values are intentionally updated from press callbacks.
+    // eslint-disable-next-line react-hooks/immutability
+    opacity.value = withTiming(1, {
+      duration: 115,
+      ...motion,
     });
   };
 
