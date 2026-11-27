@@ -14,6 +14,8 @@ const ORIGINS = {
   down: { x: 0, y: -9, scale: 1 },
   left: { x: -12, y: 0, scale: 1 },
   right: { x: 12, y: 0, scale: 1 },
+  "slide-left": { x: -24, y: 0, scale: 1 },
+  "slide-right": { x: 24, y: 0, scale: 1 },
   scale: { x: 0, y: 0, scale: 0.965 },
   none: { x: 0, y: 0, scale: 1 },
 };

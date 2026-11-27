@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 import Breadcrumbs from "../components/Breadcrumbs";
 import Button from "../components/Button";
+import FadeIn from "../components/FadeIn";
 import Screen from "../components/Screen";
 import TopBar from "../components/TopBar";
 import {
@@ -12,6 +19,7 @@ import {
   saveProgress,
 } from "../data/progress";
 import { QUIZZES } from "../data/quiz";
+import { DURATION, SPRING } from "../motion";
 import { TYPO, useTheme } from "../theme";
 
 export default function LevelsScreen({
@@ -26,6 +34,7 @@ export default function LevelsScreen({
   const { colors } = useTheme();
   const [progress, setProgress] = useState({});
   const [activeLevel, setActiveLevel] = useState(languageData.levels?.[0]?.level ?? null);
+  const [levelDirection, setLevelDirection] = useState("up");
   const [assessment, setAssessment] = useState(null);
   const [quizPassed, setQuizPassed] = useState({});
   const [loading, setLoading] = useState(true);
@@ -102,6 +111,28 @@ export default function LevelsScreen({
   const activeLevelData =
     languageData.levels.find((level) => level.level === activeLevel) ||
     languageData.levels[0];
+  const activeLevelIndex = Math.max(
+    0,
+    languageData.levels.findIndex((level) => level.level === activeLevelData?.level),
+  );
+  const pickerWidth = useSharedValue(0);
+  const indicatorIndex = useSharedValue(activeLevelIndex);
+  const indicatorStyle = useAnimatedStyle(() => {
+    const levelCount = Math.max(languageData.levels.length, 1);
+    const tabWidth = Math.max(0, (pickerWidth.value - 8 * (levelCount - 1)) / levelCount);
+    return {
+      width: tabWidth,
+      transform: [{ translateX: indicatorIndex.value * (tabWidth + 8) }],
+    };
+  });
+
+  useEffect(() => {
+    indicatorIndex.value = withSpring(activeLevelIndex, {
+      ...SPRING.settle,
+      reduceMotion: ReduceMotion.System,
+    });
+  }, [activeLevelIndex, indicatorIndex]);
+
   const activeLevelTopics = activeLevelData?.topics || [];
   const activeCompletedTopics = progress[activeLevelData?.level] || [];
   const activeCompletedCount = activeLevelTopics.filter((topic) =>
@@ -207,7 +238,12 @@ export default function LevelsScreen({
             LEARNING LEVEL
           </Text>
 
-          <View style={styles.levelPicker}>
+          <View
+            style={styles.levelPicker}
+            onLayout={(event) => {
+              pickerWidth.value = event.nativeEvent.layout.width;
+            }}
+          >
             {languageData.levels.map((level, index) => {
               const topics = level.topics || [];
               const completedCount = topics.filter((topic) =>
@@ -224,7 +260,13 @@ export default function LevelsScreen({
                       borderColor: isActive ? colors.accent : colors.ruleStrong,
                     },
                   ]}
-                  onPress={() => setActiveLevel(level.level)}
+                  onPress={() => {
+                    if (level.level === activeLevel) return;
+                    setLevelDirection(
+                      index > activeLevelIndex ? "slide-right" : "slide-left",
+                    );
+                    setActiveLevel(level.level);
+                  }}
                   activeOpacity={0.7}
                   accessibilityRole="button"
                   accessibilityLabel={level.label + ", " + completedCount + " of " + topics.length + " topics completed"}
@@ -252,21 +294,22 @@ export default function LevelsScreen({
                   >
                     {level.label}
                   </Text>
-                  <View
-                    style={[
-                      styles.levelTabMark,
-                      {
-                        backgroundColor: isActive ? colors.accent : colors.rule,
-                      },
-                    ]}
-                  />
                 </TouchableOpacity>
               );
             })}
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.levelIndicator, indicatorStyle, { backgroundColor: colors.accent }]}
+            />
           </View>
 
           {activeLevelData ? (
-            <View style={styles.level}>
+            <FadeIn
+              key={activeLevelData.level}
+              from={levelDirection}
+              duration={DURATION.base}
+              style={styles.level}
+            >
               <View style={styles.levelHead}>
                 <View style={styles.levelHeadLeft}>
                   <Text style={[TYPO.label, { color: colors.accent }]}>
@@ -396,7 +439,7 @@ export default function LevelsScreen({
                   <Text style={[TYPO.label, { color: colors.accent }]}>→</Text>
                 </TouchableOpacity>
               ) : null}
-            </View>
+            </FadeIn>
           ) : null}
         </View>
       </ScrollView>
@@ -414,10 +457,12 @@ const styles = StyleSheet.create({
   recommended: { marginTop: 14 },
   levels: { marginTop: 26 },
   levelPicker: {
+    position: "relative",
     flexDirection: "row",
     gap: 8,
     marginTop: 14,
     marginBottom: 26,
+    paddingBottom: 2,
   },
   levelTab: {
     flex: 1,
@@ -433,7 +478,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   levelTabLabel: { marginTop: 8 },
-  levelTabMark: { height: 2, marginTop: 10 },
+  levelIndicator: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    height: 2,
+  },
   level: { marginBottom: 44 },
   levelHead: {
     flexDirection: "row",
