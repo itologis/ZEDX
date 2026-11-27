@@ -1,9 +1,16 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
+import { SPRING } from "../motion";
 import { RADIUS, TYPO, useTheme } from "../theme";
 
-// Primary = accent fill, uppercase mono, 52dp, 2px radius.
-// Secondary = hairline outline, same footprint.
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export default function Button({
   children,
   onPress,
@@ -13,6 +20,10 @@ export default function Button({
 }) {
   const { colors } = useTheme();
   const primary = variant === "primary";
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   const background = primary
     ? disabled
@@ -20,13 +31,32 @@ export default function Button({
       : colors.accent
     : "transparent";
 
+  const pressIn = () => {
+    // Reanimated shared values are intentionally updated from press callbacks.
+    // eslint-disable-next-line react-hooks/immutability
+    scale.value = withSpring(0.98, {
+      ...SPRING.press,
+      reduceMotion: ReduceMotion.System,
+    });
+  };
+
+  const pressOut = () => {
+    // Reanimated shared values are intentionally updated from press callbacks.
+    // eslint-disable-next-line react-hooks/immutability
+    scale.value = withSpring(1, {
+      ...SPRING.press,
+      reduceMotion: ReduceMotion.System,
+    });
+  };
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      activeOpacity={0.85}
+      onPressIn={pressIn}
+      onPressOut={pressOut}
       style={[
         styles.base,
         {
@@ -38,6 +68,7 @@ export default function Button({
             : colors.ruleStrong,
         },
         style,
+        animatedStyle,
       ]}
     >
       <Text
@@ -54,7 +85,7 @@ export default function Button({
       >
         {children}
       </Text>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
