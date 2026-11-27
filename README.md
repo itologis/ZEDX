@@ -53,6 +53,7 @@ npm run android    # or: npm run ios / npm run web
 | `npm run android` / `npm run ios` / `npm run web` | Start on a specific platform |
 | `npm run lint` | ESLint via `expo lint` |
 | `npm run check:content` | Check that the content is complete and the progress flows work |
+| `npm run check:answers` | Check correct/wrong feedback wiring, retry resets, and assessment answer visibility |
 
 ## Design
 
