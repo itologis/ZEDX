@@ -33,6 +33,7 @@ import TopicScreen from "./src/screens/TopicScreen";
 
 import BottomNav from "./src/components/BottomNav";
 import FadeIn from "./src/components/FadeIn";
+import PageTransition from "./src/components/PageTransition";
 
 import { LANGUAGES, findTopic } from "./src/data/languages";
 import {
@@ -66,6 +67,7 @@ function Root() {
   const { colors, isDark } = useTheme();
   const { height: windowHeight } = useWindowDimensions();
   const [screen, setScreen] = useState({ name: "home" });
+  const [direction, setDirection] = useState("none");
   const [activeTab, setActiveTab] = useState("home");
   const [showDevTools, setShowDevTools] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,28 +75,33 @@ function Root() {
   const [localRecordInput, setLocalRecordInput] = useState("");
   const [localRecordStatus, setLocalRecordStatus] = useState("");
 
-  const handleNavigate = useCallback((tab) => {
-    const next = tab === "learn" ? "home" : tab;
-    setActiveTab(next);
-    setScreen({ name: next });
+  const navigate = useCallback((next, dir = "none") => {
+    setDirection(dir);
+    setScreen(next);
   }, []);
 
+  const handleNavigate = useCallback((tab, dir = "none") => {
+    const next = tab === "learn" ? "home" : tab;
+    setActiveTab(next);
+    navigate({ name: next }, dir);
+  }, [navigate]);
+
   const goQuizzes = useCallback(
-    () => handleNavigate("quizzes"),
+    (dir = "none") => handleNavigate("quizzes", dir),
     [handleNavigate],
   );
 
-  const goIntro = useCallback((languageKey) => {
-    setScreen({ name: "intro", languageKey });
-  }, []);
+  const goIntro = useCallback((languageKey, dir = "forward") => {
+    navigate({ name: "intro", languageKey }, dir);
+  }, [navigate]);
 
-  const goLevels = useCallback((languageKey) => {
-    setScreen({ name: "levels", languageKey });
-  }, []);
+  const goLevels = useCallback((languageKey, dir = "forward") => {
+    navigate({ name: "levels", languageKey }, dir);
+  }, [navigate]);
 
-  const goAssessment = useCallback((languageKey) => {
-    setScreen({ name: "assessment", languageKey });
-  }, []);
+  const goAssessment = useCallback((languageKey, dir = "forward") => {
+    navigate({ name: "assessment", languageKey }, dir);
+  }, [navigate]);
 
   // `topicOrId` is either a full topic object (from Levels) or a topic id
   // (from Home / Search / Saved). `from` decides where Back returns to.
@@ -113,17 +120,17 @@ function Root() {
       };
     }
 
-    setScreen({ name: "topic", languageKey, topic, from });
-  }, []);
+    navigate({ name: "topic", languageKey, topic, from }, "forward");
+  }, [navigate]);
 
   const closeTopic = () => {
-    if (screen.from === "levels") goLevels(screen.languageKey);
-    else handleNavigate(screen.from);
+    if (screen.from === "levels") goLevels(screen.languageKey, "back");
+    else handleNavigate(screen.from, "back");
   };
 
   const goQuiz = useCallback((languageKey, levelId, from = "levels") => {
-    setScreen({ name: "quiz", languageKey, levelId, from });
-  }, []);
+    navigate({ name: "quiz", languageKey, levelId, from }, "forward");
+  }, [navigate]);
 
   const goReview = useCallback(async () => {
     try {
@@ -135,7 +142,7 @@ function Root() {
         );
         return;
       }
-      setScreen({ name: "review", questions });
+      navigate({ name: "review", questions }, "forward");
     } catch (error) {
       console.error("Error loading missed questions:", error);
       Alert.alert(
@@ -143,16 +150,16 @@ function Root() {
         "Your missed questions could not be loaded. Try again in a moment.",
       );
     }
-  }, []);
+  }, [navigate]);
 
   const handleStartLearning = async (languageKey) => {
     try {
       const completed = await hasCompletedAssessment(languageKey);
-      if (completed) goLevels(languageKey);
-      else goAssessment(languageKey);
+      if (completed) goLevels(languageKey, "forward");
+      else goAssessment(languageKey, "forward");
     } catch (error) {
       console.error("Error checking assessment:", error);
-      goAssessment(languageKey);
+      goAssessment(languageKey, "forward");
     }
   };
 
@@ -261,6 +268,7 @@ function Root() {
         onOpenTopic={(languageKey, topicId) =>
           goTopic(languageKey, topicId, "saved")
         }
+        onBrowse={() => handleNavigate("home")}
       />
     );
   } else if (screen.name === "quizzes") {
@@ -279,7 +287,8 @@ function Root() {
         languageKey={language.key}
         languageLabel={language.label}
         languageData={language.data}
-        onBack={() => handleNavigate("home")}
+        onBack={() => handleNavigate("home", "back")}
+        onHome={() => handleNavigate("home", "back")}
         onStart={() => handleStartLearning(language.key)}
       />
     );
@@ -289,8 +298,8 @@ function Root() {
         languageKey={language.key}
         languageData={language.data}
         languageLabel={language.label}
-        onBack={() => goIntro(language.key)}
-        onComplete={() => goLevels(language.key)}
+        onBack={() => goIntro(language.key, "back")}
+        onComplete={() => goLevels(language.key, "forward")}
       />
     );
   } else if (screen.name === "levels" && language) {
@@ -299,7 +308,8 @@ function Root() {
         languageData={language.data}
         languageKey={language.key}
         languageLabel={language.label}
-        onBack={() => goIntro(language.key)}
+        onBack={() => goIntro(language.key, "back")}
+        onHome={() => handleNavigate("home", "back")}
         onOpenTopic={(topic) => goTopic(language.key, topic, "levels")}
         onOpenQuiz={(languageKey, levelId) =>
           goQuiz(languageKey || language.key, levelId, "levels")
@@ -309,12 +319,15 @@ function Root() {
   } else if (screen.name === "topic" && language) {
     content = (
       <TopicScreen
-        key={`${screen.languageKey}-${screen.topic.id}`}
+        key={`${screen.languageKey}-${screen.topic?.id || "missing"}`}
         topic={screen.topic}
         languageKey={screen.languageKey}
         languageLabel={language.label}
         backLabel={screen.from === "levels" ? "← Topics" : "← Back"}
         onBack={closeTopic}
+        onHome={() => handleNavigate("home", "back")}
+        onIntro={() => goIntro(language.key, "back")}
+        onLevels={() => goLevels(language.key, "back")}
       />
     );
   } else if (screen.name === "quiz" && language) {
@@ -324,7 +337,9 @@ function Root() {
         languageKey={language.key}
         levelId={screen.levelId}
         onBack={() =>
-          screen.from === "quizzes" ? goQuizzes() : goLevels(language.key)
+          screen.from === "quizzes"
+            ? goQuizzes("back")
+            : goLevels(language.key, "back")
         }
         onPass={() => handleQuizPass(language.key, screen.levelId)}
       />
@@ -334,7 +349,7 @@ function Root() {
       <QuizScreen
         customQuestions={screen.questions}
         title="Review"
-        onBack={goQuizzes}
+        onBack={() => goQuizzes("back")}
       />
     );
   }
@@ -359,14 +374,13 @@ function Root() {
     <View style={[styles.app, { backgroundColor: colors.paper }]}>
       <StatusBar style={isDark ? "light" : "dark"} />
       <View style={styles.shell}>
-        <FadeIn
+        <PageTransition
           key={screenTransitionKey}
+          direction={direction}
           style={styles.content}
-          duration={160}
-          from="none"
         >
           {content}
-        </FadeIn>
+        </PageTransition>
 
         {showBottomNavigation && (
           <FadeIn key="bottom-navigation" duration={140} from="none">
