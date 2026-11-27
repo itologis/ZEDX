@@ -55,7 +55,7 @@ git commit -m "docs: add ZEDX motion design and implementation plan"
 - Produces: `STAGGER = 28`, `MAX_STAGGERED = 5`
 - Produces: `FadeIn({ children, style, duration = DURATION.base, delay = 0, from = "up" })` — same props as today.
 
-- [ ] **Step 1: Create `src/motion.js`**
+- [x] **Step 1: Create `src/motion.js`**
 
 ```js
 export const DURATION = { fast: 140, base: 180, slow: 240 };
@@ -70,7 +70,7 @@ export const STAGGER = 28;
 export const MAX_STAGGERED = 5;
 ```
 
-- [ ] **Step 2: Rewrite `FadeIn.js` with Reanimated**
+- [x] **Step 2: Rewrite `FadeIn.js` with Reanimated**
 
 Keep the same public props. Use `useSharedValue` for opacity, translateY, and scale; `useAnimatedStyle` returns `opacity` plus a `transform` array. On mount, animate with `withTiming`:
 
@@ -81,7 +81,7 @@ Keep the same public props. Use `useSharedValue` for opacity, translateY, and sc
 - Remove the `AccessibilityInfo` listener and the `reduceMotion === null` early return; `ReduceMotion.System` handles the preference.
 - Render `Animated.View` with `style={[style, animatedStyle]}`.
 
-- [ ] **Step 3: Run lint**
+- [x] **Step 3: Run lint**
 
 Run: `npm run lint`
 Expected: no new errors; existing `render_test.js` warnings are acceptable.
@@ -91,7 +91,7 @@ Expected: no new errors; existing `render_test.js` warnings are acceptable.
 Run: `npm run web`
 Expected: Home content still fades up; quiz question changes still fade; with browser Reduced Motion enabled, content appears immediately with no movement.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/motion.js src/components/FadeIn.js
@@ -119,14 +119,14 @@ const navigate = useCallback((next, dir = "none") => {
 
 - All existing screen handlers gain a trailing `dir` argument with the defaults below.
 
-- [ ] **Step 1: Create `PageTransition.js`**
+- [x] **Step 1: Create `PageTransition.js`**
 
 - Initial `translateX`: `14` for `"forward"`, `-14` for `"back"`, `0` for `"none"`.
 - Animate `translateX` to `0` with `withSpring(0, { ...SPRING.page, reduceMotion: ReduceMotion.System })`.
 - Animate opacity from `0` to `1` with `withTiming(1, { duration: DURATION.base, easing: Easing.out(Easing.cubic), reduceMotion: ReduceMotion.System })`.
 - Return `Animated.View` with `style={[styles.fill, style, animatedStyle]}` and `styles.fill = { flex: 1 }`.
 
-- [ ] **Step 2: Add direction state and `navigate` in `App.js`**
+- [x] **Step 2: Add direction state and `navigate` in `App.js`**
 
 Replace direct `setScreen` calls in the navigation handlers with `navigate(...)` and these directions:
 
@@ -153,7 +153,7 @@ Update the callers:
 - `QuizScreen` review `onBack`: `goQuizzes("back")`
 - `SavedScreen` `onBrowse`: `handleNavigate("home")` (tab switch, `"none"`)
 
-- [ ] **Step 3: Replace the keyed `FadeIn` shell**
+- [x] **Step 3: Replace the keyed `FadeIn` shell**
 
 In `App.js`, replace:
 
@@ -173,7 +173,7 @@ with:
 
 Keep the `FadeIn` import for the bottom navigation wrapper.
 
-- [ ] **Step 4: Run lint**
+- [x] **Step 4: Run lint**
 
 Run: `npm run lint`
 Expected: no new errors.
@@ -183,7 +183,7 @@ Expected: no new errors.
 Run: `npm run web`
 Expected: Home → Intro slides forward; Back slides back; tab switches crossfade; Search → Topic slides forward; Topic → Levels slides back; Quizzes → Quiz slides forward; Review → Quizzes slides back. Rapidly tap Back and forward links: the newest screen settles at `translateX: 0`, with no stuck offset.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/components/PageTransition.js App.js
@@ -204,7 +204,7 @@ git commit -m "feat: add direction-aware page transitions"
 - `LevelsScreen` gains `onHome`.
 - `TopicScreen` gains `onHome`, `onIntro`, `onLevels`.
 
-- [ ] **Step 1: Create `Breadcrumbs.js`**
+- [x] **Step 1: Create `Breadcrumbs.js`**
 
 - Row: `flexDirection: "row"`, `alignItems: "center"`, `paddingHorizontal: 24`, `paddingVertical: 10`, `minHeight: 44`, `overflow: "hidden"`.
 - Each item: a `TouchableOpacity` when `onPress` exists, otherwise a plain `Text`. Tappable items use `accessibilityRole="link"`, `minHeight: 44`, `justifyContent: "center"`, and `hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}`.
@@ -212,7 +212,7 @@ git commit -m "feat: add direction-aware page transitions"
 - Separator: a `Text` containing `/`, `TYPO.label`, `colors.ruleStrong`, `marginHorizontal: 8`.
 - Do not add a bottom border; `TopBar` already draws the rule.
 
-- [ ] **Step 2: Wire `IntroScreen`**
+- [x] **Step 2: Wire `IntroScreen`**
 
 Add `onHome` to the props. Immediately after `<TopBar ... />`, render:
 
@@ -225,7 +225,7 @@ Add `onHome` to the props. Immediately after `<TopBar ... />`, render:
 />
 ```
 
-- [ ] **Step 3: Wire `LevelsScreen`**
+- [x] **Step 3: Wire `LevelsScreen`**
 
 Add `onHome` to the props. Immediately after `<TopBar ... />`, render:
 
@@ -238,7 +238,7 @@ Add `onHome` to the props. Immediately after `<TopBar ... />`, render:
 />
 ```
 
-- [ ] **Step 4: Wire `TopicScreen`**
+- [x] **Step 4: Wire `TopicScreen`**
 
 Add `onHome`, `onIntro`, and `onLevels` to the props. Immediately after the main `<TopBar ... />` (the one with Save), render:
 
@@ -254,13 +254,13 @@ Add `onHome`, `onIntro`, and `onLevels` to the props. Immediately after the main
 
 The topic title below is the current page, so it is not repeated.
 
-- [ ] **Step 5: Pass the callbacks from `App.js`**
+- [x] **Step 5: Pass the callbacks from `App.js`**
 
 - Intro: `onHome={() => handleNavigate("home", "back")}`
 - Levels: `onHome={() => handleNavigate("home", "back")}`
 - Topic: `onHome={() => handleNavigate("home", "back")}`, `onIntro={() => goIntro(language.key, "back")}`, `onLevels={() => goLevels(language.key, "back")}`
 
-- [ ] **Step 6: Run lint**
+- [x] **Step 6: Run lint**
 
 Run: `npm run lint`
 Expected: no new errors.
@@ -270,7 +270,7 @@ Expected: no new errors.
 Run: `npm run web`
 Expected: Intro shows `HOME / PYTHON`; Levels shows `HOME / PYTHON`; Topic shows `HOME / PYTHON / LEVEL 2`. The trail never wraps. HOME goes Home, PYTHON goes Intro, LEVEL 2 goes Levels, each with the back transition. Long names such as JavaScript still fit on one line and ellipsize if needed.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/components/Breadcrumbs.js src/screens/IntroScreen.js src/screens/LevelsScreen.js src/screens/TopicScreen.js App.js
@@ -287,7 +287,7 @@ git commit -m "feat: add compact breadcrumb running head"
 **Interfaces:**
 - Same props: `{ active, onNavigate }`.
 
-- [ ] **Step 1: Replace the per-tab indicator**
+- [x] **Step 1: Replace the per-tab indicator**
 
 - Keep the four `TouchableOpacity` items and remove the indicator `View` from inside the active item.
 - Add `const [barWidth, setBarWidth] = useState(0)` and attach `onLayout` to the bar.
@@ -304,7 +304,7 @@ git commit -m "feat: add compact breadcrumb running head"
   - Target X: `activeIndex * (barWidth / TABS.length) + (barWidth / TABS.length) * 0.22`.
   - Hide it while `barWidth === 0`.
 
-- [ ] **Step 2: Run lint**
+- [x] **Step 2: Run lint**
 
 Run: `npm run lint`
 Expected: no new errors.
@@ -314,7 +314,7 @@ Expected: no new errors.
 Run: `npm run web`
 Expected: switching tabs glides the accent mark; Intro/Levels/Topic hide it; returning to a tab shows it at the target without sliding from a stale position.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/BottomNav.js
@@ -333,7 +333,7 @@ git commit -m "feat: animate the bottom tab indicator"
 - Produces: `EmptyState({ eyebrow, title, body, actionLabel, onAction, style })`.
 - `SavedScreen` gains `onBrowse`; `App.js` passes `onBrowse={() => handleNavigate("home")}`.
 
-- [ ] **Step 1: Create `EmptyState.js`**
+- [x] **Step 1: Create `EmptyState.js`**
 
 - Outer `View`: `alignItems: "center"`, `paddingVertical: 40`, `paddingHorizontal: 24`, plus `style`.
 - Inner `View`: `maxWidth: 320`, `alignItems: "center"`.
@@ -344,11 +344,11 @@ git commit -m "feat: animate the bottom tab indicator"
 - Body: `TYPO.small`, `colors.body`, `textAlign: "center"`, `marginTop: 8`.
 - Action: `Button variant="secondary"` with `onPress={onAction}` and `marginTop: 20`, rendered only when `actionLabel` and `onAction` exist.
 
-- [ ] **Step 2: Update `Rule` for the animated draw**
+- [x] **Step 2: Update `Rule` for the animated draw**
 
 Add an optional `animate = false` prop. When true, render an `Animated.View` with `useSharedValue(0)`, animate `scaleX` to `1` with `withTiming(1, { duration: DURATION.base, easing: Easing.out(Easing.cubic), reduceMotion: ReduceMotion.System })`, and set `transformOrigin: "left"` plus `transform: [{ scaleX }]`. When false, keep the current plain `View`.
 
-- [ ] **Step 3: Saved empty state**
+- [x] **Step 3: Saved empty state**
 
 Replace the existing empty `<Text>` with:
 
@@ -364,7 +364,7 @@ Replace the existing empty `<Text>` with:
 
 Add `onBrowse` to the component props.
 
-- [ ] **Step 4: Search no-results state**
+- [x] **Step 4: Search no-results state**
 
 Replace the no-results `<Text>` with:
 
@@ -380,7 +380,7 @@ Replace the no-results `<Text>` with:
 
 Keep the no-query hint as the existing single quiet line.
 
-- [ ] **Step 5: Quiz unavailable and Topic missing**
+- [x] **Step 5: Quiz unavailable and Topic missing**
 
 Both branches are defensive-only; keep them unreachable. Replace their content with:
 
@@ -404,7 +404,7 @@ Both branches are defensive-only; keep them unreachable. Replace their content w
 />
 ```
 
-- [ ] **Step 6: Pass `onBrowse` from `App.js`**
+- [x] **Step 6: Pass `onBrowse` from `App.js`**
 
 ```jsx
 <SavedScreen
@@ -413,7 +413,7 @@ Both branches are defensive-only; keep them unreachable. Replace their content w
 />
 ```
 
-- [ ] **Step 7: Run lint**
+- [x] **Step 7: Run lint**
 
 Run: `npm run lint`
 Expected: no new errors.
@@ -423,7 +423,7 @@ Expected: no new errors.
 Run: `npm run web`
 Expected: Saved with no bookmarks shows the new state and Browse topics goes Home; Search with a nonsense query shows the state and Clear search empties the input; neither flashes empty before loading completes.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add src/components/EmptyState.js src/components/Rule.js src/screens/SavedScreen.js src/screens/SearchScreen.js src/screens/QuizScreen.js src/screens/TopicScreen.js App.js
@@ -441,7 +441,7 @@ git commit -m "feat: add purposeful empty states"
 **Interfaces:**
 - Same props on both components.
 
-- [ ] **Step 1: Button press scale**
+- [x] **Step 1: Button press scale**
 
 Replace `TouchableOpacity` with `Pressable` and wrap its content in an `Animated.View`, or use `Animated.createAnimatedComponent(Pressable)`. Keep the existing style array, `disabled` handling, `accessibilityRole="button"`, and `accessibilityState`. Add a shared `scale` value:
 
@@ -450,7 +450,7 @@ Replace `TouchableOpacity` with `Pressable` and wrap its content in an `Animated
 - Apply `transform: [{ scale }]` to the animated view.
 - Remove `activeOpacity` (Pressable does not use it); keep the visual style otherwise unchanged.
 
-- [ ] **Step 2: OptionRow selection spring and haptic**
+- [x] **Step 2: OptionRow selection spring and haptic**
 
 Use the same `Pressable` + `Animated.View` pattern with a `1.01` press scale. In `onPress`, call:
 
@@ -463,7 +463,7 @@ onPress?.();
 
 Keep the existing `state` color/mark logic and accessibility props.
 
-- [ ] **Step 3: Run lint**
+- [x] **Step 3: Run lint**
 
 Run: `npm run lint`
 Expected: no new errors.
@@ -473,7 +473,7 @@ Expected: no new errors.
 Run: `npm run web` and, if available, `npm run android`
 Expected: buttons scale gently; quiz options scale and show the correct/wrong marks; Android gives a light selection haptic; web logs no haptics warning.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/Button.js src/components/OptionRow.js
@@ -487,7 +487,7 @@ git commit -m "feat: add quiet press and answer feedback"
 **Files:**
 - Modify: `README.md` (Design section)
 
-- [ ] **Step 1: Run the full checks**
+- [x] **Step 1: Run the full checks**
 
 Run: `npm run lint && npm run check:content`
 Expected: lint has no new errors; content coverage passes.
@@ -497,13 +497,13 @@ Expected: lint has no new errors; content coverage passes.
 Run: `npm run web`
 Expected: every route works; forward/back directions match the table; tab indicator glides; breadcrumbs navigate; empty states show and clear; Reduced Motion disables movement; rapid navigation never leaves a stuck transform.
 
-- [ ] **Step 3: Update the README Design section**
+- [x] **Step 3: Update the README Design section**
 
 Add one sentence after the existing design paragraph:
 
 > Motion is spring-based and typographic: pages set, lines rise, rules draw. A compact running head on Intro, Levels, and Topic keeps the hierarchy visible.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add README.md

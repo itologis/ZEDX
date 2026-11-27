@@ -56,7 +56,7 @@ npm run android    # or: npm run ios / npm run web
 
 ## Design
 
-Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur.
+Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur. Motion is spring-based and typographic: pages set, lines rise, rules draw. A compact running head on Intro, Levels, and Topic keeps the hierarchy visible.
 
 ## Notes
 
