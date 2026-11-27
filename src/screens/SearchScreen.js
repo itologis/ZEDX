@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import ColophonFlash from "../components/ColophonFlash";
+import EmptyState from "../components/EmptyState";
 import Screen from "../components/Screen";
 import TopBar from "../components/TopBar";
 import { LANGUAGES, getAllTopics } from "../data/languages";
@@ -133,9 +134,14 @@ export default function SearchScreen({
         results.length === 0 &&
         languageMatches.length === 0 &&
         !showColophon ? (
-          <Text style={[TYPO.small, styles.hint, { color: colors.muted }]}>
-            No topics match “{query}”.
-          </Text>
+          <EmptyState
+            eyebrow="Search"
+            title={"Nothing matches “" + query + "”"}
+            body="Try a shorter word, or search by language."
+            actionLabel="Clear search"
+            onAction={() => onQueryChange("")}
+            style={styles.emptyState}
+          />
         ) : null}
 
         {languageMatches.map((lang) => (
@@ -258,6 +264,7 @@ const styles = StyleSheet.create({
   list: { flex: 1, marginTop: 8 },
   listContent: { paddingHorizontal: 24, paddingBottom: 32 },
   hint: { marginTop: 24, textAlign: "center", lineHeight: 20 },
+  emptyState: { marginHorizontal: -24 },
   row: {
     flexDirection: "row",
     alignItems: "flex-start",

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import EmptyState from "../components/EmptyState";
 import Screen from "../components/Screen";
 import TopBar from "../components/TopBar";
 import { findTopic } from "../data/languages";
 import { getBookmarks, toggleBookmark } from "../data/progress";
 import { TYPO, useTheme } from "../theme";
 
-export default function SavedScreen({ onOpenTopic }) {
+export default function SavedScreen({ onOpenTopic, onBrowse }) {
   const { colors } = useTheme();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -92,9 +93,14 @@ export default function SavedScreen({ onOpenTopic }) {
         ) : null}
 
         {!loading && !loadError && items.length === 0 ? (
-          <Text style={[TYPO.small, styles.empty, { color: colors.muted }]}>
-            Nothing saved yet. Open any topic and tap Save to keep it here.
-          </Text>
+          <EmptyState
+            eyebrow="Saved"
+            title="Nothing marked yet"
+            body="Tap Save on any topic and it will wait for you here."
+            actionLabel="Browse topics"
+            onAction={onBrowse}
+            style={styles.emptyState}
+          />
         ) : null}
 
         {items.map((item) => (
@@ -157,12 +163,7 @@ const styles = StyleSheet.create({
   lede: { marginTop: 14, maxWidth: 340 },
   state: { paddingVertical: 28, alignItems: "center" },
   stateText: { textAlign: "center" },
-  empty: {
-    marginTop: 32,
-    textAlign: "center",
-    lineHeight: 20,
-    paddingHorizontal: 12,
-  },
+  emptyState: { marginHorizontal: -24 },
   retry: {
     marginTop: 8,
     minHeight: 44,
