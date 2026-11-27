@@ -58,6 +58,10 @@ npm run android    # or: npm run ios / npm run web
 
 Plain and readable: IBM Plex Sans and Mono, a paper and ink palette with dark as the default, one vermilion accent, and rules instead of cards. No gradients, shadows, or blur. Motion is spring-based and typographic: pages set, lines rise, rules draw. Shared press-scale feedback keeps navigation, topic rows, lesson tabs, and saved-topic actions responsive without stacking extra effects on answer choices or buttons. A compact running head on Intro, Levels, and Topic keeps the hierarchy visible.
 
+## License
+
+ZEDX is distributed under the [MIT License](LICENSE). You may use, modify, and redistribute the project, provided the copyright and license notice is retained in redistributed copies. Third-party libraries, fonts, and assets remain subject to their own licenses.
+
 ## Notes
 
 - The project was renamed from **SyntaxLibrary** to **ZEDX** on 2026-11-02 — app name, slug, package name, folder, brand, and the icon, favicon, and splash assets. The `app.json` URL scheme, the Android package, and the EAS `projectId` still use the old identifiers. Changing those affects deep links, the Play identity, and the EAS link, so it's kept as a separate decision.
