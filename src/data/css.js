@@ -17,42 +17,46 @@ export default {
       topics: [
         { id: "c1", title: "Basic Rule Syntax", syntax: "selector {\n  property: value;\n}", description: "A CSS rule targets element(s) with a selector, then sets one or more property: value pairs inside braces." },
         { id: "c2", title: "Selectors", syntax: "p { }        /* element */\n.box { }     /* class */\n#main { }    /* id */\n* { }        /* all elements */", description: "Selectors choose which elements a rule applies to." },
+        { id: "c17", title: "Comments", syntax: "/* This is a comment */", description: "CSS comments are wrapped in /* */ and are ignored by the browser." },
         { id: "c4", title: "Colors", syntax: "color: red;\ncolor: #ff0000;\ncolor: rgb(255, 0, 0);\ncolor: rgba(255, 0, 0, 0.5);", description: "Colors can be named, hex, rgb/rgba, or hsl." },
         { id: "c14", title: "Units", syntax: "width: 100px;   /* pixels */\nwidth: 50%;     /* percent of parent */\nwidth: 2em;     /* relative to font */", description: "CSS supports absolute (px) and relative (%, em, rem, vw, vh) units." },
-        { id: "c17", title: "Comments", syntax: "/* This is a comment */", description: "CSS comments are wrapped in /* */ and are ignored by the browser." },
-      ],
-      quiz: {
-        passingScore: 3,
-        questions: [
-          { question: "What does CSS stand for?", options: ["Cascading Style Sheets", "Computer Style System", "Creative Style Sheets", "Color Style Syntax"], correct: 0 },
-          { question: "Which selector targets an element by its ID?", options: [".class", "#id", "*", "element"], correct: 1 },
-          { question: "What property changes text color?", options: ["font-color", "text-color", "color", "background-color"], correct: 2 },
-          { question: "Which unit is relative to the parent element's font size?", options: ["px", "em", "rem", "vw"], correct: 1 },
-          { question: "What does 'cascading' mean in CSS?", options: ["Styles flow like water", "More specific rules override general ones", "CSS is only for waterfalls", "All styles are equal"], correct: 1 }
-        ]
-      }
+        { id: "c5", title: "Box Model", syntax: "div {\n  margin: 10px;\n  border: 1px solid black;\n  padding: 10px;\n  width: 200px;\n}", description: "Every element is a box: content, padding, border, and margin." },
+        {
+            "id": "c18",
+            "title": "Display Modes & Normal Flow",
+            "syntax": ".panel { display: block; }\n.tag { display: inline-block; }\n.hidden { display: none; }",
+            "description": "display controls an element's outer layout role and, for some values, its inner formatting context. Understanding normal flow explains the default layout before flexbox or grid is introduced."
+          }
+      ]
     },
     {
       level: "L2",
       label: "Intermediate",
       topics: [
-        { id: "c5", title: "Box Model", syntax: "div {\n  margin: 10px;\n  border: 1px solid black;\n  padding: 10px;\n  width: 200px;\n}", description: "Every element is a box: content, padding, border, and margin." },
+        { id: "c3", title: "Combinators", syntax: "div p { }     /* descendant */\ndiv > p { }   /* direct child */\ndiv + p { }   /* adjacent sibling */", description: "Combinators describe relationships between selectors." },
         { id: "c9", title: "Typography", syntax: "p {\n  font-family: Arial, sans-serif;\n  font-size: 16px;\n  font-weight: bold;\n  line-height: 1.5;\n}", description: "Controls text appearance: font, size, weight, and spacing." },
         { id: "c10", title: "Backgrounds", syntax: 'div {\n  background-color: #eee;\n  background-image: url("bg.png");\n  background-size: cover;\n}', description: "Sets an element's background color and/or image." },
-        { id: "c3", title: "Combinators", syntax: "div p { }     /* descendant */\ndiv > p { }   /* direct child */\ndiv + p { }   /* adjacent sibling */", description: "Combinators describe relationships between selectors." },
         { id: "c11", title: "Pseudo-classes", syntax: "a:hover { }\nli:first-child { }\ninput:focus { }", description: "Pseudo-classes style elements based on state or position." },
         { id: "c12", title: "Pseudo-elements", syntax: 'p::before { content: "→ "; }\np::first-line { }', description: "Pseudo-elements style a specific part of an element." },
-      ],
-      quiz: {
-        passingScore: 3,
-        questions: [
-          { question: "Which is NOT part of the Box Model?", options: ["Margin", "Padding", "Background", "Border"], correct: 2 },
-          { question: "What does 'flex-direction: row' do?", options: ["Arranges items in a column", "Arranges items in a row", "Hides all items", "Makes items round"], correct: 1 },
-          { question: "Which pseudo-class targets a hovered element?", options: ["a:visited", "a:active", "a:hover", "a:focus"], correct: 2 },
-          { question: "What does 'box-sizing: border-box' do?", options: ["Includes padding and border in width/height", "Excludes padding from width/height", "Adds a shadow", "Makes the box round"], correct: 0 },
-          { question: "Which is NOT a valid CSS position value?", options: ["static", "relative", "absolute", "flexible"], correct: 3 }
-        ]
-      }
+        {
+            "id": "c19",
+            "title": "Float & Clear",
+            "syntax": ".thumbnail { float: left; margin: 0 1rem 1rem 0; }\n.article { display: flow-root; }",
+            "description": "float moves a box toward one side and lets inline content flow around it. clear moves an element below earlier floats. Flexbox and grid are usually better for full page layouts."
+          },
+        {
+            "id": "c20",
+            "title": "Gradients & Opacity",
+            "syntax": ".banner {\n  background: linear-gradient(90deg, #192f29, #72927b);\n}\n.panel { background: rgb(25 47 41 / 75%); }",
+            "description": "Gradients create image-like color transitions without external image files. Opacity controls the transparency of a complete element, while alpha colors can make only a painted color translucent."
+          },
+        {
+            "id": "c21",
+            "title": "Borders, Outlines & Shadows",
+            "syntax": ".card {\n  border: 1px solid #72927b;\n  border-radius: 12px;\n  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);\n}\nbutton:focus-visible { outline: 3px solid currentColor; }",
+            "description": "Borders, outlines, and shadows shape a component's visible boundary. They look related but affect layout and keyboard focus feedback in different ways."
+          }
+      ]
     },
     {
       level: "L3",
@@ -64,17 +68,34 @@ export default {
         { id: "c13", title: "Media Queries", syntax: "@media (max-width: 600px) {\n  .box {\n    display: none;\n  }\n}", description: "Applies styles based on screen size - key for responsive design." },
         { id: "c15", title: "Variables", syntax: ":root {\n  --main-color: blue;\n}\n.box {\n  color: var(--main-color);\n}", description: "Custom properties store reusable values." },
         { id: "c16", title: "Transitions", syntax: ".box {\n  transition: all 0.3s ease-in-out;\n}\n.box:hover {\n  transform: scale(1.1);\n}", description: "Animates a property change smoothly over time." },
-      ],
-      quiz: {
-        passingScore: 3,
-        questions: [
-          { question: "What does 'grid-template-columns: 1fr 1fr 1fr' do?", options: ["Creates 3 equal columns", "Creates 1 column with 3 rows", "Creates 3 unequal columns", "Creates a single column"], correct: 0 },
-          { question: "Which media query targets phones?", options: ["@media (min-width: 1024px)", "@media (max-width: 600px)", "@media (orientation: landscape)", "@media (print)"], correct: 1 },
-          { question: "How do you define a CSS variable?", options: ["$color: blue;", "--color: blue;", "@color: blue;", "var(color: blue);"], correct: 1 },
-          { question: "What does 'transform: scale(1.1)' do?", options: ["Moves the element", "Rotates the element", "Makes it 10% bigger", "Makes it 10% smaller"], correct: 2 },
-          { question: "What is the 'gap' property used for?", options: ["Adds space between flex/grid items", "Adds space inside an element", "Adds a border", "Creates a gap in text"], correct: 0 }
-        ]
-      }
+
+
+          {
+            "id": "c22",
+            "title": "CSS Math Functions",
+            "syntax": ".content { width: min(92%, 70rem); }\nh1 { font-size: clamp(2rem, 5vw, 4rem); }\n.panel { height: calc(100vh - 5rem); }",
+            "description": "calc(), min(), max(), and clamp() calculate CSS values from other values. They help build fluid layouts that respond to available space without adding many breakpoints."
+          },
+          {
+            "id": "c23",
+            "title": "Transforms & Transform Origin",
+            "syntax": ".tile {\n  transform-origin: center;\n  transform: translateY(-4px) rotate(3deg) scale(1.02);\n}",
+            "description": "Transforms visually move, rotate, or scale elements without changing their original normal-flow layout space. transform-origin sets the point around which a transform occurs."
+          },
+          {
+            "id": "c24",
+            "title": "Keyframe Animations",
+            "syntax": "@keyframes pulse {\n  0%, 100% { transform: scale(1); }\n  50% { transform: scale(1.04); }\n}\n.badge { animation: pulse 1.2s ease-in-out infinite; }",
+            "description": "Keyframes describe how styles change over time. The animation property connects an element to a named sequence and controls duration, pacing, repetition, and direction."
+          },
+          {
+            "id": "c25",
+            "title": "Cascade Layers & Feature Queries",
+            "syntax": "@layer reset, components, utilities;\n@layer components { .card { padding: 1rem; } }\n@supports (display: grid) { .layout { display: grid; } }",
+            "description": "Cascade layers organize groups of CSS rules into explicit priority order. @supports checks whether a browser recognizes a declaration before applying progressive enhancements."
+          }
+
+]
     }
   ]
 };

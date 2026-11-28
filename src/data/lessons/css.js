@@ -1197,4 +1197,381 @@ body {
       },
     },
   ],
+
+  "c18": [
+  {
+    "title": "Block and inline boxes",
+    "body": [
+      "A block box begins on a new line in normal flow. An inline box flows within a line of text, so width and height do not behave like they do on a normal block box.",
+      "Common block elements include div and p. Common inline elements include span, a, and strong. CSS can change their default display behavior."
+    ],
+    "example": {
+      "code": ".panel { display: block; }\n.tag { display: inline; }",
+      "caption": "The panel begins a new block; the tag flows with text."
+    },
+    "wrong": {
+      "code": ".tag { display: inline; width: 120px; }",
+      "why": "A normal inline box does not honor width as a block or inline-block would."
+    }
+  },
+  {
+    "title": "Use inline-block for compact controls",
+    "body": [
+      "inline-block participates in an inline formatting context but accepts width and height like a block. It suits badges and compact controls that should sit beside text.",
+      "Whitespace in the markup can create visible gaps between inline-block items. Use flexbox or grid when more complex alignment is needed."
+    ],
+    "example": {
+      "code": ".chip {\n  display: inline-block;\n  padding: .25rem .75rem;\n}",
+      "caption": "The chip flows inline but keeps a padded box."
+    },
+    "wrong": {
+      "code": ".chip {\n  display: inline;\n  width: 120px;\n}",
+      "why": "Inline elements do not honor width like inline-block."
+    }
+  },
+  {
+    "title": "Hide content intentionally",
+    "body": [
+      "display:none removes an element from layout and the accessibility tree. visibility:hidden keeps its layout space but hides it from view and assistive technology.",
+      "Do not hide essential content without an accessible alternative. If content should be visually hidden but remain available to assistive technology, use a deliberate visually-hidden pattern."
+    ],
+    "example": {
+      "code": ".help { display: none; }\n.help.is-open { display: block; }",
+      "caption": "The help content appears only in the open state."
+    },
+    "wrong": {
+      "code": ".save-button { display: none; }",
+      "why": "The essential action disappears for all users. Provide an accessible alternative before hiding a control."
+    }
+  }
+],
+  "c19": [
+  {
+    "title": "Float an image beside text",
+    "body": [
+      "A floated element moves toward the left or right edge of its containing block. Inline content can flow around it, which makes float useful for text wrapping around an image.",
+      "Float is not a replacement for flexbox or grid. Use it for text wrapping, and use modern layout tools for navigation or columns."
+    ],
+    "example": {
+      "code": ".article-image {\n  float: right;\n  width: 12rem;\n  margin: 0 0 1rem 1rem;\n}",
+      "caption": "Paragraph text flows around the image."
+    },
+    "wrong": {
+      "code": ".navigation {\n  float: left;\n  width: 33%;\n}",
+      "why": "Using float for a multi-column navigation layout complicates alignment. Use flexbox or grid."
+    }
+  },
+  {
+    "title": "Clear preceding floats",
+    "body": [
+      "clear specifies which side's floats an element must move below. clear:left responds to left floats, clear:right to right floats, and clear:both to either side.",
+      "A later section may appear beside a floated image when it should start beneath it. Apply clear to that section when the content flow needs to move past the float."
+    ],
+    "example": {
+      "code": ".footer { clear: both; }",
+      "caption": "The footer starts below floats on either side."
+    },
+    "wrong": {
+      "code": ".footer { float: both; }",
+      "why": "both is not a valid float value. The clear property accepts both."
+    }
+  },
+  {
+    "title": "Contain floats with flow-root",
+    "body": [
+      "A parent can establish a new block formatting context so its height contains floated children. display:flow-root provides a direct way to do this without extra markup.",
+      "Avoid the old clearfix hack when a modern formatting context solves the problem. Check how margin behavior changes after creating the new context."
+    ],
+    "example": {
+      "code": ".card {\n  display: flow-root;\n  border: 1px solid #888;\n}",
+      "caption": "The card's height includes its floated descendants."
+    },
+    "wrong": {
+      "code": ".card { display: inline; }",
+      "why": "Changing the parent to inline does not contain the float. Use flow-root or another layout method."
+    }
+  }
+],
+  "c20": [
+  {
+    "title": "Create a linear gradient",
+    "body": [
+      "linear-gradient() creates a gradient along a line. Set a direction or angle, then give the color stops that mark where each color appears.",
+      "A gradient is an image value. Use background-image or the background shorthand, and choose a fallback background color for older or limited rendering environments."
+    ],
+    "example": {
+      "code": ".banner {\n  background-color: #29483f;\n  background-image: linear-gradient(90deg, #192f29, #72927b);\n}",
+      "caption": "The gradient runs from left to right."
+    },
+    "wrong": {
+      "code": ".banner {\n  background-color: linear-gradient(red, blue);\n}",
+      "why": "background-color accepts a color, not an image. Use background or background-image."
+    }
+  },
+  {
+    "title": "Use radial gradients and color stops",
+    "body": [
+      "radial-gradient() radiates from a center point rather than following a straight line. Multiple stops can create a focal glow or a sharp transition between colors.",
+      "Keep text readable over the full gradient. Check contrast at the lightest and darkest parts of the background."
+    ],
+    "example": {
+      "code": ".orb {\n  background: radial-gradient(circle at 30% 30%, #e1eade, #72927b 45%, #192f29);\n}",
+      "caption": "The brightest color begins near the upper-left."
+    },
+    "wrong": {
+      "code": ".orb {\n  background: radial-gradient(circle, red, blue to right);\n}",
+      "why": "The radial gradient syntax does not accept that trailing direction. Use a valid shape and color-stop sequence."
+    }
+  },
+  {
+    "title": "Distinguish opacity from alpha",
+    "body": [
+      "opacity affects the entire element, including its text and children. An alpha color affects only the color where it is applied, so foreground text can remain fully opaque.",
+      "Use alpha in the background color when only the surface should be translucent. Use opacity when the complete element should fade."
+    ],
+    "example": {
+      "code": ".panel {\n  background: rgb(25 47 41 / 75%);\n  color: white;\n}",
+      "caption": "Only the background is translucent."
+    },
+    "wrong": {
+      "code": ".panel { opacity: .75; }",
+      "why": "This fades the text and all children along with the background."
+    }
+  }
+],
+  "c21": [
+  {
+    "title": "Set a border",
+    "body": [
+      "A border surrounds an element's content and padding. Its shorthand can set width, style, and color together, while border-radius rounds its corners.",
+      "A border contributes to box size unless box-sizing and declared dimensions account for it. Use consistent border styles across components."
+    ],
+    "example": {
+      "code": ".card {\n  border: 1px solid #72927b;\n  border-radius: .75rem;\n}",
+      "caption": "The shorthand sets width, style, and color."
+    },
+    "wrong": {
+      "code": ".card { border: -1px solid #72927b; }",
+      "why": "Border widths cannot be negative, so the browser rejects this border declaration."
+    }
+  },
+  {
+    "title": "Use outlines for focus",
+    "body": [
+      "An outline is drawn outside the border and does not change an element's layout size. It is useful for showing keyboard focus.",
+      "Do not remove browser focus indicators unless replacing them with a clear alternative. :focus-visible can target states where a visible indicator is especially useful."
+    ],
+    "example": {
+      "code": "button:focus-visible {\n  outline: 3px solid #29483f;\n  outline-offset: 3px;\n}",
+      "caption": "The offset separates the indicator from the control."
+    },
+    "wrong": {
+      "code": "button:focus { outline: none; }",
+      "why": "This removes the visible focus indicator needed by keyboard users."
+    }
+  },
+  {
+    "title": "Create shadows without changing layout",
+    "body": [
+      "box-shadow paints one or more shadows behind an element. Its values describe horizontal offset, vertical offset, blur, spread, and color.",
+      "Shadows do not reserve layout space and can be clipped by ancestor overflow. Use them sparingly so elevation remains meaningful."
+    ],
+    "example": {
+      "code": ".card {\n  box-shadow: 0 .5rem 1.5rem rgb(0 0 0 / 14%);\n}",
+      "caption": "A soft shadow suggests a raised surface."
+    },
+    "wrong": {
+      "code": ".card { width: calc(100% + 30px); }",
+      "why": "Changing width is not a shadow effect and changes layout. Use box-shadow for visual elevation."
+    }
+  }
+],
+  "c22": [
+  {
+    "title": "Calculate with calc",
+    "body": [
+      "calc() performs arithmetic inside a CSS value. It can combine compatible units, such as a viewport height minus a fixed header size.",
+      "Keep spaces around plus and minus operators. Parentheses can make the intended grouping clearer."
+    ],
+    "example": {
+      "code": ".content {\n  width: calc(100% - 2rem);\n  min-height: calc(100vh - 4rem);\n}",
+      "caption": "Subtract fixed spacing from a flexible size."
+    },
+    "wrong": {
+      "code": ".content { width: calc(100%-2rem); }",
+      "why": "Addition and subtraction operators in calc() require surrounding whitespace."
+    }
+  },
+  {
+    "title": "Compare values with min and max",
+    "body": [
+      "min() returns the smallest argument, while max() returns the largest. They are useful for a fluid width with a maximum cap or a gutter with a minimum size.",
+      "Use compatible values and test the layout at narrow and wide widths. The chosen value must still suit the property it is assigned to."
+    ],
+    "example": {
+      "code": ".content {\n  width: min(92%, 70rem);\n  padding-inline: max(1rem, 4vw);\n}",
+      "caption": "The content has a maximum width and a minimum gutter."
+    },
+    "wrong": {
+      "code": ".content { width: min(92% 70rem); }",
+      "why": "Arguments in min() must be separated by commas. Without the comma, the function value is invalid."
+    }
+  },
+  {
+    "title": "Clamp fluid values",
+    "body": [
+      "clamp(min, preferred, max) uses the preferred value while keeping it between the stated minimum and maximum. It is useful for fluid typography and spacing.",
+      "Choose bounds that protect readability on small and large screens. Test actual content, not only the numeric result."
+    ],
+    "example": {
+      "code": "h1 { font-size: clamp(2rem, 5vw, 4rem); }",
+      "caption": "The heading scales but stays within limits."
+    },
+    "wrong": {
+      "code": "h1 { font-size: clamp(5vw, 2rem, 4rem); }",
+      "why": "The first argument is the minimum. On a wide screen, 5vw can exceed 4rem; because clamp() resolves as max(minimum, min(preferred, maximum)), that larger minimum wins and defeats the intended cap. Put 5vw in the second position."
+    }
+  }
+],
+  "c23": [
+  {
+    "title": "Move, rotate, and scale",
+    "body": [
+      "translate() moves an element, rotate() turns it, and scale() changes its visual size. Multiple transform functions can appear in one transform declaration.",
+      "Transforms affect painting, not the element's original space in normal flow. Other content continues as though the transformed element had not moved."
+    ],
+    "example": {
+      "code": ".tile {\n  transform: translateX(1rem) rotate(4deg);\n}",
+      "caption": "The tile moves and rotates visually."
+    },
+    "wrong": {
+      "code": ".tile { transform: margin-left(1rem); }",
+      "why": "margin-left() is not a transform function. Use translateX() for a visual shift."
+    }
+  },
+  {
+    "title": "Choose a transform origin",
+    "body": [
+      "transform-origin selects the point used for rotation and scaling. The default is the center, but a corner or edge can make an object appear anchored to a hinge or pivot.",
+      "Changing the origin does not move the element's layout box. It changes how the transformed drawing is calculated around its anchor."
+    ],
+    "example": {
+      "code": ".door {\n  transform-origin: left center;\n  transform: rotateY(25deg);\n}",
+      "caption": "The door rotates around its left edge."
+    },
+    "wrong": {
+      "code": ".door { transform: left; }",
+      "why": "The transform property needs a transform function. transform-origin only defines the anchor."
+    }
+  },
+  {
+    "title": "Understand stacking and layout effects",
+    "body": [
+      "A transformed element can create a new stacking context and affect how positioned descendants are layered. It can also establish a containing block for some positioned descendants.",
+      "Avoid transforming a large page container just to nudge a small child. Apply the transform to the specific element and inspect overlays and fixed descendants."
+    ],
+    "example": {
+      "code": ".icon { transform: translateY(-2px); }",
+      "caption": "Only the icon receives the visual adjustment."
+    },
+    "wrong": {
+      "code": ".page { transform: translateZ(0); }",
+      "why": "Transforming the whole page can create an unnecessary stacking context and affect fixed descendants."
+    }
+  }
+],
+  "c24": [
+  {
+    "title": "Define keyframe stages",
+    "body": [
+      "@keyframes names an animation and describes styles at percentages along its timeline. from and to can represent the beginning and end.",
+      "Keep each sequence focused on one clear change. Too many simultaneous moving properties can make an interface harder to follow."
+    ],
+    "example": {
+      "code": "@keyframes fade-in {\n  from { opacity: 0; }\n  to { opacity: 1; }\n}",
+      "caption": "The element fades from transparent to opaque."
+    },
+    "wrong": {
+      "code": "@frames fade-in { from { opacity: 0; } }",
+      "why": "@frames is not the CSS at-rule. Use @keyframes."
+    }
+  },
+  {
+    "title": "Configure an animation",
+    "body": [
+      "animation-name selects the keyframes, duration sets the cycle length, timing-function controls pacing, and iteration-count determines repetition.",
+      "Use finite repetitions for feedback. Infinite movement should have a clear purpose and should not distract from the content."
+    ],
+    "example": {
+      "code": ".toast {\n  animation: fade-in 240ms ease-out 1;\n  animation-fill-mode: both;\n}",
+      "caption": "The toast animates once and retains its final state."
+    },
+    "wrong": {
+      "code": ".toast { animation: fade-in -1s infinite; }",
+      "why": "A negative animation duration is invalid. Use a positive time value."
+    }
+  },
+  {
+    "title": "Respect reduced motion",
+    "body": [
+      "Movement can explain a state change, but some users prefer reduced motion. prefers-reduced-motion lets a stylesheet reduce or remove non-essential animation.",
+      "Do not rely on movement alone to communicate success, errors, or progress. The information should remain understandable when animation is disabled."
+    ],
+    "example": {
+      "code": "@media (prefers-reduced-motion: reduce) {\n  .toast { animation: none; }\n}",
+      "caption": "The toast stays static for users requesting reduced motion."
+    },
+    "wrong": {
+      "code": ".toast { animation: pulse 1s infinite; }",
+      "why": "This loops for everyone. Provide a reduced-motion alternative and avoid unnecessary infinite movement."
+    }
+  }
+],
+  "c25": [
+  {
+    "title": "Declare cascade layers",
+    "body": [
+      "@layer creates named groups of CSS rules. A layer-order statement can establish the priority order before the layer contents appear.",
+      "For normal declarations of the same origin, later layers have higher priority than earlier layers. Unlayered normal declarations have priority over layered normal declarations."
+    ],
+    "example": {
+      "code": "@layer reset, base, components, utilities;\n@layer base { body { margin: 0; } }\n@layer components { .card { padding: 1rem; } }",
+      "caption": "The declared order makes layer priority explicit."
+    },
+    "wrong": {
+      "code": "@layer utilities, components;\n@layer components { .button { color: gray; } }\n@layer utilities { .button { color: green; } }",
+      "why": "For normal declarations, the later utilities layer wins. Do not assume the first layer has highest priority."
+    }
+  },
+  {
+    "title": "Use feature queries",
+    "body": [
+      "@supports checks whether the browser recognizes a property-value declaration. It is useful for progressive enhancement when a newer layout should be applied only where supported.",
+      "Keep a working fallback outside the feature query. A support check detects recognition, not every possible browser bug."
+    ],
+    "example": {
+      "code": ".layout { display: block; }\n@supports (display: grid) {\n  .layout { display: grid; grid-template-columns: 1fr 1fr; }\n}",
+      "caption": "The basic layout still works without the enhancement."
+    },
+    "wrong": {
+      "code": "@media (display: grid) {\n  .layout { display: grid; }\n}",
+      "why": "Media queries check viewport or device features. Use @supports to test CSS declaration support."
+    }
+  },
+  {
+    "title": "Combine support conditions",
+    "body": [
+      "Feature queries can combine conditions with and, or, and not. Parentheses keep each tested declaration clear when several features are required.",
+      "A support query should not make essential content disappear in browsers that lack the enhancement. Test the fallback path as well as the enhanced path."
+    ],
+    "example": {
+      "code": "@supports (display: grid) and (gap: 1rem) {\n  .gallery { display: grid; gap: 1rem; }\n}",
+      "caption": "Both declarations must be supported."
+    },
+    "wrong": {
+      "code": "@supports display: grid {\n  .gallery { display: grid; }\n}",
+      "why": "The feature query condition needs parentheses around its declaration."
+    }
+  }
+],
 };

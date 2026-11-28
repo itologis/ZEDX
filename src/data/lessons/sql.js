@@ -287,75 +287,40 @@ WHERE last_login = NULL;`,
     },
   ],
 
-  sql6: [
+  sql6:     [
     {
-      title: "Columns and types",
-      body: [
-        `[[CREATE TABLE]] lists each column with a type. SQLite is flexible about types; Postgres and MySQL are stricter.`,
-        `Column names must be unique within the table.`,
-      ],
-      example: {
-        code: `CREATE TABLE users (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT
-);`,
-        caption: `A key, a required name, an optional email.`,
+      "title": "Create a table and choose column types",
+      "body": "CREATE TABLE defines the structure of a table before rows are added. Each column needs a name and a data type that suits the values it stores. Keep names clear and choose types that match the information, such as an integer identifier, a text name, or a numeric age.",
+      "example": {
+        "code": "CREATE TABLE users (\n  id INTEGER,\n  name VARCHAR(100),\n  age INTEGER,\n  city VARCHAR(100)\n);"
       },
-      wrong: {
-        code: `CREATE TABLE users (
-  id INTEGER,
-  id TEXT
-);`,
-        why: `Two columns cannot share a name, so the table is rejected.`,
-      },
+      "wrong": {
+        "code": "CREATE TABLE users (\n  id INTEGER,\n  id TEXT\n);",
+        "why": "Column names must be unique within one table. Giving two columns the same name makes the table definition invalid."
+      }
     },
     {
-      title: "Constraints",
-      body: [
-        `[[NOT NULL]] requires a value. [[UNIQUE]] forbids duplicates. [[PRIMARY KEY]] identifies the row. [[FOREIGN KEY]] points at another table's key.`,
-        `A foreign key also needs the referenced table and column to exist before the constraint can be enforced.`,
-      ],
-      example: {
-        code: `CREATE TABLE orders (
-  id INTEGER PRIMARY KEY,
-  user_id INTEGER NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);`,
-        caption: `Every order belongs to an existing user.`,
+      "title": "Identify rows with a primary key",
+      "body": "A primary key identifies each row in a table. It must be unique and cannot be NULL. NOT NULL can also be used for other columns that require a value. These basic constraints help the database reject incomplete or duplicate records.",
+      "example": {
+        "code": "CREATE TABLE users (\n  id INTEGER PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  age INTEGER,\n  city VARCHAR(100)\n);"
       },
-      wrong: {
-        code: `CREATE TABLE orders (
-  id INTEGER PRIMARY KEY,
-  user_id INTEGER,
-  FOREIGN KEY (user_id) REFERENCES customer(id)
-);`,
-        why: `The referenced table is customer, which does not exist. The constraint cannot be created.`,
-      },
+      "wrong": {
+        "code": "CREATE TABLE users (\n  id INTEGER PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  another_id INTEGER PRIMARY KEY\n);",
+        "why": "A table has one primary-key constraint. If more than one column is needed to identify a row, define a single composite primary key instead."
+      }
     },
     {
-      title: "Auto-numbering differs",
-      body: [
-        `SQLite uses [[INTEGER PRIMARY KEY]] to auto-assign row ids. MySQL uses [[AUTO_INCREMENT]], Postgres uses [[GENERATED ALWAYS AS IDENTITY]] or serial.`,
-        `Do not copy one dialect's syntax into another and assume it works.`,
-      ],
-      example: {
-        code: `-- SQLite
-CREATE TABLE notes (
-  id INTEGER PRIMARY KEY,
-  body TEXT
-);`,
-        caption: `The primary key declares the rowid alias.`,
+      "title": "Review a complete table definition",
+      "body": "A complete table definition brings its column names, data types, and basic constraints together. Check that every column has a suitable type, the primary key identifies one row, and required values use NOT NULL. The next Beginner SQL topic uses INSERT to add rows to this table.",
+      "example": {
+        "code": "CREATE TABLE users (\n  id INTEGER PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  age INTEGER,\n  city VARCHAR(100)\n);"
       },
-      wrong: {
-        code: `-- SQLite
-CREATE TABLE notes (
-  id INTEGER PRIMARY KEY AUTO_INCREMENT,
-  body TEXT
-);`,
-        why: `SQLite does not support AUTO_INCREMENT, so the statement fails. MySQL is the dialect that uses it.`,
-      },
-    },
+      "wrong": {
+        "code": "CREATE TABLE users (\n  id INTEGER PRIMARY KEY,\n  name VARCHAR(100) NOT NULL\n  age INTEGER\n);",
+        "why": "Each column definition must be separated by a comma. The missing comma after the name column makes the table definition invalid."
+      }
+    }
   ],
 
   sql7: [
@@ -924,4 +889,381 @@ WHERE rn <= 3;`,
       },
     },
   ],
+
+  "sql16": [
+  {
+    "title": "Identify entities and attributes",
+    "body": [
+      "An entity represents a thing the database needs to store, such as a student or course. Attributes describe its properties, and a key identifies each entity instance.",
+      "Choose attributes that describe one fact and give each entity a stable identifier. Avoid storing several unrelated values in one field."
+    ],
+    "example": {
+      "code": "STUDENT(\n  student_id PRIMARY KEY,\n  name,\n  email\n)",
+      "caption": "The student entity has a key and descriptive attributes."
+    },
+    "wrong": {
+      "code": "STUDENT(\n  name_and_email\n)",
+      "why": "Combining several independent facts into one field makes filtering and validation harder. Model attributes separately."
+    }
+  },
+  {
+    "title": "Model relationships",
+    "body": [
+      "A relationship describes how entities are associated. A one-to-many relationship can be represented by placing a foreign key on the many side; a many-to-many relationship usually needs a junction table.",
+      "Use an ERD to show entities, keys, and relationship cardinality before implementation. The diagram helps find missing entities and ambiguous associations."
+    ],
+    "example": {
+      "code": "STUDENT(student_id, name)\nCOURSE(course_id, title)\nENROLLMENT(student_id, course_id)",
+      "caption": "ENROLLMENT connects students and courses."
+    },
+    "wrong": {
+      "code": "STUDENT(student_id, course_id)\nCOURSE(course_id, title)",
+      "why": "Storing one course field in STUDENT cannot represent a student enrolled in many courses cleanly. Use a junction table."
+    }
+  },
+  {
+    "title": "Normalize repeated information",
+    "body": [
+      "First normal form expects values to be atomic rather than repeating groups. Higher normal forms reduce dependencies that can create duplication and inconsistent updates.",
+      "Normalization is a design tool, not a command to split every table endlessly. Identify functional dependencies and preserve relationships with keys."
+    ],
+    "example": {
+      "code": "ENROLLMENT(\n  student_id,\n  course_id,\n  enrolled_at,\n  PRIMARY KEY (student_id, course_id)\n)",
+      "caption": "The relationship has its own attributes and key."
+    },
+    "wrong": {
+      "code": "STUDENT(\n  student_id,\n  course_1,\n  course_2,\n  course_3\n)",
+      "why": "Repeating course columns are difficult to query and extend. Store each enrollment as a separate row."
+    }
+  }
+],
+  "sql17": [
+  {
+    "title": "Remove duplicate query rows",
+    "body": [
+      "DISTINCT asks the database to return unique combinations of the selected columns. If several selected columns are present, uniqueness is evaluated across that combination.",
+      "Use DISTINCT when duplicates are not meaningful in the result. Do not use it as a substitute for understanding why a JOIN produces repeated rows."
+    ],
+    "example": {
+      "code": "SELECT DISTINCT city\nFROM students;",
+      "caption": "Each city appears once."
+    },
+    "wrong": {
+      "code": "SELECT DISTINCT city, name\nFROM students;",
+      "why": "This returns distinct city-and-name pairs, not one row per city. Select only the columns that define the desired uniqueness."
+    }
+  },
+  {
+    "title": "Combine queries with UNION",
+    "body": [
+      "UNION combines compatible result sets and removes duplicate rows. The queries need the same number of output columns with compatible types in corresponding positions.",
+      "Column names come from the first query. Use aliases there to give the combined result clear names."
+    ],
+    "example": {
+      "code": "SELECT student_id AS person_id FROM current_students\nUNION\nSELECT student_id FROM alumni;",
+      "caption": "The result contains unique IDs across both sources."
+    },
+    "wrong": {
+      "code": "SELECT student_id FROM current_students\nUNION\nSELECT student_id, name FROM alumni;",
+      "why": "The queries return a different number of columns. Set-operation branches must have compatible result shapes."
+    }
+  },
+  {
+    "title": "Choose UNION ALL, INTERSECT, or MINUS",
+    "body": [
+      "UNION ALL keeps duplicates and can avoid the duplicate-elimination work. INTERSECT returns rows common to both results, while Oracle uses MINUS for rows in the first result but not the second.",
+      "Set operations combine whole result rows, not related columns from separate tables. Use JOIN when rows should be matched through a relationship."
+    ],
+    "example": {
+      "code": "SELECT student_id FROM current_students\nINTERSECT\nSELECT student_id FROM scholarship_holders;",
+      "caption": "The result contains IDs present in both sets."
+    },
+    "wrong": {
+      "code": "SELECT a.student_id, b.name\nFROM current_students a\nUNION\nSELECT student_id\nFROM alumni;",
+      "why": "The branches have different output column counts. Use a JOIN for related columns or align the set-operation result shapes."
+    }
+  }
+],
+  "sql18": [
+  {
+    "title": "Use character and numeric functions",
+    "body": [
+      "Character functions such as UPPER(), LOWER(), SUBSTR(), and LENGTH() transform or inspect text. Numeric functions such as ROUND(), TRUNC(), and MOD() work with numbers.",
+      "A single-row function is evaluated for each row in the query result. Combine functions when a value needs several transformations."
+    ],
+    "example": {
+      "code": "SELECT UPPER(name), SUBSTR(name, 1, 3)\nFROM students;",
+      "caption": "Each row returns an uppercase name and a prefix."
+    },
+    "wrong": {
+      "code": "SELECT name, COUNT(*)\nFROM students;",
+      "why": "The query mixes a regular column with an aggregate but has no GROUP BY for name."
+    }
+  },
+  {
+    "title": "Work with date values",
+    "body": [
+      "Oracle date functions include SYSDATE, ADD_MONTHS, MONTHS_BETWEEN, and LAST_DAY. Date arithmetic can calculate intervals and calendar boundaries.",
+      "Use date values rather than storing dates as arbitrary text. Formatting a date for display is different from changing the underlying date value."
+    ],
+    "example": {
+      "code": "SELECT ADD_MONTHS(SYSDATE, 1)\nFROM dual;",
+      "caption": "The expression returns a date one month later."
+    },
+    "wrong": {
+      "code": "SELECT SYSDATE + \"one month\"\nFROM dual;",
+      "why": "Date arithmetic expects a numeric day interval, not descriptive text. Use date functions such as ADD_MONTHS()."
+    }
+  },
+  {
+    "title": "Convert and handle null values",
+    "body": [
+      "TO_CHAR(), TO_DATE(), and TO_NUMBER() convert values between dates, numbers, and text. NVL() and COALESCE() can provide a fallback for null values.",
+      "Use explicit format masks when converting date text so interpretation does not depend on session settings. Avoid implicit conversions in important queries."
+    ],
+    "example": {
+      "code": "SELECT TO_CHAR(order_date, 'YYYY-MM-DD')\nFROM orders;",
+      "caption": "The date is formatted as text for display."
+    },
+    "wrong": {
+      "code": "SELECT TO_DATE('2026-11-28')\nFROM dual;",
+      "why": "Use an explicit format mask when the expected text format matters, such as TO_DATE('2026-11-28','YYYY-MM-DD')."
+    }
+  }
+],
+  "sql19": [
+  {
+    "title": "Write a searched CASE expression",
+    "body": [
+      "A searched CASE expression checks conditions from top to bottom. The result for the first true WHEN branch is returned, and ELSE supplies a fallback.",
+      "Use END to close the expression and give it an alias when the result should have a readable column name."
+    ],
+    "example": {
+      "code": "SELECT name,\n       CASE\n         WHEN score >= 75 THEN 'Pass'\n         ELSE 'Retry'\n       END AS result\nFROM students;",
+      "caption": "Each row receives a result label."
+    },
+    "wrong": {
+      "code": "SELECT name,\n       CASE WHEN score >= 75 THEN 'Pass'\nFROM students;",
+      "why": "The CASE expression is missing END and has no complete alternative branch. Close it explicitly."
+    }
+  },
+  {
+    "title": "Use simple CASE and multiple branches",
+    "body": [
+      "A simple CASE compares one expression against several WHEN values. A searched CASE is more flexible because each branch can use a full condition.",
+      "Order conditions from the most specific to the broader cases when they could overlap. The first matching branch wins."
+    ],
+    "example": {
+      "code": "SELECT grade,\n       CASE grade\n         WHEN 'A' THEN 'Excellent'\n         WHEN 'B' THEN 'Good'\n         ELSE 'Review'\n       END AS description\nFROM results;",
+      "caption": "One value is compared with several alternatives."
+    },
+    "wrong": {
+      "code": "CASE grade\n  WHEN grade >= 90 THEN 'A'\nEND",
+      "why": "The simple CASE form compares equality with values. Use searched CASE when each branch needs a range condition."
+    }
+  },
+  {
+    "title": "Use CASE in calculations and ordering",
+    "body": [
+      "CASE can appear in a SELECT list, ORDER BY, or an aggregate expression. It can convert categories into numeric values or apply conditional calculations.",
+      "Keep output types compatible across branches. Databases may need to convert the result to a common type."
+    ],
+    "example": {
+      "code": "SELECT SUM(\n  CASE WHEN status = 'Paid' THEN amount ELSE 0 END\n) AS paid_total\nFROM invoices;",
+      "caption": "Only paid rows contribute their amount."
+    },
+    "wrong": {
+      "code": "SELECT SUM(\n  CASE WHEN status = 'Paid' THEN amount ELSE '0' END\n) FROM invoices;",
+      "why": "The branches mix number and text values. Return compatible numeric values."
+    }
+  }
+],
+  "sql20": [
+  {
+    "title": "Change a table structure",
+    "body": [
+      "ALTER TABLE can add, modify, rename, or drop columns and constraints, with syntax varying by database. In Oracle, ADD can introduce a new column or constraint.",
+      "Plan schema changes carefully when a table already contains data. A new NOT NULL column may require a default or a staged migration to keep existing rows valid."
+    ],
+    "example": {
+      "code": "ALTER TABLE students\nADD email VARCHAR2(255);",
+      "caption": "The table gains an email column."
+    },
+    "wrong": {
+      "code": "ALTER TABLE students\nADD COLUMN email VARCHAR2(255);",
+      "why": "Oracle's ALTER TABLE ADD syntax does not use the optional COLUMN keyword. Follow the target database's dialect."
+    }
+  },
+  {
+    "title": "Enforce data rules with constraints",
+    "body": [
+      "PRIMARY KEY uniquely identifies each row. FOREIGN KEY enforces a reference, UNIQUE prevents duplicate values, NOT NULL requires a value, and CHECK enforces a condition.",
+      "Constraints protect data regardless of which application inserts it. Choose names that make the rule identifiable during maintenance."
+    ],
+    "example": {
+      "code": "ALTER TABLE students\nADD CONSTRAINT uq_students_email\nUNIQUE (email);",
+      "caption": "The database rejects duplicate email values."
+    },
+    "wrong": {
+      "code": "ALTER TABLE students\nADD CONSTRAINT uq_students_email\nCHECK (email);",
+      "why": "CHECK expects a Boolean condition, not a column name by itself. Use UNIQUE for duplicate prevention."
+    }
+  },
+  {
+    "title": "Inspect and plan schema changes",
+    "body": [
+      "A schema migration should account for existing rows, dependent views or applications, and rollback planning. Test a schema change against representative data before deploying it.",
+      "Avoid dropping or changing a column just because the application no longer displays it. Check dependencies and data-retention requirements first."
+    ],
+    "example": {
+      "code": "ALTER TABLE students\nADD status VARCHAR2(20) DEFAULT 'Active';",
+      "caption": "Existing rows receive a suitable default according to Oracle's behavior."
+    },
+    "wrong": {
+      "code": "ALTER TABLE students\nDROP TABLE students;",
+      "why": "This removes the entire table, not one column. Use DROP COLUMN only when removal is intended and dependencies have been reviewed."
+    }
+  }
+],
+  "sql21": [
+  {
+    "title": "Understand users and privileges",
+    "body": [
+      "A database user represents an identity that can connect or own database objects. Privileges describe permitted actions, such as creating a session or selecting rows from a table.",
+      "Give accounts only the permissions needed for their tasks. Application accounts should not receive broad administrative privileges."
+    ],
+    "example": {
+      "code": "CREATE USER analyst IDENTIFIED BY password_value;\nGRANT CREATE SESSION TO analyst;",
+      "caption": "The user can connect after receiving a session privilege."
+    },
+    "wrong": {
+      "code": "GRANT DBA TO application_user;",
+      "why": "DBA is a broad administrative role. An application account should receive only the specific privileges it needs."
+    }
+  },
+  {
+    "title": "Grant and revoke object privileges",
+    "body": [
+      "GRANT assigns an object privilege such as SELECT, INSERT, UPDATE, or DELETE on a table. REVOKE removes a grant that is no longer needed.",
+      "Grant access to named objects and specific actions. Review privileges when users change roles or applications no longer need access."
+    ],
+    "example": {
+      "code": "GRANT SELECT ON students TO analyst;\nREVOKE SELECT ON students FROM analyst;",
+      "caption": "The privilege is assigned and then removed."
+    },
+    "wrong": {
+      "code": "GRANT SELECT ON students TO PUBLIC;",
+      "why": "Granting to PUBLIC exposes the privilege broadly. Grant only to the intended user or role."
+    }
+  },
+  {
+    "title": "Use roles for permission groups",
+    "body": [
+      "A role groups multiple privileges under one name. Administrators can grant the role to users and manage the permissions in one place.",
+      "Separate roles by job function, such as read-only reporting and data maintenance. Avoid granting every role to every account."
+    ],
+    "example": {
+      "code": "CREATE ROLE report_reader;\nGRANT SELECT ON students TO report_reader;\nGRANT report_reader TO analyst;",
+      "caption": "The role carries the read privilege to its user."
+    },
+    "wrong": {
+      "code": "GRANT ALL PRIVILEGES TO analyst;",
+      "why": "This grants far more access than a reporting user needs. Use a narrowly scoped role."
+    }
+  }
+],
+  "sql22": [
+  {
+    "title": "Recognize the block structure",
+    "body": [
+      "A PL/SQL block has an optional DECLARE section, a required BEGIN section, an optional EXCEPTION section, and END. The slash on a following line is a client command that submits the block in tools such as SQL*Plus.",
+      "Declarations belong before BEGIN. Executable statements belong between BEGIN and EXCEPTION or END."
+    ],
+    "example": {
+      "code": "DECLARE\n  v_total NUMBER := 0;\nBEGIN\n  v_total := 10 + 5;\nEND;\n/",
+      "caption": "The variable is declared before executable statements."
+    },
+    "wrong": {
+      "code": "BEGIN\n  DECLARE v_total NUMBER;\n  v_total := 10;\nEND;",
+      "why": "The declaration section belongs before BEGIN in a standard anonymous block."
+    }
+  },
+  {
+    "title": "Declare variables and use conditions",
+    "body": [
+      "PL/SQL variables have data types such as NUMBER, VARCHAR2, and DATE. Assignment uses :=, which differs from SQL's comparison operator =.",
+      "Use IF, ELSIF, and ELSE to select a branch. Initialize variables deliberately and choose types that fit the values they hold."
+    ],
+    "example": {
+      "code": "DECLARE\n  v_score NUMBER := 82;\nBEGIN\n  IF v_score >= 75 THEN\n    DBMS_OUTPUT.PUT_LINE('Pass');\n  ELSE\n    DBMS_OUTPUT.PUT_LINE('Retry');\n  END IF;\nEND;\n/",
+      "caption": "The branch depends on a numeric condition."
+    },
+    "wrong": {
+      "code": "DECLARE\n  v_score NUMBER;\nBEGIN\n  v_score = 82;\nEND;\n/",
+      "why": "PL/SQL assignment uses :=, not =."
+    }
+  },
+  {
+    "title": "Repeat work with loops",
+    "body": [
+      "PL/SQL supports basic LOOP, WHILE LOOP, and FOR LOOP constructs. A loop should have a clear termination condition unless repeated execution is intentionally controlled elsewhere.",
+      "Use FOR loops for a known range and WHILE loops when repetition depends on a condition. Avoid loops that never update the state they test."
+    ],
+    "example": {
+      "code": "BEGIN\n  FOR i IN 1..3 LOOP\n    DBMS_OUTPUT.PUT_LINE(i);\n  END LOOP;\nEND;\n/",
+      "caption": "The loop runs for the values 1 through 3."
+    },
+    "wrong": {
+      "code": "BEGIN\n  WHILE 1 = 1 LOOP\n    DBMS_OUTPUT.PUT_LINE('Again');\n  END LOOP;\nEND;\n/",
+      "why": "The condition never becomes false, so the loop does not terminate. Add an exit condition."
+    }
+  }
+],
+  "sql23": [
+  {
+    "title": "Understand implicit and explicit cursors",
+    "body": [
+      "An implicit cursor is created by Oracle for SQL statements such as SELECT INTO and DML. An explicit cursor is declared when code needs to process a query result row by row.",
+      "Use set-based SQL when it can perform the operation directly. An explicit cursor adds procedural control when each row genuinely requires separate handling."
+    ],
+    "example": {
+      "code": "DECLARE\n  CURSOR c_students IS\n    SELECT student_id, name FROM students;\nBEGIN\n  FOR row_item IN c_students LOOP\n    DBMS_OUTPUT.PUT_LINE(row_item.name);\n  END LOOP;\nEND;\n/",
+      "caption": "The cursor FOR loop opens, fetches, and closes the cursor."
+    },
+    "wrong": {
+      "code": "DECLARE\n  CURSOR c_students IS SELECT name FROM students;\nBEGIN\n  DBMS_OUTPUT.PUT_LINE(c_students.name);\nEND;\n/",
+      "why": "A cursor is not a row value. Fetch rows through a cursor loop or explicit OPEN, FETCH, and CLOSE."
+    }
+  },
+  {
+    "title": "Create procedures and functions",
+    "body": [
+      "A procedure performs an operation and can accept IN, OUT, or IN OUT parameters. A function returns a value and can be used in expressions where permitted.",
+      "Choose a procedure for an action and a function for a calculation or value. Keep parameters and return types clear so callers know the contract."
+    ],
+    "example": {
+      "code": "CREATE OR REPLACE FUNCTION tax_amount(p_price NUMBER)\nRETURN NUMBER IS\nBEGIN\n  RETURN p_price * 0.12;\nEND;\n/",
+      "caption": "The function declares and returns a numeric value."
+    },
+    "wrong": {
+      "code": "CREATE OR REPLACE FUNCTION tax_amount(p_price NUMBER)\nIS\nBEGIN\n  p_price * 0.12;\nEND;\n/",
+      "why": "A function needs a RETURN type and a RETURN statement that supplies a value."
+    }
+  },
+  {
+    "title": "Use triggers carefully",
+    "body": [
+      "A trigger runs automatically when a defined event occurs, such as inserting or updating a table. It can validate data or record an audit event, depending on the design.",
+      "Triggers can hide important behavior from the application code. Keep them focused, document their effects, and avoid using them as a substitute for ordinary business logic."
+    ],
+    "example": {
+      "code": "CREATE OR REPLACE TRIGGER audit_student\nAFTER INSERT ON students\nFOR EACH ROW\nBEGIN\n  INSERT INTO student_audit(student_id, action)\n  VALUES (:NEW.student_id, 'INSERT');\nEND;\n/",
+      "caption": "The row trigger records the inserted student's ID."
+    },
+    "wrong": {
+      "code": "CREATE OR REPLACE TRIGGER audit_student\nAFTER INSERT ON students\nBEGIN\n  INSERT INTO student_audit(student_id)\n  VALUES (:NEW.student_id);\nEND;\n/",
+      "why": "A statement-level trigger has no :NEW row record. Add FOR EACH ROW when referencing row values."
+    }
+  }
+],
 };

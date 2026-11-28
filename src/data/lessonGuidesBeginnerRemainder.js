@@ -1,11 +1,12 @@
 // Guided teaching notes for the remaining Beginner topics.
 // Each lesson follows: learning goal -> explanation -> worked steps -> retrieval check.
 
-const makeGuide = (goal, body, walkthrough, check) => ({
+const makeGuide = (goal, body, walkthrough, check, capstone = null) => ({
   goal,
   body,
   walkthrough,
   check,
+  ...(capstone ? { capstone } : {}),
 });
 
 export const BEGINNER_REMAINDER_GUIDES = {
@@ -1132,6 +1133,19 @@ export const BEGINNER_REMAINDER_GUIDES = {
           options: ["To inspect the target rows before changing data", "To automatically reverse the query", "To create a new table"],
           correct: 0,
           explanation: "SELECT lets you inspect the rows that match without changing them. This helps catch a condition that is too broad or too narrow before data is modified.",
+        },
+        {
+          title: "Build a small inventory table",
+          prompt: "Create a simple SQL inventory table, add several items, and write queries to inspect and update the records.",
+          deliverable: "A short SQL script that defines an inventory table, inserts sample rows, lists selected items, and safely updates one chosen row.",
+          criteria: [
+            "Use CREATE TABLE with clear column names and suitable basic data types.",
+            "Give each row a primary key and require the item name.",
+            "Insert at least three sample items.",
+            "Use SELECT, WHERE, and ORDER BY to inspect the records.",
+            "Use UPDATE with a WHERE condition that identifies only the intended item.",
+          ],
+          selfCheck: "Can you run a SELECT with the same WHERE condition before updating a row, and confirm that only the intended item matches?",
         },
       ),
     ],

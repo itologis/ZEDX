@@ -1010,4 +1010,475 @@ Timed timed = Service.class.getAnnotation(Timed.class);`,
       },
     },
   ],
+
+  "j16": [
+  {
+    "title": "Describe a solution as an algorithm",
+    "body": [
+      "Start by identifying the inputs, the processing steps, and the expected output. An algorithm should be precise enough that another person can follow it without guessing.",
+      "A useful algorithm also handles important cases, such as empty input or a value outside the expected range. Test the steps with a small example before coding."
+    ],
+    "example": {
+      "code": "1. Read the item price.\n2. Read the quantity.\n3. Multiply price by quantity.\n4. Display the total.",
+      "caption": "The steps describe a complete small calculation."
+    },
+    "wrong": {
+      "code": "1. Read the price.\n2. Calculate something.\n3. Show the answer.",
+      "why": "The processing step is vague. An algorithm needs a precise operation, such as multiplying price by quantity."
+    }
+  },
+  {
+    "title": "Read a flowchart",
+    "body": [
+      "A flowchart uses standard symbols: an oval for start or end, a parallelogram for input or output, a rectangle for a process, and a diamond for a decision.",
+      "Arrows show the direction of the process. Label decision branches clearly, and make sure loops have a path that eventually reaches an exit condition."
+    ],
+    "example": {
+      "code": "Start\n  |\nInput score\n  |\nscore >= 75?\n  | Yes       | No\nOutput Pass   Output Retry\n  |           |\n  +----- End -+",
+      "caption": "The decision branches to two outcomes."
+    },
+    "wrong": {
+      "code": "Start -> Input score -> Output Pass -> End",
+      "why": "The flow always prints Pass and omits the decision. A flowchart must show both possible outcomes."
+    }
+  },
+  {
+    "title": "Write pseudocode before Java",
+    "body": [
+      "Pseudocode uses readable words such as INPUT, IF, ELSE, REPEAT, and OUTPUT. It describes control flow without requiring Java punctuation or data types.",
+      "Keep it close enough to the final solution that it can be translated into code. Do not mix Java braces and pseudocode keywords in the same statement."
+    ],
+    "example": {
+      "code": "INPUT score\nIF score >= 75 THEN\n    OUTPUT \"Passed\"\nELSE\n    OUTPUT \"Needs improvement\"\nEND IF",
+      "caption": "Both paths are written before implementation."
+    },
+    "wrong": {
+      "code": "if (score >= 75) {\n    OUTPUT \"Passed\"\n}",
+      "why": "This mixes Java braces with a pseudocode keyword and omits the alternative path."
+    }
+  }
+],
+  "j17": [
+  {
+    "title": "Calculate with arithmetic operators",
+    "body": [
+      "Arithmetic operators include +, -, *, /, and %. Integer division discards the fractional part, while the remainder operator returns what remains after division.",
+      "Choose numeric types carefully. If both operands are integers, division uses integer arithmetic; using a floating-point operand produces a floating-point result."
+    ],
+    "example": {
+      "code": "int total = 17;\nint people = 5;\nint each = total / people;\nint remainder = total % people;",
+      "caption": "Integer division and remainder answer different questions."
+    },
+    "wrong": {
+      "code": "int each = 17 / 5.0;",
+      "why": "17 / 5.0 produces a double, which cannot be assigned to int without an explicit conversion."
+    }
+  },
+  {
+    "title": "Compare values and combine conditions",
+    "body": [
+      "Relational operators such as <, <=, >, and >= compare values. Equality uses == for primitive values, while &&, ||, and ! combine or reverse Boolean results.",
+      "Use parentheses when a condition mixes operators. Short-circuit && and || stop evaluating when the result is already known."
+    ],
+    "example": {
+      "code": "if (age >= 18 && hasId) {\n    System.out.println(\"Continue\");\n}",
+      "caption": "Both conditions must be true."
+    },
+    "wrong": {
+      "code": "if (age = 18 && hasId) {\n    System.out.println(\"Continue\");\n}",
+      "why": "A single equals sign assigns. Use == when comparing primitive values."
+    }
+  },
+  {
+    "title": "Understand assignment and precedence",
+    "body": [
+      "Assignment operators store values, and compound forms such as += update an existing variable. Increment and decrement operators change a numeric variable by one.",
+      "Operator precedence determines how an expression is grouped. Use parentheses when the intended order should be obvious to another reader."
+    ],
+    "example": {
+      "code": "int score = 10;\nscore += 5;\nint finalScore = (score + 3) * 2;",
+      "caption": "Parentheses make the intended calculation explicit."
+    },
+    "wrong": {
+      "code": "int finalScore = score + 3 * 2;",
+      "why": "Multiplication happens before addition, so this does not match (score + 3) * 2."
+    }
+  }
+],
+  "j18": [
+  {
+    "title": "Create a Scanner",
+    "body": [
+      "Import java.util.Scanner and construct it with System.in to read keyboard input. Scanner provides methods such as next(), nextLine(), nextInt(), and nextDouble().",
+      "Store input in a variable with a compatible type. Text belongs in String, while numeric values can use integer or floating-point types."
+    ],
+    "example": {
+      "code": "Scanner input = new Scanner(System.in);\nSystem.out.print(\"Age: \");\nint age = input.nextInt();",
+      "caption": "nextInt reads an integer token."
+    },
+    "wrong": {
+      "code": "Scanner input = new Scanner();\nint age = input.nextInt();",
+      "why": "The Scanner constructor needs an input source. Pass System.in to read from the console."
+    }
+  },
+  {
+    "title": "Read text and numbers",
+    "body": [
+      "next() reads one token and stops at whitespace; nextLine() reads the remainder of a line. Numeric methods parse tokens and can throw InputMismatchException when the input does not match.",
+      "After a numeric read, a line break may remain in the input buffer. Consume it deliberately before reading a full line as the next response."
+    ],
+    "example": {
+      "code": "int age = input.nextInt();\ninput.nextLine(); // consume the line break\nString name = input.nextLine();",
+      "caption": "Consume the leftover newline before reading the name."
+    },
+    "wrong": {
+      "code": "int age = input.nextInt();\nString name = input.nextLine();",
+      "why": "nextLine may return the empty remainder after nextInt. Consume the newline first."
+    }
+  },
+  {
+    "title": "Format and print results",
+    "body": [
+      "System.out.print writes without a trailing newline, while println writes and then moves to the next line. printf supports formatted output such as fixed decimal places.",
+      "Close a Scanner when its input source is a resource you own. Closing a Scanner over System.in also closes System.in, so avoid doing so while another part of the program still needs console input."
+    ],
+    "example": {
+      "code": "double price = 19.5;\nSystem.out.printf(\"Total: %.2f%n\", price);",
+      "caption": "%.2f prints two digits after the decimal point."
+    },
+    "wrong": {
+      "code": "System.out.printf(\"Total: %d%n\", 19.5);",
+      "why": "%d expects an integer conversion. Use %.2f for a decimal value."
+    }
+  }
+],
+  "j19": [
+  {
+    "title": "Sort values",
+    "body": [
+      "A sorting algorithm rearranges values according to a comparison rule. Bubble sort, selection sort, insertion sort, and merge sort are common examples with different trade-offs.",
+      "For ordinary Java arrays, Arrays.sort() is usually the right tool. Learning algorithms manually explains how comparisons and swaps produce an ordered result."
+    ],
+    "example": {
+      "code": "int[] scores = {72, 91, 65};\nArrays.sort(scores);\n// [65, 72, 91]",
+      "caption": "The library sort is suited to common use."
+    },
+    "wrong": {
+      "code": "Arrays.sort(scores, 0, scores.length + 1);",
+      "why": "The range endpoint is outside the array's valid range. Use the full-array overload or a valid range."
+    }
+  },
+  {
+    "title": "Compare simple sorting strategies",
+    "body": [
+      "Bubble sort compares neighboring values and swaps them when they are out of order. Selection sort repeatedly chooses the smallest remaining value, while insertion sort inserts each value into a sorted prefix.",
+      "These methods are useful for learning but can take quadratic time on large inputs. Their operation counts grow quickly as the number of values increases."
+    ],
+    "example": {
+      "code": "for (int i = 0; i < values.length - 1; i++) {\n    for (int j = 0; j < values.length - 1 - i; j++) {\n        if (values[j] > values[j + 1]) {\n            int temp = values[j];\n            values[j] = values[j + 1];\n            values[j + 1] = temp;\n        }\n    }\n}",
+      "caption": "The adjacent values are swapped using a temporary variable."
+    },
+    "wrong": {
+      "code": "if (values[j] > values[j + 1]) {\n    values[j] = values[j + 1];\n    values[j + 1] = values[j];\n}",
+      "why": "The first assignment overwrites the original value. Save it before swapping."
+    }
+  },
+  {
+    "title": "Search for a value",
+    "body": [
+      "Linear search checks values one by one and works on unsorted data. Binary search compares with the middle value and discards half the range, but requires sorted input.",
+      "Arrays.binarySearch() returns a negative value when it cannot find a target. Check the result before using it as an array index."
+    ],
+    "example": {
+      "code": "Arrays.sort(values);\nint index = Arrays.binarySearch(values, 5);\nif (index >= 0) {\n    System.out.println(\"Found at \" + index);\n}",
+      "caption": "Check the result before indexing."
+    },
+    "wrong": {
+      "code": "int index = Arrays.binarySearch(values, 5);\nSystem.out.println(values[index]);",
+      "why": "The result may be negative when the value is missing. Check whether it is at least zero."
+    }
+  }
+],
+  "j20": [
+  {
+    "title": "Choose a collection interface",
+    "body": [
+      "List represents an ordered sequence that can contain duplicates. Set represents unique elements, and Map stores key-value associations rather than single values.",
+      "Declare variables using the interface when possible. That lets an implementation change without changing every method that uses the collection."
+    ],
+    "example": {
+      "code": "List<String> names = new ArrayList<>();\nSet<String> tags = new HashSet<>();\nMap<String, Integer> scores = new HashMap<>();",
+      "caption": "Each interface represents a different data relationship."
+    },
+    "wrong": {
+      "code": "List<String> scores = new HashMap<>();",
+      "why": "HashMap implements Map, not List. Declare the variable with the matching interface."
+    }
+  },
+  {
+    "title": "Add and retrieve values",
+    "body": [
+      "List commonly uses add() and get(index), Set uses add() while ignoring duplicates, and Map uses put(key,value) and get(key). Each collection exposes operations suited to its structure.",
+      "A Map can return null when a key is absent. Use containsKey() when the difference between a missing key and a key mapped to null matters."
+    ],
+    "example": {
+      "code": "Map<String, Integer> points = new HashMap<>();\npoints.put(\"red\", 10);\nint redPoints = points.get(\"red\");",
+      "caption": "The key retrieves its associated value."
+    },
+    "wrong": {
+      "code": "points.add(\"green\", 20);",
+      "why": "Map has no add(key,value) method. Use put() to associate a key with a value."
+    }
+  },
+  {
+    "title": "Iterate through collections",
+    "body": [
+      "Enhanced for loops work with Iterable collections such as List and Set. A Map exposes entrySet(), keySet(), and values() for different ways to traverse its contents.",
+      "Avoid structurally modifying a collection during an enhanced for loop unless the API explicitly supports it. Use an iterator or collect changes for later."
+    ],
+    "example": {
+      "code": "for (Map.Entry<String, Integer> entry : points.entrySet()) {\n    System.out.println(entry.getKey() + \": \" + entry.getValue());\n}",
+      "caption": "Each entry exposes both a key and its value."
+    },
+    "wrong": {
+      "code": "for (String key : points) {\n    System.out.println(key);\n}",
+      "why": "Map is not directly iterable. Iterate over keySet(), values(), or entrySet()."
+    }
+  }
+],
+  "j21": [
+  {
+    "title": "Represent a path",
+    "body": [
+      "Path describes a file-system location without itself reading or writing the file. Path.of() creates a path from text, and resolve() builds a child path from a directory.",
+      "A relative path is interpreted from the program's working directory. Do not assume it is the same folder as the source file."
+    ],
+    "example": {
+      "code": "Path dataDir = Path.of(\"data\");\nPath report = dataDir.resolve(\"report.txt\");",
+      "caption": "resolve builds a child path."
+    },
+    "wrong": {
+      "code": "Path report = Path.of(\"data\").resolve(\"report.txt\", \"backup.txt\");",
+      "why": "The resolve() method accepts one child path at a time; it does not have an overload for two strings.",
+    }
+  },
+  {
+    "title": "Read and write text",
+    "body": [
+      "Files.readString() reads file contents into a String, while Files.writeString() writes text. These methods suit small text files.",
+      "File operations can throw IOException. A file may be missing or permissions may be denied, so handle expected failures instead of assuming success."
+    ],
+    "example": {
+      "code": "try {\n    Files.writeString(path, \"Saved\");\n    String content = Files.readString(path);\n} catch (IOException error) {\n    System.out.println(\"Could not access file\");\n}",
+      "caption": "Handle I/O failures around the operation."
+    },
+    "wrong": {
+      "code": "String content = Files.readString(path);",
+      "why": "readString can throw IOException. Handle or declare that exception."
+    }
+  },
+  {
+    "title": "Stream larger files",
+    "body": [
+      "For a large file, streams can process data incrementally instead of loading everything into memory. BufferedReader and BufferedWriter are common character-stream tools.",
+      "Use try-with-resources so file streams close even if an exception occurs. Choose an explicit character encoding when the data format requires it."
+    ],
+    "example": {
+      "code": "try (BufferedReader reader = Files.newBufferedReader(path)) {\n    String line;\n    while ((line = reader.readLine()) != null) {\n        System.out.println(line);\n    }\n}",
+      "caption": "The reader closes automatically."
+    },
+    "wrong": {
+      "code": "BufferedReader reader = Files.newBufferedReader(path);\nString line = reader.readLine();",
+      "why": "The reader is left open. Use try-with-resources for reliable cleanup."
+    }
+  }
+],
+  "j22": [
+  {
+    "title": "Create a Swing window",
+    "body": [
+      "JFrame is a top-level window. It can contain panels and other controls, and pack() sizes the window according to the preferred sizes of those components.",
+      "Build and update Swing interfaces on the Event Dispatch Thread. Use SwingUtilities.invokeLater() to schedule initial setup."
+    ],
+    "example": {
+      "code": "SwingUtilities.invokeLater(() -> {\n    JFrame frame = new JFrame(\"Student Records\");\n    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);\n    frame.add(new JLabel(\"Welcome\"));\n    frame.pack();\n    frame.setVisible(true);\n});",
+      "caption": "The GUI is created on Swing's event thread."
+    },
+    "wrong": {
+      "code": "JFrame frame = new JFrame(\"Student Records\");\nframe.setVisible(true);",
+      "why": "This omits close behavior and may be constructed outside the Event Dispatch Thread."
+    }
+  },
+  {
+    "title": "Respond to user actions",
+    "body": [
+      "JButton triggers an action event when activated. Add an ActionListener to connect the user's click or keyboard activation to a task.",
+      "Keep listener code short. Long-running work should not block the Event Dispatch Thread, because that prevents the interface from repainting and responding."
+    ],
+    "example": {
+      "code": "JButton save = new JButton(\"Save\");\nJLabel status = new JLabel(\"Not saved\");\nsave.addActionListener(event -> status.setText(\"Saved\"));",
+      "caption": "The listener updates the status when the button is activated."
+    },
+    "wrong": {
+      "code": "save.addActionListener(status.setText(\"Saved\"));",
+      "why": "This calls setText immediately and passes its result instead of providing a listener."
+    }
+  },
+  {
+    "title": "Arrange components with layout managers",
+    "body": [
+      "Layout managers position components as a window changes size. FlowLayout places controls in a flow, BorderLayout uses regions, and GridLayout creates equal-sized cells.",
+      "Avoid setting fixed coordinates for every component. Layout managers adapt better to different window sizes, fonts, and platform rendering."
+    ],
+    "example": {
+      "code": "JPanel panel = new JPanel(new BorderLayout());\npanel.add(new JLabel(\"Name\"), BorderLayout.WEST);\npanel.add(new JTextField(18), BorderLayout.CENTER);\nframe.add(panel);",
+      "caption": "BorderLayout places the label and field in separate regions."
+    },
+    "wrong": {
+      "code": "panel.add(new JLabel(\"Name\"), BorderLayout.MIDDLE);",
+      "why": "BorderLayout has no MIDDLE constant. Use one of its defined regions, such as NORTH or CENTER."
+    }
+  }
+],
+  "j23": [
+  {
+    "title": "Model requirements with use cases",
+    "body": [
+      "A use case describes a goal an actor achieves by interacting with a system. Actors represent roles outside the system boundary, not necessarily individual people.",
+      "Write a short scenario for each important use case, including the normal flow and alternative outcomes. This makes vague requirements more testable."
+    ],
+    "example": {
+      "code": "Actor: Student\nUse case: Register for a class\n1. Select a class.\n2. System checks available seats.\n3. System confirms registration.",
+      "caption": "The scenario states a goal and system response."
+    },
+    "wrong": {
+      "code": "Actor: Database\nUse case: Click Button",
+      "why": "A database is usually an internal component, not an external actor. Describe a meaningful goal from a user role's perspective."
+    }
+  },
+  {
+    "title": "Describe classes and relationships",
+    "body": [
+      "A UML class diagram shows classes, attributes, operations, and relationships. Associations describe links between classes, while inheritance shows a specialized type derived from a general type.",
+      "Multiplicity labels such as 1 and 0..* communicate how many related objects can participate in a relationship."
+    ],
+    "example": {
+      "code": "Student\n----------------\n- studentId: int\n- name: String\n----------------\n+ enroll(course: Course)\n\nCourse\n----------------\n- code: String\n- title: String",
+      "caption": "The operation refers to another domain class."
+    },
+    "wrong": {
+      "code": "Student\n- course: String\nCourse\n- student: int",
+      "why": "The sketch does not show a clear relationship or multiplicity. Use domain types and describe the association."
+    }
+  },
+  {
+    "title": "Trace behavior with sequence diagrams",
+    "body": [
+      "A sequence diagram shows participants and the messages exchanged over time. Read it from top to bottom to understand the order of calls in a scenario.",
+      "Use sequence diagrams to reveal missing responsibilities, repeated requests, and places where an error response needs to be handled."
+    ],
+    "example": {
+      "code": "Student -> Portal: submit()\nPortal -> Validator: check(file)\nValidator --> Portal: valid\nPortal -> Storage: save(file)\nStorage --> Portal: saved",
+      "caption": "The diagram traces the submission scenario."
+    },
+    "wrong": {
+      "code": "Student -> Storage: submit()\nStorage -> Student: saved",
+      "why": "This skips the portal and validation responsibilities described in the design. Show the participants that actually take part."
+    }
+  }
+],
+  "j24": [
+  {
+    "title": "Open a database connection",
+    "body": [
+      "JDBC connects Java code to a database through a driver. DriverManager can create a Connection using a JDBC URL and credentials.",
+      "Keep credentials out of source code and protect the configuration that supplies them. Larger applications often use a connection pool."
+    ],
+    "example": {
+      "code": "try (Connection connection =\n     DriverManager.getConnection(url, user, password)) {\n    System.out.println(\"Connected\");\n}",
+      "caption": "The connection closes when the block ends."
+    },
+    "wrong": {
+      "code": "Connection connection =\n    DriverManager.getConnection(url, user, password);\n// connection is never closed",
+      "why": "The connection can remain open. Use try-with-resources or a managed pool."
+    }
+  },
+  {
+    "title": "Use prepared statements",
+    "body": [
+      "PreparedStatement separates SQL structure from supplied values. Bind values with setters such as setInt() and setString() instead of concatenating input into the SQL text.",
+      "Prepared statements help protect value parameters. They do not replace authorization checks, and identifiers such as table names generally cannot be bound as ordinary values."
+    ],
+    "example": {
+      "code": "String sql = \"SELECT name FROM students WHERE id = ?\";\ntry (PreparedStatement statement = connection.prepareStatement(sql)) {\n    statement.setInt(1, studentId);\n}",
+      "caption": "The question mark is bound to a value."
+    },
+    "wrong": {
+      "code": "String sql = \"SELECT name FROM students WHERE id = \" + userInput;",
+      "why": "Concatenating external input can alter query structure. Use a parameterized statement."
+    }
+  },
+  {
+    "title": "Read a ResultSet",
+    "body": [
+      "executeQuery() returns a ResultSet for a SELECT statement. Call next() to move through rows, then retrieve columns by label or index with an appropriate getter.",
+      "A ResultSet is tied to its statement and connection. Close all JDBC resources with try-with-resources, using nested resources where needed."
+    ],
+    "example": {
+      "code": "try (PreparedStatement statement = connection.prepareStatement(sql);\n     ResultSet rows = statement.executeQuery()) {\n    while (rows.next()) {\n        System.out.println(rows.getString(\"name\"));\n    }\n}",
+      "caption": "next() advances one row at a time."
+    },
+    "wrong": {
+      "code": "ResultSet rows = statement.executeQuery();\nString name = rows.getString(\"name\");",
+      "why": "The cursor begins before the first row. Call next() and check the result first."
+    }
+  }
+],
+  "j25": [
+  {
+    "title": "Coordinate completion with a latch",
+    "body": [
+      "CountDownLatch lets threads wait until a fixed number of events have occurred. Each completed task calls countDown(), and another thread can wait with await().",
+      "A CountDownLatch cannot be reset after it reaches zero. Create a new latch for a new coordination cycle."
+    ],
+    "example": {
+      "code": "CountDownLatch ready = new CountDownLatch(2);\n// Each worker calls ready.countDown()\nready.await();",
+      "caption": "The main thread waits for both workers."
+    },
+    "wrong": {
+      "code": "CountDownLatch ready = new CountDownLatch(2);\nready.await();\nready.countDown();",
+      "why": "The thread waits before decrementing the count, so the latch never reaches zero. Worker tasks should signal completion."
+    }
+  },
+  {
+    "title": "Use a barrier for shared phases",
+    "body": [
+      "CyclicBarrier lets a fixed group of threads wait at a common point. When the required number arrives, all are released and the barrier can be reused.",
+      "A barrier suits work performed in repeated phases. It differs from a latch, which is a one-way signal that cannot be reset."
+    ],
+    "example": {
+      "code": "CyclicBarrier barrier = new CyclicBarrier(3);\nRunnable phase = () -> {\n    prepare();\n    barrier.await();\n    calculate();\n};",
+      "caption": "Each worker waits for the other two."
+    },
+    "wrong": {
+      "code": "CyclicBarrier barrier = new CyclicBarrier(3);\nbarrier.await();",
+      "why": "One thread cannot satisfy a three-party barrier. All participating threads must arrive."
+    }
+  },
+  {
+    "title": "Limit access with a semaphore",
+    "body": [
+      "Semaphore maintains a number of permits. A thread acquires a permit before using a limited resource and releases it when finished.",
+      "Always release a permit in a finally block. If a task fails before release, available permits can shrink and other tasks may wait indefinitely."
+    ],
+    "example": {
+      "code": "Semaphore permits = new Semaphore(2);\npermits.acquire();\ntry {\n    useSharedResource();\n} finally {\n    permits.release();\n}",
+      "caption": "finally releases the permit after success or failure."
+    },
+    "wrong": {
+      "code": "permits.acquire();\nuseSharedResource();\npermits.release();",
+      "why": "If the operation throws, release is skipped. Put release in finally."
+    }
+  }
+],
 };

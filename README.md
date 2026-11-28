@@ -8,12 +8,12 @@ Built with Expo (SDK 58) and React Native. Runs on Android, iOS, and web.
 
 ## What's inside
 
-- **108 topics** across the seven languages.
-- **Lessons** — every topic is a short chapter with three steps: the syntax, a working example, and the broken version that shows what goes wrong. All 35 Beginner topics now include guided goals, plain-language explanations, worked examples, and quick understanding checks.
+- **166 topics** across the seven languages: 58 Beginner, 42 Intermediate, and 66 Advanced.
+- **Lessons** — every topic has three lesson chapters with explanations, working examples, and wrong-code comparisons. All 58 Beginner topics include guided goals, plain-language explanations, worked walkthroughs, and comprehension checks. Each language also has a self-directed Beginner capstone.
 - **Practice** — one fill-in-the-blank exercise per topic, with an explanation.
-- **Quizzes** — per language and per level, four options per question, with a passing score.
+- **Quizzes** — per language and per level, with topic-tagged Beginner and Intermediate coverage, four options per question, and a two-thirds passing threshold.
 - **Initial assessment** — a starting test to see where a student is.
-- **Progress** — finished practice, quiz passes, and missed questions, saved on the device.
+- **Progress** — lesson completion, practice, quiz passes, bookmarks, and missed questions are saved on the device. Curriculum migrations preserve completed topic IDs when topics change levels.
 - **Saved topics** and **search** — so any lesson is one tap away.
 - **Offline** — no internet needed, nothing leaves the phone.
 
@@ -39,11 +39,12 @@ npm run android    # or: npm run ios / npm run web
 - `src/theme.js` — light and dark palettes, IBM Plex type scale, spacing, and the 7px language swatches. The chosen theme is saved with AsyncStorage (`zedx_theme`).
 - `src/data/<language>.js` — the topics for each language. Every language has three levels, and every level has topics with an `id`, `title`, `syntax`, and `description`.
 - `src/data/lessons/<language>.js` — the chapter content for each topic, keyed by topic id. Every chapter has three steps (`title`, `body`, `example`, `wrong`, `gotcha`).
-- `src/data/lessonGuides*.js` — guided teaching notes for Beginner lessons: learning goals, explanations, worked walkthroughs, and comprehension checks.
+- `src/data/lessonGuides*.js` — guided teaching notes for Beginner lessons: learning goals, explanations, worked walkthroughs, comprehension checks, and capstone briefs.
 - `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
 - `src/data/quiz.js` — the per-language, per-level quizzes and the question pool the assessment draws from.
 - `src/data/languages.js` — the list of languages the screens read from. Topics are picked up automatically, so adding a topic needs no screen changes.
-- `src/data/progress.js` — progress stored with AsyncStorage. Nothing leaves the device.
+- `src/data/progress.js` — progress, quiz versions, assessment versions, and idempotent curriculum migrations stored with AsyncStorage.
+- `src/data/curriculum.js` — promoted topic IDs and saved-data version constants.
 - `scripts/check-content-coverage.cjs` — the coverage checker behind `npm run check:content`.
 
 ## Scripts
@@ -52,9 +53,10 @@ npm run android    # or: npm run ios / npm run web
 | --- | --- |
 | `npm start` | Start the Expo dev server |
 | `npm run android` / `npm run ios` / `npm run web` | Start on a specific platform |
-| `npm run lint` | ESLint via `expo lint` |
+| `npm run lint` | ESLint via expo lint |
 | `npm run check:content` | Check that the content is complete and the progress flows work |
 | `npm run check:answers` | Check correct/wrong feedback wiring, retry resets, and assessment answer visibility |
+| `npm run check:migration` | Test curriculum progress migration, quiz/assessment versioning, and missed-question re-keying |
 
 ## Design
 

@@ -1,5 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAllQuestions } from "./quiz";
+import {
+  ASSESSMENT_POOL_VERSION,
+  BEGINNER_TOPIC_MOVES,
+  PROGRESS_MIGRATION_VERSION,
+  QUIZ_POOL_VERSIONS,
+} from "./curriculum";
 
 const read = async (key, fallback) => {
   try {
@@ -21,25 +27,139 @@ const write = async (key, value) => {
   }
 };
 
+// Write operations that must preserve existing records use strict reads.
+// A transient storage error must never be mistaken for an empty object.
+const readObjectStrict = async (key) => {
+  const raw = await AsyncStorage.getItem(key);
+
+  if (!raw) {
+    return {};
+  }
+
+  const value = JSON.parse(raw);
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Stored value for " + key + " is not an object");
+  }
+
+  return value;
+};
+
+const readArrayStrict = async (key) => {
+  const raw = await AsyncStorage.getItem(key);
+
+  if (!raw) {
+    return [];
+  }
+
+  const value = JSON.parse(raw);
+
+  if (!Array.isArray(value)) {
+    throw new Error("Stored value for " + key + " is not an array");
+  }
+
+  return value;
+};
+
 // ============================================================
 // LESSON PROGRESS
 // ============================================================
 
-export const getProgress = (languageKey) => read(`progress_${languageKey}`, {});
+const migrationInFlight = new Map();
+
+const runCurriculumProgressMigration = async (languageKey) => {
+  const promotedIds = BEGINNER_TOPIC_MOVES[languageKey];
+
+  if (!promotedIds?.length) {
+    return true;
+  }
+
+  const markerKey = "curriculum_migration_" + languageKey;
+  const progressKey = "progress_" + languageKey;
+
+  try {
+    // Read directly here so a storage read error cannot be mistaken for empty
+    // progress and followed by a successful migration marker.
+    const markerRaw = await AsyncStorage.getItem(markerKey);
+    const completedVersion = markerRaw ? JSON.parse(markerRaw) : 0;
+
+    if (completedVersion >= PROGRESS_MIGRATION_VERSION) {
+      return true;
+    }
+
+    const progressRaw = await AsyncStorage.getItem(progressKey);
+    const existing = progressRaw ? JSON.parse(progressRaw) : {};
+    const promoted = new Set(promotedIds);
+    const beginner = Array.isArray(existing.L1) ? existing.L1 : [];
+    const intermediate = Array.isArray(existing.L2) ? existing.L2 : [];
+    const nextBeginner = [
+      ...new Set([...beginner, ...intermediate.filter((id) => promoted.has(id))]),
+    ];
+    const nextIntermediate = [
+      ...new Set(intermediate.filter((id) => !promoted.has(id))),
+    ];
+
+    const next = {
+      ...existing,
+      L1: nextBeginner,
+      L2: nextIntermediate,
+    };
+
+    if (JSON.stringify(next) !== JSON.stringify(existing)) {
+      await AsyncStorage.setItem(progressKey, JSON.stringify(next));
+    }
+
+    // The marker is written only after the progress transformation succeeds.
+    await AsyncStorage.setItem(
+      markerKey,
+      JSON.stringify(PROGRESS_MIGRATION_VERSION),
+    );
+    return true;
+  } catch (error) {
+    console.error("Error migrating curriculum progress:", error);
+    return false;
+  }
+};
+
+// Explicit entry point for tests and controlled migration workflows.
+export const migrateCurriculumProgress = (languageKey) => {
+  if (migrationInFlight.has(languageKey)) {
+    return migrationInFlight.get(languageKey);
+  }
+
+  const migration = runCurriculumProgressMigration(languageKey).finally(() => {
+    migrationInFlight.delete(languageKey);
+  });
+
+  migrationInFlight.set(languageKey, migration);
+  return migration;
+};
+
+export const getProgress = async (languageKey) => {
+  await migrateCurriculumProgress(languageKey);
+  return read("progress_" + languageKey, {});
+};
 
 export const saveProgress = async (languageKey, level, topicId) => {
-  const existing = await getProgress(languageKey);
-
-  if (!existing[level]) {
-    existing[level] = [];
+  if (!(await migrateCurriculumProgress(languageKey))) {
+    return false;
   }
 
-  if (!existing[level].includes(topicId)) {
-    existing[level].push(topicId);
-    return write(`progress_${languageKey}`, existing);
-  }
+  try {
+    const progressKey = "progress_" + languageKey;
+    const existing = await readObjectStrict(progressKey);
+    const completed = Array.isArray(existing[level]) ? existing[level] : [];
 
-  return true;
+    if (!completed.includes(topicId)) {
+      existing[level] = [...completed, topicId];
+      return write(progressKey, existing);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error updating lesson progress:", error);
+    return false;
+  }
 };
 
 export const isLevelComplete = async (languageKey, level, topics) => {
@@ -53,23 +173,84 @@ export const isLevelComplete = async (languageKey, level, topics) => {
 // QUIZ PASSES
 // ============================================================
 
-export const getQuizProgress = (languageKey) => read(`quiz_${languageKey}`, {});
+const quizVersionKey = (languageKey) => "quiz_versions_" + languageKey;
+
+export const getQuizProgress = async (languageKey) => {
+  const [storedPasses, storedVersions] = await Promise.all([
+    read("quiz_" + languageKey, {}),
+    read(quizVersionKey(languageKey), {}),
+  ]);
+  const currentVersions = QUIZ_POOL_VERSIONS[languageKey] || {};
+  const currentPasses = {};
+
+  for (const [level, version] of Object.entries(currentVersions)) {
+    currentPasses[level] =
+      storedPasses[level] === true &&
+      storedVersions[level] === version;
+  }
+
+  return currentPasses;
+};
 
 export const saveQuizPassed = async (languageKey, level) => {
-  const passed = await getQuizProgress(languageKey);
-  passed[level] = true;
-  return write(`quiz_${languageKey}`, passed);
+  const version = QUIZ_POOL_VERSIONS[languageKey]?.[level];
+
+  if (!version) {
+    return false;
+  }
+
+  try {
+    const [passed, versions] = await Promise.all([
+      readObjectStrict("quiz_" + languageKey),
+      readObjectStrict(quizVersionKey(languageKey)),
+    ]);
+
+    passed[level] = true;
+    versions[level] = version;
+
+    // Store the pass first. Without its matching current version it remains
+    // invalid, so a failed version write cannot revive a stale legacy pass.
+    const passSaved = await write("quiz_" + languageKey, passed);
+
+    if (!passSaved) {
+      return false;
+    }
+
+    return write(quizVersionKey(languageKey), versions);
+  } catch (error) {
+    console.error("Error saving quiz pass:", error);
+    return false;
+  }
 };
 
 export const isQuizPassed = async (languageKey, level) => {
   const passed = await getQuizProgress(languageKey);
-  return passed[level] || false;
+  return passed[level] === true;
 };
 
 export const resetQuizProgress = async (languageKey, level) => {
-  const passed = await getQuizProgress(languageKey);
-  delete passed[level];
-  return write(`quiz_${languageKey}`, passed);
+  try {
+    const [passed, versions] = await Promise.all([
+      readObjectStrict("quiz_" + languageKey),
+      readObjectStrict(quizVersionKey(languageKey)),
+    ]);
+
+    delete passed[level];
+    delete versions[level];
+
+    // Invalidate the version first. If clearing the pass fails afterward,
+    // the old boolean can no longer count as a current pass.
+    const versionsSaved = await write(quizVersionKey(languageKey), versions);
+
+    if (!versionsSaved) {
+      return false;
+    }
+
+    return write("quiz_" + languageKey, passed);
+  } catch (error) {
+    console.error("Error resetting quiz progress:", error);
+    return false;
+  }
 };
 
 // ============================================================
@@ -82,11 +263,24 @@ export const saveAssessmentResult = (languageKey, results) =>
   write(assessmentKey(languageKey), {
     completed: true,
     ...results, // { scores, startingLevel }
+    assessmentVersion: ASSESSMENT_POOL_VERSION,
     completedAt: new Date().toISOString(),
   });
 
-export const getAssessmentResult = (languageKey) =>
-  read(assessmentKey(languageKey), null);
+export const getAssessmentResult = async (languageKey) => {
+  const result = await read(assessmentKey(languageKey), null);
+
+  if (!result) {
+    return null;
+  }
+
+  // A skipped assessment contains no score and safely defaults to Beginner.
+  if (result.skipped === true) {
+    return result;
+  }
+
+  return result.assessmentVersion === ASSESSMENT_POOL_VERSION ? result : null;
+};
 
 export const hasCompletedAssessment = async (languageKey) => {
   const assessment = await getAssessmentResult(languageKey);
@@ -118,20 +312,28 @@ export const isBookmarked = async (languageKey, topicId) => {
 
 // Returns true if the topic is bookmarked after the toggle
 export const toggleBookmark = async (languageKey, topicId) => {
-  const list = await getBookmarks();
-  const exists = list.some(
-    (b) => b.languageKey === languageKey && b.topicId === topicId,
-  );
+  try {
+    const list = await readArrayStrict("bookmarks");
+    const exists = list.some(
+      (bookmark) =>
+        bookmark.languageKey === languageKey && bookmark.topicId === topicId,
+    );
+    const next = exists
+      ? list.filter(
+          (bookmark) =>
+            !(bookmark.languageKey === languageKey && bookmark.topicId === topicId),
+        )
+      : [...list, { languageKey, topicId }];
 
-  const next = exists
-    ? list.filter(
-        (b) => !(b.languageKey === languageKey && b.topicId === topicId),
-      )
-    : [...list, { languageKey, topicId }];
+    if (!(await write("bookmarks", next))) {
+      throw new Error("Bookmark storage write failed");
+    }
 
-  await write("bookmarks", next);
-
-  return !exists;
+    return !exists;
+  } catch (error) {
+    console.error("Error updating bookmark:", error);
+    throw error;
+  }
 };
 
 // ============================================================
@@ -151,13 +353,20 @@ export const getPracticeDone = (languageKey) =>
   read(`practice_${languageKey}`, []);
 
 export const savePracticeDone = async (languageKey, topicId) => {
-  const done = await getPracticeDone(languageKey);
+  const key = "practice_" + languageKey;
 
-  if (!done.includes(topicId)) {
-    return write(`practice_${languageKey}`, [...done, topicId]);
+  try {
+    const done = await readArrayStrict(key);
+
+    if (!done.includes(topicId)) {
+      return write(key, [...done, topicId]);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error saving practice completion:", error);
+    return false;
   }
-
-  return true;
 };
 
 // ============================================================
@@ -175,25 +384,78 @@ export const recordQuizAnswer = async (
   correct,
 ) => {
   const key = questionKey(languageKey, level, question);
-  const missed = await read("missed_questions", []);
-  const has = missed.includes(key);
 
-  if (!correct && !has) {
-    await write("missed_questions", [...missed, key]);
-  }
+  try {
+    const missed = await readArrayStrict("missed_questions");
+    const has = missed.includes(key);
 
-  if (correct && has) {
-    await write(
-      "missed_questions",
-      missed.filter((k) => k !== key),
-    );
+    if (!correct && !has) {
+      return write("missed_questions", [...missed, key]);
+    }
+
+    if (correct && has) {
+      return write(
+        "missed_questions",
+        missed.filter((item) => item !== key),
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error recording quiz answer:", error);
+    return false;
   }
 };
 
 export const getMissedQuestions = async () => {
-  const keys = await read("missed_questions", []);
+  let storedKeys;
 
-  return getAllQuestions().filter((item) =>
-    keys.includes(questionKey(item._lang, item._level, item.question)),
+  try {
+    storedKeys = await readArrayStrict("missed_questions");
+  } catch (error) {
+    console.error("Error loading missed questions:", error);
+    return [];
+  }
+
+  const currentQuestions = getAllQuestions();
+  const currentKeysByText = new Map();
+
+  for (const item of currentQuestions) {
+    const textKey = item._lang + "|" + item.question;
+    const matches = currentKeysByText.get(textKey) || [];
+    matches.push({
+      level: item._level,
+      key: questionKey(item._lang, item._level, item.question),
+    });
+    currentKeysByText.set(textKey, matches);
+  }
+
+  // Keep the original level when the wording still exists there. If it moved,
+  // re-key only when that wording identifies exactly one current question.
+  const currentKeys = [
+    ...new Set(
+      storedKeys.flatMap((storedKey) => {
+        const [languageKey, oldLevel, ...questionParts] = storedKey.split("|");
+        const question = questionParts.join("|");
+        const matches = currentKeysByText.get(languageKey + "|" + question) || [];
+        const sameLevel = matches.find((match) => match.level === oldLevel);
+
+        if (sameLevel) return [sameLevel.key];
+        return matches.length === 1 ? [matches[0].key] : [];
+      }),
+    ),
+  ];
+
+  if (
+    currentKeys.length !== storedKeys.length ||
+    currentKeys.some((key, index) => key !== storedKeys[index])
+  ) {
+    if (!(await write("missed_questions", currentKeys))) {
+      return [];
+    }
+  }
+
+  return currentQuestions.filter((item) =>
+    currentKeys.includes(questionKey(item._lang, item._level, item.question)),
   );
 };
