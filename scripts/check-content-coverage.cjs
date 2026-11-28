@@ -39,6 +39,7 @@ const { LANGUAGES } = require("../src/data/languages");
 const { LESSONS, LESSON_GUIDES, getLessons } = require("../src/data/lessons");
 const { PRACTICE } = require("../src/data/practice");
 const { getAllQuestions, QUIZZES } = require("../src/data/quiz");
+const { BEGINNER_TOPIC_MOVES } = require("../src/data/curriculum");
 const { parseInlineCode } = require("../src/utils/inlineCode");
 const {
   getMissedQuestions,
@@ -67,6 +68,41 @@ async function checkContentCoverage() {
       );
 
       const quiz = QUIZZES[language.key][level.level];
+
+      if (level.level === "L1" || level.level === "L2") {
+        const levelTopicIds = new Set((level.topics ?? []).map((topic) => topic.id));
+        const taggedTopicIds = new Set(
+          quiz.questions.map((question) => question.topicId).filter(Boolean),
+        );
+
+        for (const topicId of levelTopicIds) {
+          assert.ok(
+            taggedTopicIds.has(topicId),
+            language.key + " " + level.level + " quiz is missing coverage for " + topicId,
+          );
+        }
+
+        for (const question of quiz.questions) {
+          if (question.topicId) {
+            assert.ok(
+              levelTopicIds.has(question.topicId),
+              language.key + " " + level.level + " question references a topic outside that level: " + question.topicId,
+            );
+          }
+          assert.ok(
+            typeof question.explanation === "string" && question.explanation.trim(),
+            language.key + " " + level.level + " question is missing answer feedback",
+          );
+        }
+
+        if (level.level === "L2") {
+          assert.equal(
+            quiz.questions.length,
+            8,
+            language.key + " Intermediate quiz should contain eight balanced questions",
+          );
+        }
+      }
       assert.ok(quiz.questions.length > 0, `${language.key} ${level.level} quiz is empty`);
       assert.ok(
         Number.isInteger(quiz.passingScore) &&
@@ -75,17 +111,32 @@ async function checkContentCoverage() {
         `${language.key} ${level.level} has an invalid passing score`,
       );
 
+      assert.equal(
+        quiz.passingScore,
+        Math.ceil(quiz.questions.length * 2 / 3),
+        language.key + " " + level.level + " must use the two-thirds passing rule",
+      );
+
       for (const question of quiz.questions) {
         assert.equal(
           question.options.length,
           4,
-          `${language.key} ${level.level} questions must have four options`,
+          language.key + " " + level.level + " questions must have four options",
+        );
+        assert.equal(
+          new Set(question.options).size,
+          4,
+          language.key + " " + level.level + " question options must be unique",
         );
         assert.ok(
           Number.isInteger(question.correct) &&
             question.correct >= 0 &&
             question.correct < question.options.length,
-          `${language.key} ${level.level} question has an invalid correct option`,
+          language.key + " " + level.level + " question has an invalid correct option",
+        );
+        assert.ok(
+          typeof question.explanation === "string" && question.explanation.trim().length >= 40,
+          language.key + " " + level.level + " question needs answer feedback",
         );
       }
 
@@ -120,6 +171,15 @@ async function checkContentCoverage() {
           (level.topics ?? []).map((topic) => topic.id),
         ),
       ),
+    ]),
+  );
+
+  const levelByTopic = new Map(
+    LANGUAGES.map((language) => [
+      language.key,
+      new Map((language.data.levels ?? []).flatMap((level) =>
+        (level.topics ?? []).map((topic) => [topic.id, level.level]),
+      )),
     ]),
   );
 
@@ -234,7 +294,7 @@ async function checkContentCoverage() {
               guide.check.explanation?.trim().length >= 60,
             `${label} guided lesson needs a valid comprehension check and explanation`,
           );
-          guidedLessonCount += 1;
+          if (levelByTopic.get(languageKey)?.get(topicId) === "L1") guidedLessonCount += 1;
         }
 
         wrongCount += 1;
@@ -273,6 +333,76 @@ async function checkContentCoverage() {
       `${languageKey}/${topicId} guide metadata must reach the lesson screen`,
     );
   }
+  const capstoneTopicIds = {
+    html: "h8",
+    css: "c18",
+    java: "j10",
+    python: "p18",
+    javascript: "js9",
+    php: "php8",
+    sql: "sql5",
+  };
+
+  for (const [languageKey, topicIds] of Object.entries(BEGINNER_TOPIC_MOVES)) {
+    for (const topicId of topicIds) {
+      const topicLessons = LESSONS[languageKey]?.[topicId] || [];
+      const topicGuides = LESSON_GUIDES[languageKey]?.[topicId] || [];
+      assert.equal(
+        topicLessons.length,
+        3,
+        languageKey + "/" + topicId + " promoted topic must retain three lessons",
+      );
+      assert.equal(
+        topicGuides.length,
+        3,
+        languageKey + "/" + topicId + " promoted topic must have three guided lessons",
+      );
+      const merged = getLessons(languageKey, topicId) || [];
+      assert.equal(
+        merged.length,
+        3,
+        languageKey + "/" + topicId + " must load all guided lessons",
+      );
+      merged.forEach((lesson, index) => {
+        assert.ok(
+          lesson.goal && lesson.walkthrough?.length >= 2 && lesson.check?.explanation,
+          languageKey + "/" + topicId + " lesson " + (index + 1) + " must load its guided content",
+        );
+      });
+    }
+
+    const capstoneEntries = Object.entries(LESSON_GUIDES[languageKey] || {}).flatMap(
+      ([topicId, guides]) => (guides || []).flatMap((guide, lessonIndex) =>
+        guide.capstone ? [{ topicId, lessonIndex, capstone: guide.capstone }] : [],
+      ),
+    );
+    assert.equal(
+      capstoneEntries.length,
+      1,
+      languageKey + " must have exactly one Beginner capstone",
+    );
+    assert.equal(
+      capstoneEntries[0].topicId,
+      capstoneTopicIds[languageKey],
+      languageKey + " capstone must belong to the final Beginner topic",
+    );
+    assert.equal(
+      capstoneEntries[0].lessonIndex,
+      2,
+      languageKey + " capstone must appear in the final lesson chapter",
+    );
+    const capstone = capstoneEntries[0].capstone;
+    assert.ok(
+      capstone.title?.trim() &&
+        capstone.prompt?.trim() &&
+        capstone.deliverable?.trim() &&
+        Array.isArray(capstone.criteria) &&
+        capstone.criteria.length >= 3 &&
+        capstone.selfCheck?.trim(),
+      languageKey + " capstone needs a task, deliverable, criteria, and self-check",
+    );
+  }
+
   const expectedGuidedLessonCount = expectedGuidedTopics.reduce(
     (count, [languageKey, topicId]) =>
       count + LESSONS[languageKey][topicId].length,

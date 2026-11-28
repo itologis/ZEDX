@@ -769,4 +769,585 @@ export const PRACTICE = {
     [`WITHIN`, `ACROSS`],
     `OVER defines the rows a window function looks at, without collapsing them the way GROUP BY does.`,
   ),
+
+  "h16": {
+  "q": "Which attribute makes a field mandatory?",
+  "code": "<input type=\"email\" ____>",
+  "a": "required",
+  "w": [
+    "optional",
+    "validate"
+  ],
+  "why": "required prevents the form from passing built-in validation while the field is empty."
+},
+  "h17": {
+  "q": "Which attribute names an iframe for assistive technology?",
+  "code": "<iframe src=\"map.html\" ____=\"Campus map\"></iframe>",
+  "a": "title",
+  "w": [
+    "alt",
+    "label"
+  ],
+  "why": "The title describes the embedded browsing context."
+},
+  "h18": {
+  "q": "Which element labels the disclosure control inside details?",
+  "code": "<details><____>More information</____></details>",
+  "a": "summary",
+  "w": [
+    "caption",
+    "legend"
+  ],
+  "why": "summary is the visible toggle label for the details disclosure."
+},
+  "h19": {
+  "q": "How does JavaScript read data-book-id through dataset?",
+  "code": "element.dataset.____",
+  "a": "bookId",
+  "w": [
+    "data-book-id",
+    "book-id"
+  ],
+  "why": "dataset converts hyphenated data attribute names to camelCase properties."
+},
+  "h20": {
+  "q": "Which attribute defers a classic script until HTML parsing finishes while preserving order?",
+  "code": "<script ____ src=\"app.js\"></script>",
+  "a": "defer",
+  "w": [
+    "async",
+    "blocking"
+  ],
+  "why": "Deferred classic scripts run after parsing and preserve their order."
+},
+  "h21": {
+  "q": "Which property contains a template's inert document fragment?",
+  "code": "template.____",
+  "a": "content",
+  "w": [
+    "children",
+    "innerTemplate"
+  ],
+  "why": "HTMLTemplateElement.content stores the template's DocumentFragment."
+},
+  "h22": {
+  "q": "Which method registers a custom element name?",
+  "code": "customElements.____(\"user-badge\", UserBadge);",
+  "a": "define",
+  "w": [
+    "register",
+    "create"
+  ],
+  "why": "customElements.define() registers a custom element name and class."
+},
+  "h23": {
+  "q": "Which rel value prevents a new page from controlling its opener?",
+  "code": "<a target=\"_blank\" rel=\"____\" href=\"...\">Open</a>",
+  "a": "noopener",
+  "w": [
+    "stylesheet",
+    "author"
+  ],
+  "why": "noopener severs the window.opener relationship."
+},
+  "c18": {
+  "q": "Which display value removes an element from layout?",
+  "code": " .notice { display: ____; }",
+  "a": "none",
+  "w": [
+    "hidden",
+    "transparent"
+  ],
+  "why": "display:none removes the element from layout; visibility:hidden keeps its layout space."
+},
+  "c19": {
+  "q": "Which property moves an element below earlier left floats?",
+  "code": "footer { ____: left; }",
+  "a": "clear",
+  "w": [
+    "float",
+    "display"
+  ],
+  "why": "clear: left prevents the element from sitting beside left-floating boxes."
+},
+  "c20": {
+  "q": "Which function creates a straight-line color transition?",
+  "code": "background: ____ (red, blue);",
+  "a": "linear-gradient",
+  "w": [
+    "radial-gradient-only",
+    "color-line"
+  ],
+  "why": "linear-gradient() generates a gradient along a straight line."
+},
+  "c21": {
+  "q": "Which property draws a focus ring without changing layout size?",
+  "code": "button:focus-visible { ____: 2px solid blue; }",
+  "a": "outline",
+  "w": [
+    "border",
+    "padding"
+  ],
+  "why": "outline is drawn outside the border and does not take up layout space."
+},
+  "c22": {
+  "q": "Which function keeps a value between a minimum and maximum?",
+  "code": "font-size: ____ (1rem, 2vw, 2rem);",
+  "a": "clamp",
+  "w": [
+    "calc",
+    "minmax"
+  ],
+  "why": "clamp(minimum, preferred, maximum) bounds the preferred value."
+},
+  "c23": {
+  "q": "Which property sets the anchor point for rotation and scaling?",
+  "code": " .tile { ____: top left; }",
+  "a": "transform-origin",
+  "w": [
+    "transform-point",
+    "origin"
+  ],
+  "why": "transform-origin chooses the anchor used by transform functions."
+},
+  "c24": {
+  "q": "Which at-rule defines the stages of a named animation?",
+  "code": "____ pulse { from { opacity: 0; } to { opacity: 1; } }",
+  "a": "@keyframes",
+  "w": [
+    "@frames",
+    "@animate"
+  ],
+  "why": "@keyframes declares the sequence referenced by animation-name."
+},
+  "c25": {
+  "q": "Which at-rule checks whether a CSS declaration is supported?",
+  "code": "____ (display: grid) { .layout { display: grid; } }",
+  "a": "@supports",
+  "w": [
+    "@media",
+    "@layer"
+  ],
+  "why": "@supports tests browser support for a CSS property-value declaration."
+},
+  "j16": {
+  "q": "Which flowchart shape commonly represents a decision?",
+  "code": "A ____ shape represents a yes/no branch.",
+  "a": "diamond",
+  "w": [
+    "rectangle",
+    "oval"
+  ],
+  "why": "A diamond represents a decision and branches into outcomes such as yes and no."
+},
+  "j17": {
+  "q": "Which operator compares primitive values for equality?",
+  "code": "if (score ____ 100) { ... }",
+  "a": "==",
+  "w": [
+    "=",
+    "!="
+  ],
+  "why": "== checks equality, = assigns a value, and != checks inequality."
+},
+  "j18": {
+  "q": "Which Scanner method reads a full line of text?",
+  "code": "String name = input.____();",
+  "a": "nextLine",
+  "w": [
+    "nextInt",
+    "readLine"
+  ],
+  "why": "nextLine() reads the remainder of the current line and returns it as a String."
+},
+  "j19": {
+  "q": "What condition must be true before binary search works correctly?",
+  "code": "The input must already be ____.",
+  "a": "sorted",
+  "w": [
+    "reversed",
+    "randomized"
+  ],
+  "why": "Binary search discards half of the remaining range based on order, so the input must be sorted."
+},
+  "j20": {
+  "q": "Which collection type stores key-value pairs?",
+  "code": "Map<String, Integer> scores = new ____<>();",
+  "a": "HashMap",
+  "w": [
+    "ArrayList",
+    "HashSet"
+  ],
+  "why": "HashMap implements Map and stores values associated with unique keys."
+},
+  "j21": {
+  "q": "Which class provides readString() and writeString() utility methods?",
+  "code": "____.writeString(path, \"Hello\");",
+  "a": "Files",
+  "w": [
+    "printFile",
+    "saveText"
+  ],
+  "why": "Files.writeString() writes text to the file represented by a Path."
+},
+  "j22": {
+  "q": "Which listener commonly handles a JButton action?",
+  "code": "button.add____(event -> save());",
+  "a": "ActionListener",
+  "w": [
+    "MouseTimer",
+    "ClickHandler"
+  ],
+  "why": "ActionListener receives action events generated by controls such as JButton."
+},
+  "j23": {
+  "q": "Which UML diagram shows actors and the goals they achieve with a system?",
+  "code": "A ____ diagram shows actors and use cases.",
+  "a": "use-case",
+  "w": [
+    "class",
+    "deployment"
+  ],
+  "why": "A use-case diagram shows actors and their goals within a system boundary."
+},
+  "j24": {
+  "q": "Which JDBC object represents rows returned by a SELECT query?",
+  "code": "ResultSet rows = statement.execute____();",
+  "a": "Query",
+  "w": [
+    "Update",
+    "Insert"
+  ],
+  "why": "executeQuery() runs a SELECT statement and returns a ResultSet."
+},
+  "j25": {
+  "q": "How many workers should this latch wait for when each worker calls countDown() once?",
+  "code": "CountDownLatch latch = new CountDownLatch(____);",
+  "a": "2",
+  "w": [
+    "-1",
+    "0.5"
+  ],
+  "why": "CountDownLatch starts with a non-negative count and releases waiting threads when countDown reduces it to zero."
+},
+  "p16": {
+  "q": "Which operator checks whether a value is present in a sequence?",
+  "code": "if \"a\" ____ \"cat\":",
+  "a": "in",
+  "w": [
+    "is",
+    "has"
+  ],
+  "why": "in tests membership in sequences and other containers."
+},
+  "p17": {
+  "q": "What type does input() return?",
+  "code": "answer = input(\"Enter a value: \")\nprint(type(answer) is ____)",
+  "a": "str",
+  "w": [
+    "int",
+    "bool"
+  ],
+  "why": "input() returns a string, even when the user types digits."
+},
+  "p18": {
+  "q": "Which method removes whitespace from both ends of a string?",
+  "code": "clean = text.____()",
+  "a": "strip",
+  "w": [
+    "split",
+    "replace"
+  ],
+  "why": "strip() removes leading and trailing whitespace by default."
+},
+  "p19": {
+  "q": "Which method initializes a new Python instance?",
+  "code": "class Student:\n    def ____(self, name):\n        self.name = name",
+  "a": "__init__",
+  "w": [
+    "new",
+    "create"
+  ],
+  "why": "__init__() initializes an instance after it is created."
+},
+  "p20": {
+  "q": "Which keyword imports a module in Python?",
+  "code": "____ math",
+  "a": "import",
+  "w": [
+    "include",
+    "require"
+  ],
+  "why": "import loads a module or selected names into the current namespace."
+},
+  "p21": {
+  "q": "Which command creates a virtual environment named .venv?",
+  "code": "python -m ____ .venv",
+  "a": "venv",
+  "w": [
+    "pip",
+    "install"
+  ],
+  "why": "python -m venv creates a virtual environment at the supplied path."
+},
+  "p22": {
+  "q": "Which symbol introduces a function return type annotation?",
+  "code": "def total(values: list[int]) ____ int:",
+  "a": "->",
+  "w": [
+    "=>",
+    ":"
+  ],
+  "why": "The arrow token -> introduces a function's return annotation."
+},
+  "p23": {
+  "q": "Which statement checks an expected condition during development?",
+  "code": "____ add(2, 3) == 5",
+  "a": "assert",
+  "w": [
+    "verify",
+    "expect"
+  ],
+  "why": "assert raises AssertionError when its condition is false."
+},
+  "js17": {
+  "q": "Which operator checks strict equality without type conversion?",
+  "code": "if (value ____ 10) { ... }",
+  "a": "===",
+  "w": [
+    "=",
+    "=="
+  ],
+  "why": "=== compares both type and value without coercion."
+},
+  "js18": {
+  "q": "Which method removes whitespace from both ends of a string?",
+  "code": "const name = text.____();",
+  "a": "trim",
+  "w": [
+    "slice",
+    "split"
+  ],
+  "why": "trim() returns a new string without whitespace at the beginning or end."
+},
+  "js19": {
+  "q": "Which method selects the first element matching a CSS selector?",
+  "code": "document.____(\".card\")",
+  "a": "querySelector",
+  "w": [
+    "getFirst",
+    "selectOne"
+  ],
+  "why": "querySelector() returns the first element matching the supplied CSS selector."
+},
+  "js20": {
+  "q": "Which method registers an event listener on an element?",
+  "code": "button.____(\"click\", handler);",
+  "a": "addEventListener",
+  "w": [
+    "attachEvent",
+    "onEvent"
+  ],
+  "why": "addEventListener() registers a function to respond to an event."
+},
+  "js21": {
+  "q": "Which method converts a JavaScript value into JSON text?",
+  "code": "const text = JSON.____(data);",
+  "a": "stringify",
+  "w": [
+    "parse",
+    "encode"
+  ],
+  "why": "JSON.stringify() serializes a JavaScript value into a JSON string."
+},
+  "js22": {
+  "q": "Which storage API normally persists after a browser is closed and reopened?",
+  "code": "____Storage",
+  "a": "local",
+  "w": [
+    "session",
+    "memory"
+  ],
+  "why": "localStorage persists for the origin until its values are removed."
+},
+  "js23": {
+  "q": "Which queue is processed after the current call stack and before the next task?",
+  "code": "Promise callbacks are queued as ____.",
+  "a": "microtasks",
+  "w": [
+    "timers",
+    "render tasks"
+  ],
+  "why": "Promise reaction callbacks are microtasks, processed after the current stack and before the next task."
+},
+  "js24": {
+  "q": "Which browser API creates a dedicated worker?",
+  "code": "const worker = new ____(\"worker.js\");",
+  "a": "Worker",
+  "w": [
+    "Thread",
+    "BackgroundTask"
+  ],
+  "why": "The Worker constructor creates a dedicated worker from a script URL."
+},
+  "php16": {
+  "q": "Which operator joins two PHP strings?",
+  "code": "$name = \"Ada\" ____ \" Lovelace\";",
+  "a": ".",
+  "w": [
+    "+",
+    "&"
+  ],
+  "why": "The dot operator concatenates strings in PHP."
+},
+  "php17": {
+  "q": "Which keyword declares a class constant in PHP?",
+  "code": "class Config { public ____ VERSION = \"1.0\"; }",
+  "a": "const",
+  "w": [
+    "let",
+    "static"
+  ],
+  "why": "const declares a class constant that is accessed with the scope resolution operator."
+},
+  "php18": {
+  "q": "Which PHP function sends an HTTP response header?",
+  "code": "____(\"Content-Type: application/json\");",
+  "a": "header",
+  "w": [
+    "cookie",
+    "response"
+  ],
+  "why": "header() sends a response header when called before output is sent."
+},
+  "php19": {
+  "q": "Which function converts a PHP value into JSON text?",
+  "code": "$json = ____( $data );",
+  "a": "json_encode",
+  "w": [
+    "json_parse",
+    "json_string"
+  ],
+  "why": "json_encode() serializes PHP values as a JSON string."
+},
+  "php20": {
+  "q": "Which function reads an entire file into a string?",
+  "code": "$text = ____(\"notes.txt\");",
+  "a": "file_get_contents",
+  "w": [
+    "file_read",
+    "read_file"
+  ],
+  "why": "file_get_contents() reads a file and returns its contents as a string."
+},
+  "php21": {
+  "q": "Which keyword declares a PHP namespace?",
+  "code": "____ App\\Services;",
+  "a": "namespace",
+  "w": [
+    "package",
+    "module"
+  ],
+  "why": "namespace declares the namespace for code in a PHP file."
+},
+  "php22": {
+  "q": "Which HTTP method is commonly used to retrieve a resource?",
+  "code": "GET is used to ____.",
+  "a": "read",
+  "w": [
+    "delete",
+    "create"
+  ],
+  "why": "GET retrieves a representation of a resource and should not change server state."
+},
+  "php23": {
+  "q": "Which function verifies a password against a stored hash?",
+  "code": "if (____($input, $hash)) { ... }",
+  "a": "password_verify",
+  "w": [
+    "password_check",
+    "hash_compare"
+  ],
+  "why": "password_verify() checks a password against a hash created by a compatible password hashing function."
+},
+  "sql16": {
+  "q": "Which key uniquely identifies a row in a table?",
+  "code": "A ____ KEY identifies each row.",
+  "a": "PRIMARY",
+  "w": [
+    "FOREIGN",
+    "SECONDARY"
+  ],
+  "why": "A primary key uniquely identifies each row in its table."
+},
+  "sql17": {
+  "q": "Which operator combines result sets and removes duplicates?",
+  "code": "SELECT city FROM A ____ SELECT city FROM B;",
+  "a": "UNION",
+  "w": [
+    "JOIN",
+    "UPDATE"
+  ],
+  "why": "UNION combines compatible result sets and removes duplicate rows."
+},
+  "sql18": {
+  "q": "Which function converts text to uppercase in Oracle SQL?",
+  "code": "SELECT ____(name) FROM students;",
+  "a": "UPPER",
+  "w": [
+    "COUNT",
+    "GROUP"
+  ],
+  "why": "UPPER() converts alphabetic characters to uppercase."
+},
+  "sql19": {
+  "q": "Which keyword closes a CASE expression?",
+  "code": "CASE WHEN score >= 75 THEN 'Pass' ____ AS result",
+  "a": "END",
+  "w": [
+    "ELSE",
+    "STOP"
+  ],
+  "why": "END closes the CASE expression."
+},
+  "sql20": {
+  "q": "Which constraint prevents duplicate values in a column or column group?",
+  "code": "ADD CONSTRAINT uq_email ____ (email);",
+  "a": "UNIQUE",
+  "w": [
+    "CHECK",
+    "DEFAULT"
+  ],
+  "why": "UNIQUE prevents duplicate non-null key values according to the database's rules."
+},
+  "sql21": {
+  "q": "Which command removes a previously granted privilege?",
+  "code": "____ SELECT ON students FROM analyst;",
+  "a": "REVOKE",
+  "w": [
+    "REMOVE",
+    "DELETE"
+  ],
+  "why": "REVOKE withdraws a previously granted privilege."
+},
+  "sql22": {
+  "q": "Which section begins the executable statements of a PL/SQL block?",
+  "code": "DECLARE\n  v_count NUMBER;\n____\n  v_count := 1;\nEND;",
+  "a": "BEGIN",
+  "w": [
+    "START",
+    "RUN"
+  ],
+  "why": "BEGIN marks the start of the executable section."
+},
+  "sql23": {
+  "q": "Which PL/SQL program unit must return a value?",
+  "code": "A stored ____ returns a value to its caller.",
+  "a": "function",
+  "w": [
+    "trigger",
+    "cursor"
+  ],
+  "why": "A function returns a value through its RETURN type and RETURN statement."
+},
 };

@@ -60,8 +60,8 @@ function PracticeBlock({ topicId, languageKey }) {
     if (solved) return;
     setChoice(option);
     if (option === item.a) {
-      setDone(true);
-      await savePracticeDone(languageKey, topicId);
+      const saved = await savePracticeDone(languageKey, topicId);
+      if (saved) setDone(true);
     }
   };
 
@@ -505,6 +505,51 @@ export default function TopicScreen({
             <LessonCheck key={`${lesson.title}-check`} check={lesson.check} />
           ) : null}
 
+          {lesson.capstone && placement?.levelLabel === "Beginner" ? (
+            <View
+              style={[
+                styles.capstone,
+                {
+                  backgroundColor: colors.plate,
+                  borderColor: colors.rule,
+                },
+              ]}
+            >
+              <Text style={[TYPO.label, { color: colors.accent }]}>
+                Beginner capstone
+              </Text>
+              <Text style={[TYPO.item, styles.capstoneTitle, { color: colors.ink }]}>
+                {lesson.capstone.title}
+              </Text>
+              <Text style={[TYPO.body, styles.capstoneText, { color: colors.body }]}>
+                {lesson.capstone.prompt}
+              </Text>
+              <Text style={[TYPO.label, styles.capstoneSubhead, { color: colors.ink }]}>
+                Your deliverable
+              </Text>
+              <Text style={[TYPO.small, styles.capstoneText, { color: colors.body }]}>
+                {lesson.capstone.deliverable}
+              </Text>
+              <Text style={[TYPO.label, styles.capstoneSubhead, { color: colors.ink }]}>
+                Acceptance checklist
+              </Text>
+              {lesson.capstone.criteria.map((criterion, index) => (
+                <View key={index} style={styles.capstoneCriterion}>
+                  <Text style={[TYPO.small, { color: colors.accent }]}>•</Text>
+                  <Text style={[TYPO.small, styles.capstoneCriterionText, { color: colors.body }]}>
+                    {criterion}
+                  </Text>
+                </View>
+              ))}
+              <Text style={[TYPO.label, styles.capstoneSubhead, { color: colors.ink }]}>
+                Self-check
+              </Text>
+              <Text style={[TYPO.small, styles.capstoneText, { color: colors.body }]}>
+                {lesson.capstone.selfCheck}
+              </Text>
+            </View>
+          ) : null}
+
           {lessons.length > 1 ? (
             <View style={styles.lessonNav}>
               {lessonIndex > 0 ? (
@@ -669,6 +714,22 @@ const styles = StyleSheet.create({
   },
   goalText: { lineHeight: 21, marginTop: 4 },
   walkthrough: { marginTop: 24 },
+  capstone: {
+    marginTop: 28,
+    padding: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 12,
+  },
+  capstoneTitle: { marginTop: 8 },
+  capstoneText: { marginTop: 8, lineHeight: 22 },
+  capstoneSubhead: { marginTop: 16 },
+  capstoneCriterion: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginTop: 8,
+  },
+  capstoneCriterionText: { flex: 1, lineHeight: 21 },
   walkStep: { marginTop: 16 },
   walkHeading: { flexDirection: "row", alignItems: "baseline", gap: 10 },
   walkLabel: { flex: 1 },

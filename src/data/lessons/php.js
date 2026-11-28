@@ -494,60 +494,40 @@ if (isset($user["email"])) {
   ],
 
   php8: [
-    {
-      title: "Concatenation and length",
-      body: [
-        `The dot operator joins strings: [["Hi, " . $name]]. [[strlen()]] counts bytes, not characters.`,
-        `For UTF-8 text use [[mb_strlen()]] and the other mb_* functions, or accented characters count as two or more.`,
-      ],
-      example: {
-        code: `<?php
-$name = "José";
-echo mb_strlen($name);`,
-        caption: `Four characters, counted correctly.`,
-      },
-      wrong: {
-        code: `<?php
-$name = "José";
-echo strlen($name);`,
-        why: `strlen counts bytes; the accented é takes two in UTF-8, so this reports 5.`,
-      },
+  {
+    "title": "Join strings and measure their length",
+    "body": "PHP uses the dot operator to join strings. strlen returns the number of bytes in a string, which matches the number of characters for simple ASCII text. UTF-8 characters outside ASCII can use more than one byte, so byte length and visible character count are not always the same.",
+    "example": {
+      "code": "$name = \"Mina\";\n$message = \"Hello, \" . $name;\necho $message;\necho strlen($name);"
     },
-    {
-      title: "Search and replace",
-      body: [
-        `[[str_replace()]] replaces every exact match. [[str_ireplace()]] ignores case. [[str_contains()]] answers a yes/no question.`,
-        `The search functions are literal, not patterns. Regular expressions need preg_* functions.`,
-      ],
-      example: {
-        code: `<?php
-$clean = str_ireplace("ERROR", "warning", $line);`,
-        caption: `Case-insensitive replacement.`,
-      },
-      wrong: {
-        code: `<?php
-$clean = str_replace("error", "warning", "ERROR: disk full");`,
-        why: `str_replace is case-sensitive, so the uppercase text is untouched. Use str_ireplace.`,
-      },
+    "wrong": {
+      "code": "$message = \"Hello, \" + $name;",
+      "why": "PHP uses the dot operator for string concatenation. The plus operator is used for arithmetic, not for joining text."
+    }
+  },
+  {
+    "title": "Trim and change text case",
+    "body": "trim removes whitespace from the beginning and end of a string. strtolower converts letters to lowercase, while strtoupper converts them to uppercase. These functions return a string, so assign the result when the cleaned value should be used later.",
+    "example": {
+      "code": "$raw = \"  ZEDX  \";\n$clean = trim($raw);\n$normalized = strtolower($clean);\necho $normalized;"
     },
-    {
-      title: "Substrings and multibyte text",
-      body: [
-        `[[substr()]] returns part of a string by byte offset. On UTF-8 text, cut with [[mb_substr()]] instead.`,
-        `A cut in the middle of a multibyte character produces broken output.`,
-      ],
-      example: {
-        code: `<?php
-$excerpt = mb_substr($title, 0, 40, "UTF-8");`,
-        caption: `Forty characters, not forty bytes.`,
-      },
-      wrong: {
-        code: `<?php
-$excerpt = substr("ZÉDX guide", 0, 2);`,
-        why: `The É is two bytes, so the cut lands inside the character and produces an invalid string.`,
-      },
+    "wrong": {
+      "code": "$raw = \"  ZEDX  \";\n$raw.trim();\necho $raw;",
+      "why": "PHP string functions are called as functions, not as JavaScript-style methods. Use trim($raw) and store the returned string."
+    }
+  },
+  {
+    "title": "Search and replace text",
+    "body": "str_replace returns a string with matching text replaced. In PHP 8 and later, str_contains checks whether a string contains another string and returns true or false. These functions use literal text rather than regular-expression patterns. For pattern matching, PHP provides separate preg_* functions.",
+    "example": {
+      "code": "$message = \"Welcome, reader!\";\nif (str_contains($message, \"reader\")) {\n    $message = str_replace(\"reader\", \"Mina\", $message);\n}\necho $message;"
     },
-  ],
+    "wrong": {
+      "code": "$message = \"Welcome, reader!\";\nstr_replace(\"reader\", \"Mina\", $message);\necho $message;",
+      "why": "str_replace returns an updated string but does not change the original variable automatically. Assign its return value when you want to keep the replacement."
+    }
+  }
+],
 
   php9: [
     {
@@ -1050,4 +1030,381 @@ if ($_POST["confirm"] === "yes") {
       },
     },
   ],
+
+  "php16": [
+  {
+    "title": "Calculate and assign values",
+    "body": [
+      "Arithmetic operators include +, -, *, /, %, and **. Assignment operators store or update values, including shorthand forms such as += and *=.",
+      "Use a numeric type that fits the values being calculated. Do not assume every value received from a form is already numeric; validate and convert it deliberately."
+    ],
+    "example": {
+      "code": "$price = 19.50;\n$quantity = 3;\n$total = $price * $quantity;",
+      "caption": "The multiplication calculates a total."
+    },
+    "wrong": {
+      "code": "$price = \"19.50\";\n$total = $price + \"three\";",
+      "why": "The value is not a valid numeric amount. Validate and convert external input before arithmetic."
+    }
+  },
+  {
+    "title": "Compare and combine conditions",
+    "body": [
+      "Comparison operators include ==, ===, !=, !==, <, and >=. Logical operators &&, ||, and ! combine Boolean conditions.",
+      "Prefer strict comparison when both type and value should match. Loose comparison can convert values and produce surprising results with mixed types."
+    ],
+    "example": {
+      "code": "if ($age >= 18 && $hasId === true) {\n    echo \"Continue\";\n}",
+      "caption": "Both requirements must be satisfied."
+    },
+    "wrong": {
+      "code": "if ($age = 18) {\n    echo \"Continue\";\n}",
+      "why": "A single equals sign assigns a value. Use == or === for comparison."
+    }
+  },
+  {
+    "title": "Join strings and supply fallbacks",
+    "body": [
+      "The dot operator concatenates strings. The null coalescing operator ?? supplies a fallback when a value is absent or null.",
+      "Do not confuse concatenation with arithmetic addition. Keep user input escaped for its output context, and do not treat a fallback operator as input validation."
+    ],
+    "example": {
+      "code": "$name = $_POST[\"name\"] ?? \"Guest\";\n$message = \"Hello, \" . $name;\necho htmlspecialchars($message);",
+      "caption": "A missing value gets a fallback and the output is escaped."
+    },
+    "wrong": {
+      "code": "$message = \"Total: \" + $total;",
+      "why": "PHP uses the dot operator for string concatenation. Plus is arithmetic addition."
+    }
+  }
+],
+  "php17": [
+  {
+    "title": "Declare constants",
+    "body": [
+      "define() declares a named constant at runtime, while const declares a compile-time constant in supported declaration contexts. Constants do not use the dollar sign when referenced.",
+      "Use descriptive uppercase names by convention. A constant should represent a value that is not expected to change while the application runs."
+    ],
+    "example": {
+      "code": "define(\"APP_NAME\", \"ZEDX\");\nconst MAX_ATTEMPTS = 3;\necho APP_NAME;",
+      "caption": "Constants are referenced without a dollar sign."
+    },
+    "wrong": {
+      "code": "$APP_NAME = \"ZEDX\";\necho $APP_NAME;",
+      "why": "This creates a normal variable, not a constant. Use define() or const for a constant."
+    }
+  },
+  {
+    "title": "Understand variable scope",
+    "body": [
+      "A variable declared inside a function is local to that function. The global keyword can import a global variable into a function, while superglobals are available across scopes.",
+      "Prefer passing values as parameters and returning results instead of relying on global state. Explicit dependencies make functions easier to test and reuse."
+    ],
+    "example": {
+      "code": "$taxRate = 0.12;\nfunction total($amount) {\n    global $taxRate;\n    return $amount * (1 + $taxRate);\n}",
+      "caption": "The global keyword makes the outer variable available."
+    },
+    "wrong": {
+      "code": "$taxRate = 0.12;\nfunction total($amount) {\n    return $amount * (1 + $taxRate);\n}",
+      "why": "A local function cannot automatically read an ordinary global variable. Pass it as a parameter or import it deliberately."
+    }
+  },
+  {
+    "title": "Use static local and class state deliberately",
+    "body": [
+      "A static local variable retains its value between calls to the function. A static class property belongs to the class rather than one particular object.",
+      "Use static state only when shared lifetime is intentional. Hidden mutable state can make behavior harder to predict across tests or requests."
+    ],
+    "example": {
+      "code": "function nextId(): int {\n    static $id = 0;\n    return ++$id;\n}",
+      "caption": "The local counter persists between calls."
+    },
+    "wrong": {
+      "code": "function nextId(): int {\n    $id = 0;\n    return ++$id;\n}",
+      "why": "The variable resets to zero every call. Use static when the function must retain its local value."
+    }
+  }
+],
+  "php18": [
+  {
+    "title": "Send response headers",
+    "body": [
+      "HTTP headers describe the response, such as its content type, cache policy, or redirect destination. PHP's header() function sends a response header before output begins.",
+      "Headers must be sent before body content. Avoid accidental whitespace or debug output before a header call."
+    ],
+    "example": {
+      "code": "header(\"Content-Type: application/json\");\necho json_encode([\"ok\" => true]);",
+      "caption": "The content type matches the JSON response."
+    },
+    "wrong": {
+      "code": "echo \"Starting response\";\nheader(\"Content-Type: application/json\");",
+      "why": "Output has already started, so PHP may no longer be able to change the headers."
+    }
+  },
+  {
+    "title": "Set a cookie",
+    "body": [
+      "setcookie() asks the browser to store a small value and send it with later matching requests. Options can set an expiry, path, domain, secure flag, HttpOnly flag, and SameSite policy.",
+      "Use Secure on HTTPS sites, HttpOnly when client-side scripts do not need to read the cookie, and an appropriate SameSite value. Cookies are not a safe place for arbitrary secrets."
+    ],
+    "example": {
+      "code": "setcookie(\"theme\", \"dark\", [\n    \"expires\" => time() + 3600,\n    \"secure\" => true,\n    \"httponly\" => true,\n    \"samesite\" => \"Lax\"\n]);",
+      "caption": "The options describe how the browser should handle the cookie."
+    },
+    "wrong": {
+      "code": "setcookie(\"theme\", \"dark\");\necho $_COOKIE[\"theme\"];",
+      "why": "The browser sends a newly set cookie on a later matching request, not necessarily in the current request."
+    }
+  },
+  {
+    "title": "Read and expire cookies",
+    "body": [
+      "Incoming cookies are available through $_COOKIE. A cookie can be expired by sending the same name with an expiry time in the past.",
+      "Treat cookie values as untrusted input. Validate them before use, and do not assume that a cookie proves that a user is authenticated."
+    ],
+    "example": {
+      "code": "if (isset($_COOKIE[\"theme\"])) {\n    $theme = $_COOKIE[\"theme\"];\n}\nsetcookie(\"theme\", \"\", time() - 3600, \"/\");",
+      "caption": "The cookie is read from the request and expired in the response."
+    },
+    "wrong": {
+      "code": "if ($_COOKIE[\"is_admin\"] === \"1\") {\n    showAdminPanel();\n}",
+      "why": "A visitor can modify cookies. Check authorization using trusted server-side session or account data."
+    }
+  }
+],
+  "php19": [
+  {
+    "title": "Encode PHP values",
+    "body": [
+      "json_encode() serializes supported PHP values such as arrays and objects into a JSON string. This is useful for API responses and data interchange.",
+      "Check the return value and handle encoding errors. Invalid text encoding or unsupported values can prevent successful serialization."
+    ],
+    "example": {
+      "code": "$payload = [\"name\" => \"Ada\", \"active\" => true];\nheader(\"Content-Type: application/json\");\necho json_encode($payload);",
+      "caption": "The response body contains JSON text."
+    },
+    "wrong": {
+      "code": "$payload = [\"name\" => \"Ada\"];\necho $payload;",
+      "why": "echo does not convert an array into JSON. Use json_encode() to create the text representation."
+    }
+  },
+  {
+    "title": "Decode JSON text",
+    "body": [
+      "json_decode() parses a JSON string. Its second argument controls whether JSON objects become PHP associative arrays or objects.",
+      "Validate decoded data before using it. Malformed input can return null or raise a JSON error, so check the decoder's error state or use JSON_THROW_ON_ERROR."
+    ],
+    "example": {
+      "code": "$data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);\n$name = $data[\"name\"] ?? \"Guest\";",
+      "caption": "The true argument requests associative arrays."
+    },
+    "wrong": {
+      "code": "$data = json_decode($json, true);\necho $data->name;",
+      "why": "The true argument returns an associative array, so read the value with array syntax."
+    }
+  },
+  {
+    "title": "Handle errors and validate fields",
+    "body": [
+      "JSON parsing proves that a string follows JSON syntax, not that it contains the fields your application expects. Check required keys and value types before using them.",
+      "Catch JsonException when using JSON_THROW_ON_ERROR. Treat request data as untrusted and validate it according to the operation being performed."
+    ],
+    "example": {
+      "code": "try {\n    $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);\n} catch (JsonException $error) {\n    http_response_code(400);\n    exit;\n}",
+      "caption": "Malformed JSON is handled as a bad request."
+    },
+    "wrong": {
+      "code": "$data = json_decode($json, true);\nsaveUser($data[\"user_id\"]);",
+      "why": "A parsed document may omit user_id or provide an invalid value. Validate the structure and authorization before saving."
+    }
+  }
+],
+  "php20": [
+  {
+    "title": "Read and write server files",
+    "body": [
+      "file_get_contents() reads file contents into a string. file_put_contents() writes data and can overwrite a file unless an append option is supplied.",
+      "Use paths that your application controls. Check failures and permissions, and avoid allowing user input to choose arbitrary server paths."
+    ],
+    "example": {
+      "code": "$path = __DIR__ . \"/data/report.txt\";\nfile_put_contents($path, \"Saved\");\n$text = file_get_contents($path);",
+      "caption": "The file is written and then read."
+    },
+    "wrong": {
+      "code": "$path = $_GET[\"path\"];\necho file_get_contents($path);",
+      "why": "Allowing request data to select a path can expose files outside the intended folder. Use a controlled location."
+    }
+  },
+  {
+    "title": "Validate uploaded files",
+    "body": [
+      "A file input sends uploaded data to a temporary server location. PHP exposes upload details through $_FILES, including a temporary path, upload error code, and client filename.",
+      "Check the upload error, size, and actual file content type on the server. Do not trust the original filename or the MIME type supplied by the browser."
+    ],
+    "example": {
+      "code": "if ($_FILES[\"photo\"][\"error\"] === UPLOAD_ERR_OK) {\n    $tmp = $_FILES[\"photo\"][\"tmp_name\"];\n    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($tmp);\n}",
+      "caption": "The content type is inspected from the temporary file."
+    },
+    "wrong": {
+      "code": "$mime = $_FILES[\"photo\"][\"type\"];",
+      "why": "The browser supplies that MIME value and can lie. Inspect the temporary file with a server-side tool."
+    }
+  },
+  {
+    "title": "Store uploads safely",
+    "body": [
+      "move_uploaded_file() moves a valid uploaded file from its temporary location. Generate a server-side filename and store files in a controlled directory.",
+      "Restrict accepted formats and sizes. Do not let uploaded files execute as server code, and prevent path traversal by never using an unchecked client filename as a path."
+    ],
+    "example": {
+      "code": "$name = bin2hex(random_bytes(16)) . \".jpg\";\n$destination = __DIR__ . \"/uploads/\" . $name;\nmove_uploaded_file($_FILES[\"photo\"][\"tmp_name\"], $destination);",
+      "caption": "The stored name is generated by the server."
+    },
+    "wrong": {
+      "code": "$destination = __DIR__ . \"/uploads/\" . $_FILES[\"photo\"][\"name\"];",
+      "why": "The client filename may contain unsafe characters or path segments. Generate a safe server-side name."
+    }
+  }
+],
+  "php21": [
+  {
+    "title": "Declare and use namespaces",
+    "body": [
+      "A namespace groups related PHP code under a named path. It helps prevent collisions between classes that share a short name.",
+      "Declare the namespace near the start of the PHP file, after the opening tag and any declare statement. Use a consistent namespace structure across the project."
+    ],
+    "example": {
+      "code": "<?php\nnamespace App\\Services;\nclass StudentService {}",
+      "caption": "The class belongs to App\\Services."
+    },
+    "wrong": {
+      "code": "<?php\nclass App\\Services\\StudentService {}",
+      "why": "A namespace is declared with the namespace keyword, not embedded in the class declaration."
+    }
+  },
+  {
+    "title": "Import names with use",
+    "body": [
+      "The use statement imports a fully qualified class, function, or constant name into the current namespace. An alias can make a long name easier to reference.",
+      "Remember that importing a class does not instantiate it. Create an object separately with new when an instance is needed."
+    ],
+    "example": {
+      "code": "use App\\Models\\Student;\n$student = new Student();",
+      "caption": "The imported short name refers to the fully qualified class."
+    },
+    "wrong": {
+      "code": "use App\\Models\\Student;\n$student = Student;",
+      "why": "The class name is not an object instance. Use new Student() to construct one."
+    }
+  },
+  {
+    "title": "Manage packages with Composer",
+    "body": [
+      "Composer reads composer.json to resolve project dependencies and can create an autoloader for namespaced classes. The vendor directory contains installed packages.",
+      "Commit the dependency manifest and lock file for an application. Do not commit generated vendor files unless the deployment process specifically requires them."
+    ],
+    "example": {
+      "code": "composer require vendor/package\ncomposer install",
+      "caption": "The first command adds a dependency and the second installs declared dependencies."
+    },
+    "wrong": {
+      "code": "require \"vendor/package\";",
+      "why": "A package name is not normally a PHP file path. Use Composer to install the package and load its generated autoloader."
+    }
+  }
+],
+  "php22": [
+  {
+    "title": "Match HTTP methods to resource actions",
+    "body": [
+      "GET retrieves a representation, POST usually submits data for processing or creation, PUT replaces a resource, PATCH partially updates it, and DELETE removes it.",
+      "Design endpoints around resources and predictable actions. Do not use GET for operations that change important server state."
+    ],
+    "example": {
+      "code": "GET /api/students\nPOST /api/students\nPATCH /api/students/42\nDELETE /api/students/42",
+      "caption": "The method and path communicate the operation."
+    },
+    "wrong": {
+      "code": "GET /api/students/42/delete",
+      "why": "A state-changing action should not be hidden behind GET. Use a method such as DELETE with authorization."
+    }
+  },
+  {
+    "title": "Read input and return JSON",
+    "body": [
+      "PHP can read a JSON request body from php://input and decode it. Set an appropriate response content type and status code before writing the response body.",
+      "Validate the decoded structure and report useful client errors. Keep internal exception details out of public API responses."
+    ],
+    "example": {
+      "code": "$input = file_get_contents(\"php://input\");\n$data = json_decode($input, true);\nheader(\"Content-Type: application/json\");\necho json_encode([\"received\" => true]);",
+      "caption": "The body is read and a JSON response is returned."
+    },
+    "wrong": {
+      "code": "echo \"<h1>Saved</h1>\";",
+      "why": "An API endpoint should return the documented data format, such as JSON, rather than an unrelated HTML fragment."
+    }
+  },
+  {
+    "title": "Return meaningful status codes",
+    "body": [
+      "Use status codes that match the outcome: 200 for a successful response, 201 for creation, 400 for invalid input, 401 for missing authentication, 403 for forbidden access, and 404 for a missing resource.",
+      "An API must also check authorization and validate data on the server. A correct status code does not make an unsafe operation secure."
+    ],
+    "example": {
+      "code": "http_response_code(201);\nheader(\"Content-Type: application/json\");\necho json_encode([\"id\" => 42]);",
+      "caption": "The response indicates that a resource was created."
+    },
+    "wrong": {
+      "code": "http_response_code(200);\necho json_encode([\"error\" => \"Not found\"]);",
+      "why": "A missing resource should normally use 404, not 200. The status code is part of the API contract."
+    }
+  }
+],
+  "php23": [
+  {
+    "title": "Hash passwords for storage",
+    "body": [
+      "password_hash() creates a salted password hash using a password hashing algorithm. Store the resulting hash, not the original password.",
+      "Use PASSWORD_DEFAULT unless the application has a specific, well-reviewed reason to choose another supported algorithm. Hashing is one-way, so the original password is not recovered from the hash."
+    ],
+    "example": {
+      "code": "$hash = password_hash($password, PASSWORD_DEFAULT);\nsaveUserPasswordHash($userId, $hash);",
+      "caption": "Only the password hash is stored."
+    },
+    "wrong": {
+      "code": "$stored = $password;\nsaveUserPassword($userId, $stored);",
+      "why": "This stores the original password. Store the output of password_hash() instead."
+    }
+  },
+  {
+    "title": "Verify a submitted password",
+    "body": [
+      "password_verify() checks a submitted password against a stored hash. It handles the salt and algorithm information embedded in the hash.",
+      "Use a generic login failure message so the response does not reveal whether an account exists. Rate-limit attempts and use secure transport for login forms."
+    ],
+    "example": {
+      "code": "if (password_verify($input, $storedHash)) {\n    startUserSession($userId);\n}",
+      "caption": "A matching password allows the login flow to continue."
+    },
+    "wrong": {
+      "code": "if ($input === $storedHash) {\n    startUserSession($userId);\n}",
+      "why": "The stored value is a hash, not the original password. Use password_verify()."
+    }
+  },
+  {
+    "title": "Separate authentication from authorization",
+    "body": [
+      "Authentication determines whether credentials identify a user. Authorization checks whether that user is allowed to view or change a particular resource.",
+      "Check permissions on every protected server action. A hidden button or client-side role flag is not a security control."
+    ],
+    "example": {
+      "code": "if (!$user->can(\"edit\", $record)) {\n    http_response_code(403);\n    exit;\n}",
+      "caption": "The permission check happens on the server."
+    },
+    "wrong": {
+      "code": "if ($_POST[\"is_admin\"] === \"1\") {\n    deleteRecord($id);\n}",
+      "why": "Request data can be changed by a visitor. Determine roles and permissions from trusted server-side data."
+    }
+  }
+],
 };

@@ -28,40 +28,60 @@ export default {
       label: "Beginner",
       topics: [
         {
-          id: "php1",
-          title: "Hello World",
-          syntax: `<?php\n  echo "Hello, World!";\n?>`,
-          description:
-            "PHP code runs on the server between <?php and ?> tags. The echo statement sends text to the browser, and every statement ends with a semicolon.",
-        },
+            id: "php1",
+            title: "Hello World",
+            syntax: `<?php\n  echo "Hello, World!";\n?>`,
+            description:
+              "PHP code runs on the server between <?php and ?> tags. The echo statement sends text to the browser, and every statement ends with a semicolon.",
+          },
         {
-          id: "php2",
-          title: "Variables",
-          syntax: `$name = "John";\n$age = 25;\n$price = 19.99;\n$isActive = true;\n\necho "Hello, $name";`,
-          description:
-            "Variables start with a dollar sign ($) and need no type declaration. Names are case-sensitive, and double-quoted strings can include variables directly.",
-        },
+            id: "php2",
+            title: "Variables",
+            syntax: `$name = "John";\n$age = 25;\n$price = 19.99;\n$isActive = true;\n\necho "Hello, $name";`,
+            description:
+              "Variables start with a dollar sign ($) and need no type declaration. Names are case-sensitive, and double-quoted strings can include variables directly.",
+          },
         {
-          id: "php3",
-          title: "If Statements",
-          syntax: `$score = 85;\n\nif ($score >= 90) {\n  echo "Excellent";\n} elseif ($score >= 70) {\n  echo "Pass";\n} else {\n  echo "Fail";\n}`,
-          description:
-            "If statements run code only when a condition is true. Use elseif for extra conditions and else as the fallback. Use === to compare both value and type.",
-        },
+            "id": "php16",
+            "title": "Operators & Expressions",
+            "syntax": "$subtotal = 120;\n$quantity = 3;\n$total = $subtotal * $quantity;\n$eligible = $total >= 300 && $quantity > 0;",
+            "description": "PHP expressions combine values and operators to produce results. Arithmetic, comparison, logical, string, assignment, and null-coalescing operators support calculations and decisions."
+          },
         {
-          id: "php4",
-          title: "Loops",
-          syntax: `for ($i = 0; $i < 5; $i++) {\n  echo $i;\n}\n\n$count = 0;\nwhile ($count < 3) {\n  echo $count;\n  $count++;\n}`,
-          description:
-            "Loops repeat code. A for loop is useful for counting, while a while loop continues as long as its condition is true.",
-        },
+            id: "php3",
+            title: "If Statements",
+            syntax: `$score = 85;\n\nif ($score >= 90) {\n  echo "Excellent";\n} elseif ($score >= 70) {\n  echo "Pass";\n} else {\n  echo "Fail";\n}`,
+            description:
+              "If statements run code only when a condition is true. Use elseif for extra conditions and else as the fallback. Use === to compare both value and type.",
+          },
         {
-          id: "php5",
-          title: "Functions",
-          syntax: `function add(int $a, int $b): int {\n  return $a + $b;\n}\n\nfunction greet(string $name = "friend"): string {\n  return "Hello, $name!";\n}\n\necho add(5, 3);\necho greet();`,
-          description:
-            "Functions group reusable code. Type declarations and default values are optional, and return sends a result back to the caller.",
-        },
+            id: "php4",
+            title: "Loops",
+            syntax: `for ($i = 0; $i < 5; $i++) {\n  echo $i;\n}\n\n$count = 0;\nwhile ($count < 3) {\n  echo $count;\n  $count++;\n}`,
+            description:
+              "Loops repeat code. A for loop is useful for counting, while a while loop continues as long as its condition is true.",
+          },
+        {
+            id: "php5",
+            title: "Functions",
+            syntax: `function add(int $a, int $b): int {\n  return $a + $b;\n}\n\nfunction greet(string $name = "friend"): string {\n  return "Hello, $name!";\n}\n\necho add(5, 3);\necho greet();`,
+            description:
+              "Functions group reusable code. Type declarations and default values are optional, and return sends a result back to the caller.",
+          },
+        {
+            id: "php6",
+            title: "Arrays",
+            syntax: `$fruits = ["apple", "banana", "orange"];\n\n$fruits[] = "grape";\necho $fruits[0];\necho count($fruits);\n\nforeach ($fruits as $fruit) {\n  echo $fruit;\n}`,
+            description:
+              "Arrays store ordered lists of values. Indexes start at 0, [] adds an item to the end, count() returns the length, and foreach loops through every item.",
+          },
+        {
+            id: "php8",
+            title: "String Functions",
+            syntax: `$text = "Hello, World!";\n\necho strlen($text);                       // 13\necho strtoupper($text);                   // HELLO, WORLD!\necho str_replace("World", "PHP", $text);  // Hello, PHP!\necho substr($text, 0, 5);                 // Hello\necho "Hello, " . "John";                  // Hello, John`,
+            description:
+              "PHP has many built-in string functions. The dot (.) operator joins strings, and double-quoted strings read variables inside them while single-quoted strings do not.",
+          }
       ],
     },
     {
@@ -69,40 +89,44 @@ export default {
       label: "Intermediate",
       topics: [
         {
-          id: "php6",
-          title: "Arrays",
-          syntax: `$fruits = ["apple", "banana", "orange"];\n\n$fruits[] = "grape";\necho $fruits[0];\necho count($fruits);\n\nforeach ($fruits as $fruit) {\n  echo $fruit;\n}`,
-          description:
-            "Arrays store ordered lists of values. Indexes start at 0, [] adds an item to the end, count() returns the length, and foreach loops through every item.",
-        },
+            id: "php7",
+            title: "Associative Arrays",
+            syntax: `$person = [\n  "name" => "John",\n  "age" => 25,\n];\n\necho $person["name"];\n$person["city"] = "London";\n\nforeach ($person as $key => $value) {\n  echo "$key: $value<br>";\n}`,
+            description:
+              "Associative arrays use named keys instead of numbers. The => operator links a key to its value, and foreach can read both the key and the value.",
+          },
         {
-          id: "php7",
-          title: "Associative Arrays",
-          syntax: `$person = [\n  "name" => "John",\n  "age" => 25,\n];\n\necho $person["name"];\n$person["city"] = "London";\n\nforeach ($person as $key => $value) {\n  echo "$key: $value<br>";\n}`,
-          description:
-            "Associative arrays use named keys instead of numbers. The => operator links a key to its value, and foreach can read both the key and the value.",
-        },
+            id: "php9",
+            title: "Forms ($_GET & $_POST)",
+            syntax: `<form method="post" action="">\n  <input type="text" name="username">\n  <button type="submit">Send</button>\n</form>\n\n<?php\nif ($_SERVER["REQUEST_METHOD"] === "POST") {\n  $username = htmlspecialchars($_POST["username"] ?? "");\n  echo "Hello, $username!";\n}\n?>`,
+            description:
+              "$_GET and $_POST are superglobal arrays that hold data sent from the browser. The ?? operator supplies a default for missing values, and htmlspecialchars() escapes output to prevent XSS.",
+          },
         {
-          id: "php8",
-          title: "String Functions",
-          syntax: `$text = "Hello, World!";\n\necho strlen($text);                       // 13\necho strtoupper($text);                   // HELLO, WORLD!\necho str_replace("World", "PHP", $text);  // Hello, PHP!\necho substr($text, 0, 5);                 // Hello\necho "Hello, " . "John";                  // Hello, John`,
-          description:
-            "PHP has many built-in string functions. The dot (.) operator joins strings, and double-quoted strings read variables inside them while single-quoted strings do not.",
-        },
+            id: "php10",
+            title: "Include & Require",
+            syntax: `include "header.php";\nrequire "config.php";\n\ninclude_once "helpers.php";\nrequire_once "database.php";`,
+            description:
+              "include and require insert another PHP file into the current one. A missing file only causes a warning with include but stops the script with require. The _once versions never load the same file twice.",
+          },
         {
-          id: "php9",
-          title: "Forms ($_GET & $_POST)",
-          syntax: `<form method="post" action="">\n  <input type="text" name="username">\n  <button type="submit">Send</button>\n</form>\n\n<?php\nif ($_SERVER["REQUEST_METHOD"] === "POST") {\n  $username = htmlspecialchars($_POST["username"] ?? "");\n  echo "Hello, $username!";\n}\n?>`,
-          description:
-            "$_GET and $_POST are superglobal arrays that hold data sent from the browser. The ?? operator supplies a default for missing values, and htmlspecialchars() escapes output to prevent XSS.",
-        },
+            "id": "php17",
+            "title": "Constants & Scope",
+            "syntax": "define(\"APP_NAME\", \"ZEDX\");\nconst MAX_ATTEMPTS = 3;\nfunction label() {\n    return APP_NAME;\n}",
+            "description": "Constants hold values that should not be reassigned during execution. Scope determines where variables can be accessed, while PHP provides local, global, static, and superglobal variables."
+          },
         {
-          id: "php10",
-          title: "Include & Require",
-          syntax: `include "header.php";\nrequire "config.php";\n\ninclude_once "helpers.php";\nrequire_once "database.php";`,
-          description:
-            "include and require insert another PHP file into the current one. A missing file only causes a warning with include but stops the script with require. The _once versions never load the same file twice.",
-        },
+            "id": "php18",
+            "title": "Cookies & HTTP Headers",
+            "syntax": "setcookie(\"theme\", \"dark\", [\"expires\" => time() + 3600, \"secure\" => true, \"httponly\" => true, \"samesite\" => \"Lax\"]);\nheader(\"Content-Type: application/json\");",
+            "description": "HTTP headers carry metadata about requests and responses. Cookies let a server ask a browser to store and return small values on later requests."
+          },
+        {
+            "id": "php19",
+            "title": "JSON Encoding & Decoding",
+            "syntax": "$payload = [\"name\" => \"Ada\", \"active\" => true];\n$json = json_encode($payload);\n$data = json_decode($json, true);",
+            "description": "JSON is a text format for exchanging structured data. PHP's json_encode() converts PHP values to JSON, while json_decode() parses JSON text into PHP objects or associative arrays."
+          }
       ],
     },
     {
@@ -144,7 +168,34 @@ export default {
           description:
             "Sessions remember data about a visitor across page requests. Call session_start() before sending any output, then read and write the $_SESSION array.",
         },
-      ],
+
+
+          {
+            "id": "php20",
+            "title": "Filesystem Operations & Uploads",
+            "syntax": "$path = __DIR__ . \"/data/report.txt\";\nfile_put_contents($path, \"Saved\");\n$content = file_get_contents($path);",
+            "description": "PHP filesystem functions read and write files on the server. File uploads require additional checks because the original filename and client-supplied MIME type cannot be trusted."
+          },
+          {
+            "id": "php21",
+            "title": "Namespaces & Composer",
+            "syntax": "namespace App\\Services;\nuse App\\Models\\Student;\n\nclass StudentService { }\n\n// composer require vendor/package",
+            "description": "Namespaces organize PHP classes, interfaces, and functions to avoid name collisions. Composer manages third-party packages and generates an autoloader for reusable dependencies."
+          },
+          {
+            "id": "php22",
+            "title": "REST API Endpoints",
+            "syntax": "header(\"Content-Type: application/json\");\nhttp_response_code(200);\necho json_encode([ \"items\" => [] ]);",
+            "description": "A REST-style API exposes resources through HTTP methods and status codes. PHP can read request data, validate it, perform an operation, and return a structured response."
+          },
+          {
+            "id": "php23",
+            "title": "Authentication & Password Hashing",
+            "syntax": "$hash = password_hash($password, PASSWORD_DEFAULT);\nif (password_verify($input, $hash)) {\n    echo \"Authenticated\";\n}",
+            "description": "Authentication verifies who a user is. PHP provides password_hash() and password_verify() for password storage and checking, while authorization determines what an authenticated user may do."
+          }
+
+],
     },
   ],
 };

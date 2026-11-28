@@ -17,174 +17,122 @@ export default {
       label: "Beginner",
       topics: [
         {
-          id: "js1",
-          title: "Hello World",
-          syntax: 'console.log("Hello, World!");',
-          description:
-            "The console.log() function displays messages and values in the console.",
-        },
+            id: "js1",
+            title: "Hello World",
+            syntax: 'console.log("Hello, World!");',
+            description:
+              "The console.log() function displays messages and values in the console.",
+          },
         {
-          id: "js2",
-          title: "Variables",
-          syntax: 'let age = 18;\nconst name = "Alex";\nvar score = 100;',
-          description:
-            "Variables store values. Use let for reassignable variables and const when the variable should not be reassigned. var is an older declaration style.",
-        },
+            id: "js2",
+            title: "Variables",
+            syntax: 'let age = 18;\nconst name = "Alex";\nvar score = 100;',
+            description:
+              "Variables store values. Use let for reassignable variables and const when the variable should not be reassigned. var is an older declaration style.",
+          },
         {
-          id: "js3",
-          title: "Data Types",
-          syntax:
-            'let name = "Alex";\nlet age = 18;\nlet price = 19.99;\nlet isActive = true;\nlet result = null;',
-          description:
-            "JavaScript supports strings, numbers, booleans, undefined, null, objects, and other value types.",
-        },
+            id: "js3",
+            title: "Data Types",
+            syntax:
+              'let name = "Alex";\nlet age = 18;\nlet price = 19.99;\nlet isActive = true;\nlet result = null;',
+            description:
+              "JavaScript supports strings, numbers, booleans, undefined, null, objects, and other value types.",
+          },
         {
-          id: "js4",
-          title: "If Statements",
-          syntax:
-            'let score = 85;\n\nif (score >= 75) {\n  console.log("Passed");\n} else {\n  console.log("Failed");\n}',
-          description:
-            "If statements run different blocks of code depending on whether a condition is true or false.",
-        },
+            "id": "js17",
+            "title": "Operators & Expressions",
+            "syntax": "const total = price * quantity;\nconst canSubmit = total > 0 && accepted;\nconst label = score >= 75 ? \"Pass\" : \"Retry\";",
+            "description": "JavaScript expressions combine values and operators. Arithmetic, comparison, logical, assignment, equality, and conditional operators support calculations and application behavior."
+          },
         {
-          id: "js5",
-          title: "Loops",
-          syntax:
-            "for (let i = 0; i < 5; i++) {\n  console.log(i);\n}\n\nlet count = 0;\nwhile (count < 3) {\n  console.log(count);\n  count++;\n}",
-          description:
-            "Loops repeat code. A for loop is useful for counting, while a while loop continues as long as its condition is true.",
-        },
+            id: "js4",
+            title: "If Statements",
+            syntax:
+              'let score = 85;\n\nif (score >= 75) {\n  console.log("Passed");\n} else {\n  console.log("Failed");\n}',
+            description:
+              "If statements run different blocks of code depending on whether a condition is true or false.",
+          },
+        {
+            id: "js5",
+            title: "Loops",
+            syntax:
+              "for (let i = 0; i < 5; i++) {\n  console.log(i);\n}\n\nlet count = 0;\nwhile (count < 3) {\n  console.log(count);\n  count++;\n}",
+            description:
+              "Loops repeat code. A for loop is useful for counting, while a while loop continues as long as its condition is true.",
+          },
+        {
+            id: "js6",
+            title: "Functions",
+            syntax:
+              "function add(a, b) {\n  return a + b;\n}\n\nconsole.log(add(3, 5));",
+            description:
+              "Functions group reusable code. Parameters receive input, and return sends a result back to the caller.",
+          },
+        {
+            id: "js8",
+            title: "Arrays",
+            syntax:
+              'const fruits = ["Apple", "Banana", "Mango"];\n\nfruits.push("Orange");\nconsole.log(fruits[0]);\nconsole.log(fruits.length);',
+            description:
+              "Arrays store ordered collections of values. Indexes start at zero, and length gives the number of elements.",
+          },
+        {
+            id: "js9",
+            title: "Objects",
+            syntax:
+              'const person = {\n  name: "Alex",\n  age: 18,\n};\n\nconsole.log(person.name);',
+            description:
+              "Objects group related information using properties and values. Properties can be accessed with dot notation or bracket notation.",
+          }
       ],
-      quiz: {
-        passingScore: 3,
-        questions: [
-          {
-            question: "Which function displays a message in the console?",
-            options: ["print()", "console.log()", "display()", "show()"],
-            correct: 1,
-          },
-          {
-            question:
-              "Which keyword declares a variable that can be reassigned?",
-            options: ["const", "fixed", "let", "static"],
-            correct: 2,
-          },
-          {
-            question: 'What is the data type of "Hello"?',
-            options: ["Number", "Boolean", "String", "Object"],
-            correct: 2,
-          },
-          {
-            question: "Which operator checks equality without type conversion?",
-            options: ["=", "==", "===", "!="],
-            correct: 2,
-          },
-          {
-            question: "Which statement repeats code while a condition is true?",
-            options: ["if", "while", "switch", "return"],
-            correct: 1,
-          },
-        ],
-      },
     },
     {
       level: "L2",
       label: "Intermediate",
       topics: [
         {
-          id: "js6",
-          title: "Functions",
-          syntax:
-            "function add(a, b) {\n  return a + b;\n}\n\nconsole.log(add(3, 5));",
-          description:
-            "Functions group reusable code. Parameters receive input, and return sends a result back to the caller.",
-        },
+            id: "js7",
+            title: "Arrow Functions",
+            syntax:
+              "const multiply = (a, b) => a * b;\n\nconsole.log(multiply(4, 3));",
+            description:
+              "Arrow functions provide a shorter syntax for writing functions and have different this-binding behavior from regular functions.",
+          },
         {
-          id: "js7",
-          title: "Arrow Functions",
-          syntax:
-            "const multiply = (a, b) => a * b;\n\nconsole.log(multiply(4, 3));",
-          description:
-            "Arrow functions provide a shorter syntax for writing functions and have different this-binding behavior from regular functions.",
-        },
+            id: "js10",
+            title: "Array Methods",
+            syntax:
+              "const numbers = [1, 2, 3, 4];\n\nconst doubled = numbers.map(n => n * 2);\nconst even = numbers.filter(n => n % 2 === 0);\n\nconsole.log(doubled);\nconsole.log(even);",
+            description:
+              "Methods such as map() and filter() help transform arrays and select elements without manually writing a loop.",
+          },
         {
-          id: "js8",
-          title: "Arrays",
-          syntax:
-            'const fruits = ["Apple", "Banana", "Mango"];\n\nfruits.push("Orange");\nconsole.log(fruits[0]);\nconsole.log(fruits.length);',
-          description:
-            "Arrays store ordered collections of values. Indexes start at zero, and length gives the number of elements.",
-        },
+            "id": "js18",
+            "title": "String Methods & Template Literals",
+            "syntax": "const name = \"  Ada Lovelace  \".trim();\nconst label = `Hello, ${name}!`;\nconst parts = label.split(\" \");",
+            "description": "JavaScript strings provide methods for searching, extracting, changing case, and splitting text. Template literals combine text and expressions in a readable way."
+          },
         {
-          id: "js9",
-          title: "Objects",
-          syntax:
-            'const person = {\n  name: "Alex",\n  age: 18,\n};\n\nconsole.log(person.name);',
-          description:
-            "Objects group related information using properties and values. Properties can be accessed with dot notation or bracket notation.",
-        },
+            id: "js16",
+            title: "Classes",
+            syntax:
+              'class Person {\n  constructor(name) {\n    this.name = name;\n  }\n\n  greet() {\n    return "Hi, I am " + this.name;\n  }\n}\n\nconst person = new Person("Alex");\nconsole.log(person.greet());',
+            description:
+              "Classes are blueprints for creating objects. The constructor runs when you create an instance with new, and methods are shared by every instance. Use extends and super to build a class on top of another one.",
+          },
         {
-          id: "js16",
-          title: "Classes",
-          syntax:
-            'class Person {\n  constructor(name) {\n    this.name = name;\n  }\n\n  greet() {\n    return "Hi, I am " + this.name;\n  }\n}\n\nconst person = new Person("Alex");\nconsole.log(person.greet());',
-          description:
-            "Classes are blueprints for creating objects. The constructor runs when you create an instance with new, and methods are shared by every instance. Use extends and super to build a class on top of another one.",
-        },
+            "id": "js19",
+            "title": "DOM Manipulation",
+            "syntax": "const heading = document.querySelector(\"h1\");\nheading.textContent = \"Welcome\";\nconst item = document.createElement(\"li\");\nitem.textContent = \"New item\";\ndocument.querySelector(\"ul\").append(item);",
+            "description": "The Document Object Model represents a web page as a tree of nodes. JavaScript can find elements, change their content and attributes, and create or remove nodes."
+          },
         {
-          id: "js10",
-          title: "Array Methods",
-          syntax:
-            "const numbers = [1, 2, 3, 4];\n\nconst doubled = numbers.map(n => n * 2);\nconst even = numbers.filter(n => n % 2 === 0);\n\nconsole.log(doubled);\nconsole.log(even);",
-          description:
-            "Methods such as map() and filter() help transform arrays and select elements without manually writing a loop.",
-        },
+            "id": "js20",
+            "title": "Events & Event Delegation",
+            "syntax": "document.querySelector(\"ul\").addEventListener(\"click\", event => {\n  const item = event.target.closest(\"li\");\n  if (item) item.classList.toggle(\"selected\");\n});",
+            "description": "Events report user and browser activity such as clicks, keyboard input, form submission, and loading. Event delegation handles events from many child elements through a shared ancestor."
+          }
       ],
-      quiz: {
-        passingScore: 3,
-        questions: [
-          {
-            question: "Which keyword defines a function?",
-            options: ["func", "function", "method", "define"],
-            correct: 1,
-          },
-          {
-            question: "Which is a valid arrow function?",
-            options: [
-              "function => (a) { return a; }",
-              "const double = (n) => n * 2;",
-              "arrow(n) => n",
-              "const double = > n * 2",
-            ],
-            correct: 1,
-          },
-          {
-            question: "What is the index of the first array element?",
-            options: ["0", "1", "-1", "It has no index"],
-            correct: 0,
-          },
-          {
-            question: "How do you access the name property of person?",
-            options: [
-              "person->name",
-              "person(name)",
-              "person.name",
-              "person::name",
-            ],
-            correct: 2,
-          },
-          {
-            question: "What does Array.filter() return?",
-            options: [
-              "A new array containing matching elements",
-              "Always a number",
-              "The original array with every item changed",
-              "A single string",
-            ],
-            correct: 0,
-          },
-        ],
-      },
     },
     {
       level: "L3",
@@ -230,53 +178,34 @@ export default {
           description:
             "JavaScript modules let you organize code into separate files. Export makes values available to other modules, and import brings them into a file.",
         },
-      ],
-      quiz: {
-        passingScore: 3,
-        questions: [
+
+
           {
-            question: "What does object destructuring allow you to do?",
-            options: [
-              "Delete every property",
-              "Extract properties into variables",
-              "Convert an object into a string automatically",
-              "Prevent all property changes",
-            ],
-            correct: 1,
+            "id": "js21",
+            "title": "JSON Serialization",
+            "syntax": "const data = { name: \"Ada\", active: true };\nconst text = JSON.stringify(data);\nconst copy = JSON.parse(text);",
+            "description": "JSON is a text format for structured data. JSON.stringify() serializes JavaScript values into text, and JSON.parse() converts valid JSON text back into JavaScript values."
           },
           {
-            question: "What does the spread syntax use?",
-            options: ["...", "::", "**", "=>"],
-            correct: 0,
+            "id": "js22",
+            "title": "Browser Storage APIs",
+            "syntax": "localStorage.setItem(\"theme\", \"dark\");\nconst theme = localStorage.getItem(\"theme\");\nsessionStorage.setItem(\"draft\", \"Unsaved text\");",
+            "description": "Web Storage provides simple key-value storage in a browser. localStorage persists across browser sessions, while sessionStorage is scoped to a tab's page session."
           },
           {
-            question: "What does a Promise represent?",
-            options: [
-              "A guaranteed successful result",
-              "An eventual result of an asynchronous operation",
-              "A loop",
-              "A class constructor only",
-            ],
-            correct: 1,
+            "id": "js23",
+            "title": "Event Loop & Microtasks",
+            "syntax": "console.log(\"A\");\nsetTimeout(() => console.log(\"timer\"), 0);\nPromise.resolve().then(() => console.log(\"microtask\"));\nconsole.log(\"B\");",
+            "description": "The JavaScript event loop coordinates synchronous code, queued tasks, and microtasks. Understanding execution order helps explain promises, timers, rendering, and asynchronous callbacks."
           },
           {
-            question:
-              "Which keyword is used to wait for a promise inside an async function?",
-            options: ["wait", "yield", "await", "pause"],
-            correct: 2,
-          },
-          {
-            question: "Which statement imports a named export?",
-            options: [
-              'include add from "./math.js";',
-              'import { add } from "./math.js";',
-              'require add "./math.js";',
-              'using add from "./math.js";',
-            ],
-            correct: 1,
-          },
-        ],
-      },
+            "id": "js24",
+            "title": "Web Workers & WebSockets",
+            "syntax": "const worker = new Worker(\"worker.js\");\nworker.postMessage({ count: 1000 });\nworker.onmessage = event => console.log(event.data);\nconst socket = new WebSocket(\"wss://example.com/live\");",
+            "description": "Web Workers run scripts away from the main UI thread, while WebSockets provide a persistent two-way connection between a browser and a server. They solve different communication needs."
+          }
+
+],
     },
   ],
 };

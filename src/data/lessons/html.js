@@ -464,13 +464,13 @@ html, head, and body for you.</p>`,
 </table>`,
         caption: `A caption and scoped headers make the grid readable aloud.`,
       },
-      gotcha: `A header cell with no scope forces screen readers to guess the relationship. If the first row or column is a header, say so explicitly.`,
+      gotcha: `For simple tables, browsers often infer header relationships from the row structure. For more complex tables, use scope or explicit header associations so each data cell has an unambiguous heading.`,
       wrong: {
         code: `<table>
-  <tr><th>Region</th><th>Revenue</th></tr>
+  <tr><td>Region</td><td>Revenue</td></tr>
   <tr><td>North</td><td>$12k</td></tr>
 </table>`,
-        why: `The header cells have no [[scope]], so assistive tech has to guess which column they describe.`,
+        why: `The first row uses td instead of th, so those cells are not exposed as column headers. Use th for header cells; scope makes row or column relationships explicit, especially in more complex tables.`,
       },
     },
     {
@@ -665,7 +665,7 @@ html, head, and body for you.</p>`,
       wrong: {
         code: `<main>First article</main>
 <main>Second article</main>`,
-        why: `Only one [[<main>]] is allowed per page; the second is ignored as a landmark.`,
+        why: `A page should expose only one visible main landmark at a time. Multiple visible main elements create an ambiguous primary-content structure; use one main element containing the page's primary content.`,
       },
     },
     {
@@ -986,4 +986,381 @@ ctx.fillStyle = "#e2542f";`,
       },
     },
   ],
+
+  "h16": [
+  {
+    "title": "Choose the right input type",
+    "body": [
+      "The type attribute describes the kind of value a control expects. email, number, date, and url give the browser useful information and can provide suitable input interfaces.",
+      "A meaningful type is not proof that a value is genuine. The server must validate submitted data again, because browser checks can be bypassed."
+    ],
+    "example": {
+      "code": "<label>Email\n  <input type=\"email\" name=\"email\">\n</label>\n<label>Age\n  <input type=\"number\" name=\"age\" min=\"13\">\n</label>",
+      "caption": "Use types that match the expected data."
+    },
+    "wrong": {
+      "code": "<input type=\"text\" name=\"age\">",
+      "why": "A text control accepts arbitrary text. Use number when the value must be numeric."
+    }
+  },
+  {
+    "title": "Apply built-in constraints",
+    "body": [
+      "required, min, max, minlength, maxlength, and pattern describe simple input rules. The browser checks those constraints as part of form validation.",
+      "Use pattern only when a specific format is required. A title or nearby help text should explain the expected format instead of leaving users to guess."
+    ],
+    "example": {
+      "code": "<input name=\"code\"\n  pattern=\"[A-Z]{2}[0-9]{4}\"\n  title=\"Two letters followed by four digits\"\n  required>",
+      "caption": "The field must match a short code format."
+    },
+    "wrong": {
+      "code": "<input name=\"code\" pattern=\"[A-Z]{2}[0-9]{4}\">",
+      "why": "Without required, an empty field may still pass validation."
+    }
+  },
+  {
+    "title": "Use the Constraint Validation API",
+    "body": [
+      "checkValidity() reports whether controls pass their constraints. reportValidity() asks the browser to display its validation feedback for invalid controls.",
+      "Let native validation do the basic work. Custom submission code should preserve labels, keyboard access, and useful error messages."
+    ],
+    "example": {
+      "code": "const form = document.querySelector(\"form\");\nform.addEventListener(\"submit\", event => {\n  if (!form.checkValidity()) {\n    event.preventDefault();\n    form.reportValidity();\n  }\n});",
+      "caption": "Check constraints before handling the submission."
+    },
+    "wrong": {
+      "code": "form.addEventListener(\"submit\", () => {\n  form.submit();\n});",
+      "why": "Calling submit() directly skips the normal submit-event validation flow."
+    }
+  }
+],
+  "h17": [
+  {
+    "title": "Embed another document",
+    "body": [
+      "iframe creates a nested browsing context. Its src identifies the document, while width and height reserve an area for the embedded content.",
+      "Give each frame a useful title so a screen-reader user can understand its purpose without opening it first."
+    ],
+    "example": {
+      "code": "<iframe src=\"schedule.html\"\n  title=\"Class schedule\"\n  width=\"600\" height=\"400\"></iframe>",
+      "caption": "The title explains the frame's purpose."
+    },
+    "wrong": {
+      "code": "<iframe src=\"schedule.html\"></iframe>",
+      "why": "The frame has no accessible name, so its purpose is unclear."
+    }
+  },
+  {
+    "title": "Load and permit content deliberately",
+    "body": [
+      "loading=\"lazy\" can defer an off-screen frame. The allow attribute grants browser features such as fullscreen only when the embedded content needs them.",
+      "Avoid giving external content broad permissions by default. Request only the capabilities needed for the feature being displayed."
+    ],
+    "example": {
+      "code": "<iframe src=\"video.html\"\n  title=\"Project video\"\n  loading=\"lazy\"\n  allow=\"fullscreen\"></iframe>",
+      "caption": "The frame is deferred and receives one needed capability."
+    },
+    "wrong": {
+      "code": "<iframe src=\"video.html\"\n  allow=\"camera; microphone; geolocation; fullscreen\"></iframe>",
+      "why": "The frame requests unrelated permissions without a demonstrated need."
+    }
+  },
+  {
+    "title": "Understand sandbox boundaries",
+    "body": [
+      "sandbox restricts actions available to an embedded page, such as script execution or form submission. Add tokens only when a specific feature requires them.",
+      "A sandbox is not a replacement for server security. Review the whole permission combination, especially when same-origin content is involved."
+    ],
+    "example": {
+      "code": "<iframe src=\"preview.html\"\n  title=\"Document preview\"\n  sandbox></iframe>",
+      "caption": "Begin with the restrictions enabled."
+    },
+    "wrong": {
+      "code": "<iframe src=\"preview.html\"\n  sandbox=\"allow-scripts allow-same-origin allow-top-navigation allow-forms\"></iframe>",
+      "why": "If preview.html is same-origin, combining allow-scripts and allow-same-origin lets its script access the parent page and remove the iframe sandbox attribute, effectively escaping the sandbox. Do not use this combination for untrusted same-origin content; isolate untrusted content on a separate origin."
+    }
+  }
+],
+  "h18": [
+  {
+    "title": "Build a disclosure",
+    "body": [
+      "details creates a disclosure widget. Its summary child is the visible control that expands or collapses the remaining content.",
+      "Use the open attribute when the content should be expanded at first. A disclosure is useful for optional supporting information."
+    ],
+    "example": {
+      "code": "<details>\n  <summary>Grading policy</summary>\n  <p>Projects use the published rubric.</p>\n</details>",
+      "caption": "The browser supplies the disclosure interaction."
+    },
+    "wrong": {
+      "code": "<div onclick=\"toggleInfo()\">Grading policy</div>",
+      "why": "A clickable div has no native disclosure semantics or keyboard behavior."
+    }
+  },
+  {
+    "title": "Open a dialog",
+    "body": [
+      "dialog represents a dialog box. show() opens a non-modal dialog, while showModal() opens it modally and makes the rest of the document inert.",
+      "Give a dialog an accessible name and a clear close control. Think about where focus should move when it opens and where it should return afterward."
+    ],
+    "example": {
+      "code": "const dialog = document.querySelector(\"#notice\");\ndialog.showModal();",
+      "caption": "showModal creates a modal dialog."
+    },
+    "wrong": {
+      "code": "document.querySelector(\"#notice\").style.display = \"block\";",
+      "why": "Changing display does not provide modal behavior or focus management."
+    }
+  },
+  {
+    "title": "Prefer native behavior when it fits",
+    "body": [
+      "Native elements provide built-in semantics and keyboard behavior. A custom widget means the developer must recreate its state, focus behavior, and accessibility support.",
+      "Use a link for navigation, a button for an action, details for disclosure, and dialog for a dialog. Choose the element based on the user's task."
+    ],
+    "example": {
+      "code": "<details>\n  <summary>Advanced settings</summary>\n  <label><input type=\"checkbox\"> Enable alerts</label>\n</details>",
+      "caption": "The disclosure is handled by the browser."
+    },
+    "wrong": {
+      "code": "<button aria-expanded=\"false\">Advanced settings</button>",
+      "why": "The button state is not connected to a panel or a working disclosure interaction."
+    }
+  }
+],
+  "h19": [
+  {
+    "title": "Add custom data",
+    "body": [
+      "A custom data attribute begins with data- and stores a string associated with an element. Use descriptive names such as data-item-id or data-action.",
+      "Data attributes are visible and editable in developer tools. Never store secrets or use them as proof that a user has permission to do something."
+    ],
+    "example": {
+      "code": "<button data-action=\"save\" data-item-id=\"42\">\n  Save item\n</button>",
+      "caption": "The attributes describe the element's application context."
+    },
+    "wrong": {
+      "code": "<button data=\"save\">Save item</button>",
+      "why": "data alone is not the custom-data attribute pattern. Use an attribute beginning with data-."
+    }
+  },
+  {
+    "title": "Read dataset values",
+    "body": [
+      "The dataset property exposes custom data attributes as a DOMStringMap. A name such as data-item-id becomes dataset.itemId.",
+      "Dataset values are strings. Convert a value deliberately when it represents a number, and handle attributes that may be absent."
+    ],
+    "example": {
+      "code": "const button = document.querySelector(\"button\");\nconst itemId = Number(button.dataset.itemId);",
+      "caption": "Convert the stored string before numeric use."
+    },
+    "wrong": {
+      "code": "const id = button.dataset[\"data-item-id\"];",
+      "why": "dataset keys omit the data- prefix. Use dataset.itemId or getAttribute()."
+    }
+  },
+  {
+    "title": "Use data for UI context, not authority",
+    "body": [
+      "Data attributes are useful for identifying items and actions in event handlers. They keep small UI details close to the element they describe.",
+      "A visitor can edit the DOM. Server-side code must validate identifiers and check permissions before changing protected data."
+    ],
+    "example": {
+      "code": "document.addEventListener(\"click\", event => {\n  const button = event.target.closest(\"[data-action]\");\n  if (!button) return;\n  if (button.dataset.action === \"save\") {\n    saveItem(button.dataset.itemId);\n  }\n});",
+      "caption": "Delegate behavior using a data-action attribute."
+    },
+    "wrong": {
+      "code": "if (button.dataset.isAdmin === \"true\") {\n  deleteAccount();\n}",
+      "why": "A visitor can change a data attribute. It must never grant administrative permission."
+    }
+  }
+],
+  "h20": [
+  {
+    "title": "Understand parser-blocking scripts",
+    "body": [
+      "A classic script without async or defer is fetched and executed while the HTML parser is paused. A slow script can delay the rest of the page from being parsed.",
+      "A script that needs elements later in the document should run after those elements exist, or wait for the DOM to be ready."
+    ],
+    "example": {
+      "code": "<body>\n  <main id=\"app\"></main>\n  <script src=\"app.js\"></script>\n</body>",
+      "caption": "The main element appears before the script runs."
+    },
+    "wrong": {
+      "code": "<head>\n  <script src=\"app.js\"></script>\n</head>",
+      "why": "The script may run before the body elements exist."
+    }
+  },
+  {
+    "title": "Compare async and defer",
+    "body": [
+      "defer downloads in parallel, then executes after parsing is complete. Deferred classic scripts preserve their document order, making them suitable for dependent files.",
+      "async also downloads in parallel but executes as soon as it is ready. Use it for independent scripts when execution order does not matter."
+    ],
+    "example": {
+      "code": "<script defer src=\"vendor.js\"></script>\n<script defer src=\"app.js\"></script>",
+      "caption": "The dependent app file runs after the vendor file."
+    },
+    "wrong": {
+      "code": "<script async src=\"vendor.js\"></script>\n<script async src=\"app.js\"></script>",
+      "why": "The files may execute in either order, which can break dependencies."
+    }
+  },
+  {
+    "title": "Load JavaScript modules",
+    "body": [
+      "A module script uses import and export, runs in strict mode, and is deferred by default. Its top-level variables stay within the module scope.",
+      "Keep module dependencies explicit. Imported bindings do not automatically become global variables available to later classic scripts."
+    ],
+    "example": {
+      "code": "<script type=\"module\" src=\"main.js\"></script>\n// main.js\nimport { start } from \"./app.js\";\nstart();",
+      "caption": "The entry module imports only what it needs."
+    },
+    "wrong": {
+      "code": "<script type=\"module\">\nimport { start } from \"./app.js\";\n</script>\n<script>start();</script>",
+      "why": "The imported binding is module-scoped and is not available to the classic script."
+    }
+  }
+],
+  "h21": [
+  {
+    "title": "Store reusable markup",
+    "body": [
+      "Content inside template is inert while the template remains in the document. Its elements are not displayed as page content just because the template was parsed.",
+      "Give templates stable identifiers when scripts need to find them. Keep the markup semantic and provide the same accessible names expected from ordinary page content."
+    ],
+    "example": {
+      "code": "<template id=\"notice-template\">\n  <article>\n    <h2></h2>\n    <p></p>\n  </article>\n</template>",
+      "caption": "The template describes a reusable notice."
+    },
+    "wrong": {
+      "code": "<template id=\"notice-template\">\n  <script>showAlert()</script>\n</template>",
+      "why": "A script in an inert template does not run merely because the template exists."
+    }
+  },
+  {
+    "title": "Clone the template content",
+    "body": [
+      "The content property returns a DocumentFragment. cloneNode(true) creates a deep copy of its nested elements so the copy can be filled with new values.",
+      "Use textContent for plain text supplied by users or external data. Avoid parsing untrusted values as HTML."
+    ],
+    "example": {
+      "code": "const template = document.querySelector(\"#notice-template\");\nconst card = template.content.cloneNode(true);\ncard.querySelector(\"h2\").textContent = \"Update\";",
+      "caption": "Clone the content and fill the copy."
+    },
+    "wrong": {
+      "code": "const card = template.cloneNode(false);\ncard.querySelector(\"h2\").textContent = \"Update\";",
+      "why": "This clones the template element without its nested content."
+    }
+  },
+  {
+    "title": "Insert a document fragment",
+    "body": [
+      "A DocumentFragment can hold multiple nodes before they are added to the live document. Appending the fragment moves its children into the target container.",
+      "Build each item before insertion. This keeps the work organized and avoids repeated updates to the live document."
+    ],
+    "example": {
+      "code": "const list = document.querySelector(\"#notices\");\nconst fragment = template.content.cloneNode(true);\nfragment.querySelector(\"p\").textContent = \"Saved\";\nlist.append(fragment);",
+      "caption": "Append a completed fragment."
+    },
+    "wrong": {
+      "code": "list.innerHTML += userProvidedText;",
+      "why": "This parses untrusted input as markup. Use textContent for plain text."
+    }
+  }
+],
+  "h22": [
+  {
+    "title": "Define a custom element",
+    "body": [
+      "A custom element name must contain a hyphen, such as user-badge. Its class extends HTMLElement and can react when an instance is connected to the document.",
+      "Register the name with customElements.define() only once. Check the browser's customElements registry if application code may be initialized more than once."
+    ],
+    "example": {
+      "code": "class UserBadge extends HTMLElement {\n  connectedCallback() {\n    this.textContent = \"Member\";\n  }\n}\ncustomElements.define(\"user-badge\", UserBadge);",
+      "caption": "The browser upgrades matching elements after registration."
+    },
+    "wrong": {
+      "code": "class UserBadge {\n  connectedCallback() {\n    this.textContent = \"Member\";\n  }\n}\ncustomElements.define(\"user-badge\", UserBadge);",
+      "why": "A custom element class must extend HTMLElement."
+    }
+  },
+  {
+    "title": "Attach a shadow root",
+    "body": [
+      "attachShadow() creates a shadow root to hold a component's internal structure. Styles inside it are scoped to the component rather than applying to the whole document.",
+      "Shadow DOM is an encapsulation tool, not a security boundary. Do not put secrets inside it or rely on it to protect sensitive data."
+    ],
+    "example": {
+      "code": "class StatusCard extends HTMLElement {\n  constructor() {\n    super();\n    const root = this.attachShadow({ mode: \"open\" });\n    root.innerHTML = \"<p>Ready</p>\";\n  }\n}",
+      "caption": "The component owns its internal tree."
+    },
+    "wrong": {
+      "code": "this.attachShadow({ mode: \"closed\" });\nthis.shadowRoot.innerHTML = \"<p>Ready</p>\";",
+      "why": "With a closed root, this.shadowRoot is null. Use the reference returned by attachShadow or open mode."
+    }
+  },
+  {
+    "title": "Place supplied content with slots",
+    "body": [
+      "A slot marks where children supplied by the component user should appear. Named slots provide specific places for a title, summary, or action.",
+      "Keep the component meaningful when JavaScript is delayed. Supplied light-DOM content can provide useful fallback content and preserve semantics."
+    ],
+    "example": {
+      "code": "this.shadowRoot.innerHTML =\n  '<header><slot name=\"title\"></slot></header><slot></slot>';",
+      "caption": "Named and default slots accept different children."
+    },
+    "wrong": {
+      "code": "<user-card>\n  <h2 slot=\"heading\">Profile</h2>\n</user-card>",
+      "why": "The component expects a slot named title, but the child uses heading. Slot names must match."
+    }
+  }
+],
+  "h23": [
+  {
+    "title": "Protect links opened in a new tab",
+    "body": [
+      "target=_blank opens a new browsing context. The noopener relation prevents the destination from receiving a usable window.opener reference to the page that opened it.",
+      "noreferrer also suppresses the Referer header and implies noopener in modern browser behavior. Choose the relation that matches the link's privacy needs."
+    ],
+    "example": {
+      "code": "<a href=\"https://docs.example\"\n   target=\"_blank\"\n   rel=\"noopener noreferrer\">\n  Open documentation\n</a>",
+      "caption": "State the intended relationship explicitly."
+    },
+    "wrong": {
+      "code": "<a href=\"https://docs.example\" target=\"_blank\">Open</a>",
+      "why": "Add rel=\"noopener\" when the destination should not control the opening page."
+    }
+  },
+  {
+    "title": "Restrict embedded content",
+    "body": [
+      "sandbox applies restrictions to an iframe, including limits on scripts, forms, and navigation. It is safest to start with no tokens and add only the specific permissions the frame needs.",
+      "Each token relaxes a restriction. Review combinations carefully, especially when content shares the same origin as the parent page."
+    ],
+    "example": {
+      "code": "<iframe src=\"preview.html\"\n  title=\"Document preview\"\n  sandbox></iframe>",
+      "caption": "Begin with sandbox restrictions enabled."
+    },
+    "wrong": {
+      "code": "<iframe src=\"preview.html\"\n  sandbox=\"allow-scripts allow-same-origin allow-top-navigation allow-forms\"></iframe>",
+      "why": "If preview.html is same-origin, combining allow-scripts and allow-same-origin lets its script access the parent page and remove the iframe sandbox attribute, effectively escaping the sandbox. Do not use this combination for untrusted same-origin content; isolate untrusted content on a separate origin."
+    }
+  },
+  {
+    "title": "Set referrer behavior deliberately",
+    "body": [
+      "referrerpolicy controls how much referring-page information a resource request sends. The correct value depends on whether the destination needs the full URL, only the origin, or no referrer.",
+      "These attributes do not make a remote server trustworthy. Use a Content Security Policy and server-side access controls where appropriate."
+    ],
+    "example": {
+      "code": "<img src=\"https://cdn.example/photo.jpg\"\n  alt=\"Mountain lake\"\n  referrerpolicy=\"no-referrer\">",
+      "caption": "The image request omits referrer information."
+    },
+    "wrong": {
+      "code": "<img src=\"photo.jpg\" referrerpolicy=\"allow-all\">",
+      "why": "allow-all is not a valid referrer policy value. Use a documented value such as no-referrer."
+    }
+  }
+],
 };

@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "check:content": "node scripts/check-content-coverage.cjs",
-    "check:answers": "node scripts/check-answer-feedback.cjs"
+    "check:answers": "node scripts/check-answer-feedback.cjs",
+    "check:migration": "node scripts/check-curriculum-migration.cjs"
   },
   "dependencies": {
     "@expo-google-fonts/ibm-plex-mono": "^0.4.1",

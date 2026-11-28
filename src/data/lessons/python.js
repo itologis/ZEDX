@@ -976,4 +976,381 @@ def opened(path):
       },
     },
   ],
+
+  "p16": [
+  {
+    "title": "Calculate with arithmetic operators",
+    "body": [
+      "Python supports +, -, *, /, //, %, and **. Division with / produces a float, while // performs floor division and % returns the remainder.",
+      "Choose the operation that matches the problem. Floor division rounds down, which matters when values can be negative."
+    ],
+    "example": {
+      "code": "price = 17\npeople = 5\nprint(price / people)\nprint(price // people)\nprint(price % people)",
+      "caption": "The three operations produce different results."
+    },
+    "wrong": {
+      "code": "price = 17\npeople = 5\nprint(price // people == 3.4)",
+      "why": "Floor division returns a floor result, not the exact decimal quotient. Use / for ordinary division."
+    }
+  },
+  {
+    "title": "Compare and combine conditions",
+    "body": [
+      "Comparison operators return Boolean values. and requires both sides to be true, or accepts either side, and not reverses a truth value.",
+      "Use parentheses when a condition combines several operators. Python also supports chained comparisons such as 0 <= score <= 100."
+    ],
+    "example": {
+      "code": "if 18 <= age <= 60 and member:\n    print(\"Eligible\")",
+      "caption": "The chained comparison checks both bounds."
+    },
+    "wrong": {
+      "code": "if age = 18:\n    print(\"Eligible\")",
+      "why": "A single equals sign assigns a value. Use == when comparing values."
+    }
+  },
+  {
+    "title": "Test membership and identity",
+    "body": [
+      "in checks whether a value belongs to a sequence or container. is checks whether two references point to the same object, and is commonly used for None.",
+      "Do not use is to compare ordinary numbers or strings. Equal values can be stored in different objects, so use == for value equality."
+    ],
+    "example": {
+      "code": "if \"py\" in \"python\":\n    print(\"Found\")\n\nif user is None:\n    print(\"No user\")",
+      "caption": "Membership and identity answer different questions."
+    },
+    "wrong": {
+      "code": "if name is \"Ada\":\n    print(\"Hello\")",
+      "why": "is compares object identity, not text equality. Use == when comparing strings."
+    }
+  }
+],
+  "p17": [
+  {
+    "title": "Read input from the console",
+    "body": [
+      "input() displays an optional prompt and waits for a line of text. The returned value is always a string, so even digits arrive as text.",
+      "Store the result in a clearly named variable. Do not assume the user entered a value that matches the type your calculation needs."
+    ],
+    "example": {
+      "code": "name = input(\"Name: \")\nprint(\"Hello,\", name)",
+      "caption": "The prompt guides the user before input is read."
+    },
+    "wrong": {
+      "code": "age = input(\"Age: \")\nprint(age + 1)",
+      "why": "age is text, so adding an integer raises TypeError. Convert it before arithmetic."
+    }
+  },
+  {
+    "title": "Convert and validate values",
+    "body": [
+      "Use int(), float(), and other conversion functions to turn text into the required type. A conversion can fail with ValueError when input does not match the expected format.",
+      "Handle invalid input with a loop or exception handler. Give users a clear retry message instead of allowing an unexpected value to stop the program."
+    ],
+    "example": {
+      "code": "try:\n    age = int(input(\"Age: \"))\nexcept ValueError:\n    print(\"Enter a whole number.\")",
+      "caption": "The conversion is guarded against invalid text."
+    },
+    "wrong": {
+      "code": "age = int(input(\"Age: \"))\nprint(age)",
+      "why": "A non-numeric response raises ValueError. Validate or handle the conversion."
+    }
+  },
+  {
+    "title": "Format and display output",
+    "body": [
+      "print() can display several values, separate them with sep, and choose an ending with end. f-strings provide readable formatting for values inside text.",
+      "For reports, use formatting specifiers to control decimal places or alignment. Keep raw values separate from their display representation when later calculations are needed."
+    ],
+    "example": {
+      "code": "price = 19.5\nprint(f\"Total: ${price:.2f}\")",
+      "caption": "The format specifier shows two decimal places."
+    },
+    "wrong": {
+      "code": "price = 19.5\nprint(\"Total: $\" + price)",
+      "why": "A string cannot be concatenated directly with a float. Use an f-string or convert the value."
+    }
+  }
+],
+  "p18": [
+  {
+    "title": "Normalize text",
+    "body": [
+      "Strings are immutable, so lower(), upper(), strip(), and title() return new strings rather than changing the original object.",
+      "Normalize input when case or extra spaces should not affect matching. Keep the original value when exact capitalization or whitespace matters."
+    ],
+    "example": {
+      "code": "raw = \"  ZEDX  \"\nclean = raw.strip().lower()\nprint(clean)",
+      "caption": "strip removes outside spaces before lowercasing."
+    },
+    "wrong": {
+      "code": "raw = \"  ZEDX  \"\nraw.strip()\nprint(raw)",
+      "why": "strip() returns a new string. Assign the result if the cleaned value is needed."
+    }
+  },
+  {
+    "title": "Search and replace text",
+    "body": [
+      "find() returns the first position of a substring or -1 when it is absent. replace() creates a new string with matching text changed.",
+      "Use in when you only need to check whether a substring exists. Use startswith() or endswith() for prefix and suffix checks."
+    ],
+    "example": {
+      "code": "filename = \"report-final.txt\"\nif filename.endswith(\".txt\"):\n    print(filename.replace(\"final\", \"draft\"))",
+      "caption": "The suffix is checked before replacing a word."
+    },
+    "wrong": {
+      "code": "filename = \".txt-backup\"\nif filename.find(\".txt\"):\n    print(\"Text file\")",
+      "why": "find() returns 0 when a match begins at the start, and zero is false. Use endswith() or compare find() with -1."
+    }
+  },
+  {
+    "title": "Split and join structured text",
+    "body": [
+      "split() breaks a string into a list using a separator. join() combines an iterable of strings with the chosen separator between each item.",
+      "Use join() instead of repeatedly concatenating many strings in a loop. Convert values to strings before joining them."
+    ],
+    "example": {
+      "code": "names = [\"Ada\", \"Grace\", \"Linus\"]\nline = \", \".join(names)\nprint(line)",
+      "caption": "join inserts a comma and space between names."
+    },
+    "wrong": {
+      "code": "names = [\"Ada\", \"Grace\"]\nline = names.join(\", \")",
+      "why": "join is called on the separator string, with the iterable as its argument."
+    }
+  }
+],
+  "p19": [
+  {
+    "title": "Define a class and create an instance",
+    "body": [
+      "A class is a blueprint for objects. Define it with class, then create an instance by calling the class name as though it were a function.",
+      "An instance can hold attributes and call methods defined by its class. Each instance has its own state unless an attribute is deliberately shared at class level."
+    ],
+    "example": {
+      "code": "class Student:\n    pass\n\nfirst = Student()\nsecond = Student()",
+      "caption": "Two independent instances are created."
+    },
+    "wrong": {
+      "code": "class Student:\n    pass\n\nfirst = Student",
+      "why": "This stores the class itself, not an instance. Call Student() to create an object."
+    }
+  },
+  {
+    "title": "Initialize instance state",
+    "body": [
+      "__init__() runs after a new instance is created and is commonly used to set its initial attributes. self refers to the current instance.",
+      "Write self.attribute when the value belongs to each object. Validate constructor inputs when invalid state would make later methods unreliable."
+    ],
+    "example": {
+      "code": "class Student:\n    def __init__(self, name):\n        self.name = name\n\nfirst = Student(\"Ada\")",
+      "caption": "The constructor stores a name on the instance."
+    },
+    "wrong": {
+      "code": "class Student:\n    def __init__(name):\n        self.name = name",
+      "why": "Instance methods receive the instance as their first argument. Include self in the parameter list."
+    }
+  },
+  {
+    "title": "Add methods and understand class state",
+    "body": [
+      "Instance methods receive self and can read or change that object's attributes. Class attributes belong to the class and can be shared by instances.",
+      "Avoid mutable class attributes for data that should be unique per object. Put per-instance lists and dictionaries inside __init__."
+    ],
+    "example": {
+      "code": "class Counter:\n    def __init__(self):\n        self.value = 0\n\n    def increment(self):\n        self.value += 1",
+      "caption": "Each Counter instance has its own value."
+    },
+    "wrong": {
+      "code": "class Counter:\n    values = []\n    def add(self, item):\n        self.values.append(item)",
+      "why": "The list is shared by every instance. Create self.values inside __init__ when each object needs its own list."
+    }
+  }
+],
+  "p20": [
+  {
+    "title": "Import a module",
+    "body": [
+      "A Python module is commonly a .py file. import makes its names available through the module namespace, while from ... import selects particular names.",
+      "Prefer explicit imports that show where a function comes from. Avoid import * in application code because it obscures where names are defined."
+    ],
+    "example": {
+      "code": "import math\nprint(math.sqrt(25))",
+      "caption": "The function is accessed through the math namespace."
+    },
+    "wrong": {
+      "code": "import math\nprint(sqrt(25))",
+      "why": "Importing math does not place sqrt directly in the current namespace. Use math.sqrt() or import sqrt explicitly."
+    }
+  },
+  {
+    "title": "Organize a package",
+    "body": [
+      "A package groups related modules in a directory. An __init__.py file can mark a regular package and define its public interface.",
+      "Use clear folder names and avoid circular imports, where two modules depend on each other during initialization."
+    ],
+    "example": {
+      "code": "project/\n  app.py\n  tools/\n    __init__.py\n    formatters.py\n    validators.py",
+      "caption": "The tools package groups related modules."
+    },
+    "wrong": {
+      "code": "from tools import formatters\nfrom tools import app",
+      "why": "Importing an application entry point back into utility modules can create circular dependencies. Keep dependencies flowing in a clear direction."
+    }
+  },
+  {
+    "title": "Choose readable imports",
+    "body": [
+      "Absolute imports start from the package root, while relative imports refer to nearby modules within a package. Both are useful when the package structure is clear.",
+      "Run packages using their intended entry point so Python resolves names consistently. Avoid naming files after standard-library modules such as json.py or random.py."
+    ],
+    "example": {
+      "code": "from tools.formatters import title_case\nfrom tools.validators import is_valid",
+      "caption": "Explicit imports identify where functions belong."
+    },
+    "wrong": {
+      "code": "import json\njson = \"not the module\"",
+      "why": "Reassigning a name shadows the imported module. Use a distinct variable name for data."
+    }
+  }
+],
+  "p21": [
+  {
+    "title": "Create an isolated environment",
+    "body": [
+      "python -m venv creates an isolated environment with its own Python interpreter context and package installation area. This keeps one project's dependencies separate from another's.",
+      "Create the environment in the project directory and exclude generated environment files from version control. Teammates can recreate it from dependency declarations."
+    ],
+    "example": {
+      "code": "python -m venv .venv",
+      "caption": "The .venv folder holds the environment."
+    },
+    "wrong": {
+      "code": "python -m venv requirements.txt",
+      "why": "The command creates an environment directory, not a requirements file. Use a folder name such as .venv."
+    }
+  },
+  {
+    "title": "Install and inspect packages",
+    "body": [
+      "pip installs packages into the active environment. Use python -m pip so the installer is associated with the Python interpreter you intend to use.",
+      "Check that the correct environment is active before installation. Installing into the wrong interpreter is a common reason a package appears missing."
+    ],
+    "example": {
+      "code": "python -m pip install requests\npython -m pip show requests",
+      "caption": "The installer is tied to the chosen Python."
+    },
+    "wrong": {
+      "code": "pip install requests\npython -m pip show requests",
+      "why": "The two pip commands may refer to different Python installations. Prefer python -m pip consistently."
+    }
+  },
+  {
+    "title": "Record reproducible dependencies",
+    "body": [
+      "A requirements file lists packages needed by a project. pip freeze can record the installed environment, and pip install -r can install those requirements in a recreated environment.",
+      "For larger applications, distinguish direct dependencies from transitive packages. Review versions before committing dependency files."
+    ],
+    "example": {
+      "code": "python -m pip freeze > requirements.txt\npython -m pip install -r requirements.txt",
+      "caption": "One command records packages and the other installs them."
+    },
+    "wrong": {
+      "code": "python -m pip install requirements.txt",
+      "why": "pip treats that as a package name. Use -r to install from a requirements file."
+    }
+  }
+],
+  "p22": [
+  {
+    "title": "Annotate variables and functions",
+    "body": [
+      "A variable annotation documents the expected type. A function parameter annotation describes what callers should provide, and a return annotation describes the expected result.",
+      "Annotations help editors and static checkers detect mistakes. They do not replace runtime validation for user input, network data, or file contents."
+    ],
+    "example": {
+      "code": "age: int = 19\n\ndef greet(name: str) -> str:\n    return \"Hello, \" + name",
+      "caption": "The annotations document the function contract."
+    },
+    "wrong": {
+      "code": "age: int = \"nineteen\"",
+      "why": "A type hint does not stop a string from being assigned at runtime. A checker can report the mismatch."
+    }
+  },
+  {
+    "title": "Annotate collections and optional values",
+    "body": [
+      "Modern Python supports parameterized built-in collections such as list[str] and dict[str, int]. Union types can describe values that accept more than one type.",
+      "Use None explicitly when a value may be absent. Handle the None case before using an attribute or method that exists only on the other type."
+    ],
+    "example": {
+      "code": "def find_name(user_id: int) -> str | None:\n    if user_id == 1:\n        return \"Ada\"\n    return None",
+      "caption": "The return type documents that a result may be absent."
+    },
+    "wrong": {
+      "code": "def find_name(user_id: int) -> str:\n    return None",
+      "why": "The function promises str but returns None. Annotate the optional result or return a valid string."
+    }
+  },
+  {
+    "title": "Use a static checker",
+    "body": [
+      "A type checker reads annotations and reports likely mismatches without running every code path. Tools such as mypy and Pyright can check a project in development.",
+      "Treat checker output as feedback, not proof. Dynamic Python features and external data still require careful runtime handling."
+    ],
+    "example": {
+      "code": "def double(value: int) -> int:\n    return value * 2\n\nresult: int = double(4)",
+      "caption": "The parameter and result agree with the annotation."
+    },
+    "wrong": {
+      "code": "result: int = double(\"4\")",
+      "why": "The call passes a string where an integer is expected. A type checker can flag the mismatch."
+    }
+  }
+],
+  "p23": [
+  {
+    "title": "Write a simple assertion",
+    "body": [
+      "An assertion checks that a condition is true. It is useful for quick development checks and for expressing assumptions that should hold in a small example.",
+      "Do not use assert for validating untrusted user input or enforcing application security, because Python can disable assertions when optimization is enabled."
+    ],
+    "example": {
+      "code": "def add(a, b):\n    return a + b\n\nassert add(2, 3) == 5",
+      "caption": "The assertion checks a known expected result."
+    },
+    "wrong": {
+      "code": "assert input(\"Age: \") != \"\"",
+      "why": "An assertion is not a user-input validation strategy. Handle empty or invalid input directly."
+    }
+  },
+  {
+    "title": "Organize repeatable tests",
+    "body": [
+      "A unit test checks one small behavior with known inputs and expected outputs. The unittest module provides test cases and assertions in the standard library.",
+      "Keep tests independent and name them after the behavior they check. Include normal values, boundary values, and invalid inputs where relevant."
+    ],
+    "example": {
+      "code": "import unittest\n\nclass TestMath(unittest.TestCase):\n    def test_add(self):\n        self.assertEqual(add(2, 3), 5)",
+      "caption": "The test runner can discover the named test method."
+    },
+    "wrong": {
+      "code": "class TestMath:\n    def add(self):\n        assert add(2, 3) == 5",
+      "why": "This is a plain method, not a unittest test case. Inherit from unittest.TestCase and use a test_ method."
+    }
+  },
+  {
+    "title": "Debug one step at a time",
+    "body": [
+      "A debugger can pause execution at a breakpoint, inspect variables, and step through statements. This helps locate the first point where actual behavior differs from expected behavior.",
+      "Reproduce the issue with the smallest useful input. Check assumptions at function boundaries and read tracebacks from the final exception back to the line that caused it."
+    ],
+    "example": {
+      "code": "def average(values):\n    if not values:\n        raise ValueError(\"values cannot be empty\")\n    return sum(values) / len(values)",
+      "caption": "The function checks the boundary case before division."
+    },
+    "wrong": {
+      "code": "def average(values):\n    return sum(values) / len(values)",
+      "why": "An empty list causes division by zero. Define and handle the empty-input behavior."
+    }
+  }
+],
 };

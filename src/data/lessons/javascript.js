@@ -324,73 +324,40 @@ while (count > 0) {
   ],
 
   js6: [
-    {
-      title: "Function declarations",
-      body: [
-        `A function declaration has a name, parameters, and a body. [[return]] sends a value back.`,
-        `Without return, a function gives back undefined. Printing inside is not the same as returning.`,
-      ],
-      example: {
-        code: `function double(n) {
-    return n * 2;
-}
-
-const result = double(21);`,
-        caption: `The caller receives 42.`,
-      },
-      wrong: {
-        code: `function double(n) {
-    console.log(n * 2);
-}
-
-const result = double(21) + 1;`,
-        why: `The function returns undefined, so adding 1 gives NaN.`,
-      },
+  {
+    "title": "Function declarations",
+    "body": "A function declaration gives a reusable block of instructions a name. It can accept parameters and return a value. Declaring a function does not execute it. Call the function by writing its name followed by parentheses.",
+    "example": {
+      "code": "function greet() {\n  console.log(\"Hello!\");\n}\n\ngreet();"
     },
-    {
-      title: "Parameters and defaults",
-      body: [
-        `Missing arguments arrive as undefined. A default parameter fills in when the argument is undefined, not when it is null.`,
-        `Extra arguments are ignored unless you collect them with rest syntax.`,
-      ],
-      example: {
-        code: `function greet(name = "friend") {
-    return "Hi, " + name;
-}`,
-        caption: `The default only covers undefined.`,
-      },
-      wrong: {
-        code: `function greet(name = "friend") {
-    return "Hi, " + name;
-}
-
-console.log(greet(null));`,
-        why: `null is a value, so the default is not used and the result is "Hi, null". Handle null explicitly.`,
-      },
+    "wrong": {
+      "code": "function greet {\n  console.log(\"Hello!\");\n}",
+      "why": "A function declaration needs parentheses after its name, even when it has no parameters. Without them, JavaScript cannot parse the declaration."
+    }
+  },
+  {
+    "title": "Parameters, arguments, and return values",
+    "body": "Parameters are named inputs in the function definition. Arguments are the values supplied when the function is called. Use return when the caller needs the result for another calculation or decision. Logging a value only displays it.",
+    "example": {
+      "code": "function add(first, second) {\n  return first + second;\n}\n\nconst total = add(4, 6);\nconsole.log(total);"
     },
-    {
-      title: "Closures",
-      body: [
-        `A function keeps a reference to the scope where it was created. That is a closure, and it is how counters and callbacks keep private state.`,
-        `A closure captures the variable, not the value at creation time.`,
-      ],
-      example: {
-        code: `function counter() {
-    let count = 0;
-    return () => ++count;
-}
-
-const next = counter();`,
-        caption: `Each counter call gets its own count.`,
-      },
-      wrong: {
-        code: `for (var i = 0; i < 3; i++) {
-    setTimeout(() => console.log(i), 0);
-}`,
-        why: `var has function scope, so every callback sees the final i and prints 3 three times. Use let.`,
-      },
+    "wrong": {
+      "code": "function add(first, second) {\n  console.log(first + second);\n}\n\nconst total = add(4, 6) + 1;",
+      "why": "The function prints the sum but returns undefined. The caller cannot add one to the printed value. Return the result when other code needs to use it."
+    }
+  },
+  {
+    "title": "Local variables and function scope",
+    "body": "A variable declared inside a function belongs to that function's local scope. Code outside the function cannot read that local name directly. Return a value when the surrounding code needs the result, and use parameters to provide the function with its inputs.",
+    "example": {
+      "code": "function calculateTotal(price, quantity) {\n  const total = price * quantity;\n  return total;\n}\n\nconst result = calculateTotal(12, 3);\nconsole.log(result);"
     },
-  ],
+    "wrong": {
+      "code": "function calculateTotal(price, quantity) {\n  const total = price * quantity;\n}\n\nconsole.log(total);",
+      "why": "total exists only inside calculateTotal, so reading it outside the function causes a ReferenceError. Return the value and store the returned result."
+    }
+  }
+],
 
   js7: [
     {
@@ -523,61 +490,40 @@ copy.push(4);`,
   ],
 
   js9: [
-    {
-      title: "Object literals",
-      body: [
-        `An object groups key-value pairs: [[{ name: "Ada", age: 36 }]]. Keys are strings or symbols.`,
-        `Read with dot notation for known keys and brackets for dynamic ones: [[user[fieldName]]].`,
-      ],
-      example: {
-        code: `const user = { name: "Ada", age: 36 };
-console.log(user.name);`,
-        caption: `Dot notation for a fixed key.`,
-      },
-      wrong: {
-        code: `const user = { first-name: "Ada" };`,
-        why: `An unquoted hyphen is read as subtraction. Quote the key: [["first-name": "Ada"]].`,
-      },
+  {
+    "title": "Object literals and properties",
+    "body": "An object groups related information as key-value pairs. Each property has a name and a value. Use dot notation when the property name is known, or bracket notation when the key is stored in a variable.",
+    "example": {
+      "code": "const user = {\n  name: \"Mina\",\n  level: 3,\n};\n\nconsole.log(user.name);\nconst field = \"level\";\nconsole.log(user[field]);"
     },
-    {
-      title: "Methods and this",
-      body: [
-        `A property whose value is a function is a method. Inside it, [[this]] refers to the object it was called on.`,
-        `Extracting the method into a variable loses that connection; [[this]] becomes undefined in strict mode.`,
-      ],
-      example: {
-        code: `const user = {
-    name: "Ada",
-    greet() {
-        return "Hi, " + this.name;
+    "wrong": {
+      "code": "const user = {\n  first-name: \"Mina\",\n};",
+      "why": "An unquoted hyphen is read as a subtraction operator, not as part of a property name. Use a valid identifier such as firstName or quote the key and access it with brackets."
+    }
+  },
+  {
+    "title": "Add, update, and remove properties",
+    "body": "Create properties with an object literal, then update them by assigning a new value. You can add a property by assigning to a new key. The delete operator removes a property, but use it only when the property should no longer exist.",
+    "example": {
+      "code": "const book = { title: \"The Glass Library\" };\nbook.pages = 320;\nbook.read = true;\ndelete book.read;\nconsole.log(book.pages);"
     },
-};
-
-user.greet();`,
-        caption: `Called as a method, this is the user.`,
-      },
-      wrong: {
-        code: `const greet = user.greet;
-greet();`,
-        why: `The function is called with no receiver, so this is undefined and reading this.name throws.`,
-      },
+    "wrong": {
+      "code": "book.pages == 320;",
+      "why": "Double equals compares values and does not update the property. Use a single equals sign to assign a new value."
+    }
+  },
+  {
+    "title": "Methods and the this keyword",
+    "body": "A method is a function stored as an object property. When it is called through the object, this refers to the object before the dot. This lets a method use the other properties that belong to the same object.",
+    "example": {
+      "code": "const reader = {\n  name: \"Mina\",\n  greet() {\n    return \"Hello, \" + this.name;\n  },\n};\n\nconsole.log(reader.greet());",
     },
-    {
-      title: "Optional chaining",
-      body: [
-        `[[user?.address?.street]] stops and returns undefined when a link is missing. Without it, reading a property of undefined throws.`,
-        `Use [[??]] together with optional chaining for a fallback. Do not use optional chaining to hide data that should always exist.`,
-      ],
-      example: {
-        code: `const street = user?.address?.street ?? "unknown";`,
-        caption: `Reach through safely, then default.`,
-      },
-      wrong: {
-        code: `const street = user.address.street;`,
-        why: `If address is undefined this throws TypeError before any fallback can run. Add [[?.]].`,
-      },
-    },
-  ],
+    "wrong": {
+      "code": "const reader = {\n  name: \"Mina\",\n  greet() { return this.name; },\n};\n\nconst greet = reader.greet;\nconsole.log(greet());",
+      "why": "The method is called without reader as its object receiver. In module code, this is undefined inside the unbound call, so reading this.name fails. Call reader.greet() instead."
+    }
+  }
+],
 
   js16: [
     {
@@ -1008,4 +954,381 @@ const fs = require("fs");`,
       },
     },
   ],
+
+  "js17": [
+  {
+    "title": "Calculate and assign values",
+    "body": [
+      "Arithmetic operators include +, -, *, /, %, and **. Assignment operators store or update a variable, including compound forms such as += and *=.",
+      "The plus operator can add numbers or concatenate strings. Convert values deliberately when text comes from an input field."
+    ],
+    "example": {
+      "code": "let total = 10;\ntotal += 5;\nconst doubled = total * 2;",
+      "caption": "Compound assignment updates the existing value."
+    },
+    "wrong": {
+      "code": "const total = 10;\ntotal += 5;",
+      "why": "A const binding cannot be reassigned. Use let when the variable itself must change."
+    }
+  },
+  {
+    "title": "Compare values safely",
+    "body": [
+      "Strict equality === compares type and value, while loose equality == may convert operands before comparison. Relational operators compare values such as numbers or strings.",
+      "Prefer strict equality for predictable checks. Remember that NaN is not equal to itself; Number.isNaN() tests for that special numeric value."
+    ],
+    "example": {
+      "code": "if (inputValue === 10) {\n  console.log(\"Exact numeric match\");\n}",
+      "caption": "The comparison requires both value and type to match."
+    },
+    "wrong": {
+      "code": "if (inputValue == 10) {\n  console.log(\"Matched\");\n}",
+      "why": "Loose equality can convert a string such as \"10\" into a number. Use === when types should match."
+    }
+  },
+  {
+    "title": "Combine conditions and choose results",
+    "body": [
+      "&& and || combine Boolean decisions, while ! reverses a truth value. The conditional operator selects one of two expressions based on a condition.",
+      "Nullish coalescing ?? supplies a fallback only for null or undefined, unlike ||, which also replaces other falsy values such as zero and an empty string."
+    ],
+    "example": {
+      "code": "const displayName = user.name ?? \"Guest\";\nconst label = score >= 75 ? \"Pass\" : \"Retry\";",
+      "caption": "The fallback preserves a deliberately empty value."
+    },
+    "wrong": {
+      "code": "const pageSize = userSetting || 10;",
+      "why": "If a valid setting is zero, || replaces it. Use ?? when only null or undefined should trigger the fallback."
+    }
+  }
+],
+  "js18": [
+  {
+    "title": "Normalize a string",
+    "body": [
+      "trim(), toLowerCase(), and toUpperCase() return new strings with whitespace or letter case adjusted. Strings are immutable, so the original value is not changed.",
+      "Normalize input for matching when capitalization and outside spaces should not matter. Preserve the original value if its exact form is meaningful."
+    ],
+    "example": {
+      "code": "const raw = \"  ZEDX  \";\nconst clean = raw.trim().toLowerCase();",
+      "caption": "The cleaned value is a new string."
+    },
+    "wrong": {
+      "code": "const raw = \"  ZEDX  \";\nraw.trim();\nconsole.log(raw);",
+      "why": "trim() returns a new string. Assign the returned value if you need to keep it."
+    }
+  },
+  {
+    "title": "Find and extract text",
+    "body": [
+      "includes() checks for a substring, startsWith() and endsWith() check boundaries, and slice() extracts a portion of a string.",
+      "Use methods that express the intent. Avoid relying on an index without checking whether the search actually found a match."
+    ],
+    "example": {
+      "code": "const filename = \"report-final.txt\";\nif (filename.endsWith(\".txt\")) {\n  console.log(filename.slice(0, -4));\n}",
+      "caption": "The suffix is checked before removing it."
+    },
+    "wrong": {
+      "code": "const position = filename.indexOf(\".pdf\");\nconsole.log(filename.slice(0, position));",
+      "why": "When the substring is missing, indexOf returns -1. Check the result before slicing."
+    }
+  },
+  {
+    "title": "Format with template literals",
+    "body": [
+      "Template literals use backticks and ${...} placeholders to insert expressions. They can also span multiple lines without explicit newline escapes.",
+      "Template literals improve readability, but inserting untrusted text into HTML is still unsafe if the result is later parsed as markup. Use textContent for plain text."
+    ],
+    "example": {
+      "code": "const user = \"Ada\";\nconst message = `Welcome, ${user}!`;",
+      "caption": "The expression is evaluated inside the text."
+    },
+    "wrong": {
+      "code": "const message = \"Welcome, ${user}!\";",
+      "why": "Ordinary quoted strings do not interpolate ${...}. Use a template literal with backticks."
+    }
+  }
+],
+  "js19": [
+  {
+    "title": "Select elements",
+    "body": [
+      "querySelector() returns the first element matching a CSS selector, while querySelectorAll() returns a static NodeList of all matches.",
+      "Check whether a selector found an element before changing it. A missing element produces null, and accessing a property on null causes an error."
+    ],
+    "example": {
+      "code": "const title = document.querySelector(\"#page-title\");\nif (title) {\n  title.textContent = \"Overview\";\n}",
+      "caption": "The code checks that the element exists."
+    },
+    "wrong": {
+      "code": "document.querySelector(\"#missing\").textContent = \"Hello\";",
+      "why": "The selector returns null when there is no match. Check the result before accessing it."
+    }
+  },
+  {
+    "title": "Create, update, and remove nodes",
+    "body": [
+      "createElement() builds a new element, while append() and prepend() insert nodes into an existing parent. remove() detaches an element from the document.",
+      "Use textContent when setting plain text. Use classList to add, remove, or toggle CSS classes without replacing the element's full class attribute."
+    ],
+    "example": {
+      "code": "const item = document.createElement(\"li\");\nitem.textContent = \"New task\";\ndocument.querySelector(\"ul\").append(item);",
+      "caption": "The new list item is inserted as a node."
+    },
+    "wrong": {
+      "code": "list.innerHTML += userInput;",
+      "why": "This parses input as HTML and may create cross-site scripting risk. Use textContent for user-provided text."
+    }
+  },
+  {
+    "title": "Update attributes and classes",
+    "body": [
+      "setAttribute() and getAttribute() work with HTML attributes. classList offers add(), remove(), contains(), and toggle() for managing CSS classes.",
+      "Keep content, behavior, and presentation distinct. Change a class to represent a UI state, then let CSS define how it looks."
+    ],
+    "example": {
+      "code": "const card = document.querySelector(\".card\");\ncard.classList.add(\"is-active\");\ncard.setAttribute(\"aria-expanded\", \"true\");",
+      "caption": "The class and state attribute are updated."
+    },
+    "wrong": {
+      "code": "card.className = \"is-active\";",
+      "why": "Replacing className can remove unrelated classes. Use classList.add() when adding one class."
+    }
+  }
+],
+  "js20": [
+  {
+    "title": "Listen for an event",
+    "body": [
+      "addEventListener() connects a handler function to an event type such as click, input, change, or submit. The handler receives an Event object with information about what happened.",
+      "Use the event type that matches the interaction. A form should commonly handle submit, while a live text field may use input."
+    ],
+    "example": {
+      "code": "const button = document.querySelector(\"button\");\nbutton.addEventListener(\"click\", event => {\n  console.log(\"Button activated\");\n});",
+      "caption": "The callback runs when the button is activated."
+    },
+    "wrong": {
+      "code": "button.addEventListener(\"onclick\", handler);",
+      "why": "The event type is click, not onclick. The on prefix appears in HTML attributes and older property names."
+    }
+  },
+  {
+    "title": "Understand bubbling and delegation",
+    "body": [
+      "Many DOM events bubble from the event target toward ancestor elements. A parent can listen once and inspect event.target to respond to matching descendants.",
+      "Delegation works well for lists whose items are added later. Use closest() to find the intended child and contains() to confirm it belongs to the delegated container."
+    ],
+    "example": {
+      "code": "list.addEventListener(\"click\", event => {\n  const item = event.target.closest(\"li\");\n  if (item && list.contains(item)) selectItem(item);\n});",
+      "caption": "One parent handles current and future list items."
+    },
+    "wrong": {
+      "code": "list.addEventListener(\"click\", event => {\n  selectItem(event.currentTarget);\n});",
+      "why": "currentTarget is the parent listener, not the child clicked. Inspect target or use closest()."
+    }
+  },
+  {
+    "title": "Prevent defaults and manage propagation",
+    "body": [
+      "preventDefault() cancels a browser action such as a form's normal navigation. stopPropagation() stops an event from continuing through the propagation path.",
+      "Use these methods only when the intended interaction requires them. Stopping propagation indiscriminately can break other components that rely on the same event."
+    ],
+    "example": {
+      "code": "form.addEventListener(\"submit\", event => {\n  event.preventDefault();\n  saveForm();\n});",
+      "caption": "The form is handled without a full page navigation."
+    },
+    "wrong": {
+      "code": "form.addEventListener(\"submit\", () => {\n  event.preventDefault();\n});",
+      "why": "event is not defined in this callback. Accept the Event parameter."
+    }
+  }
+],
+  "js21": [
+  {
+    "title": "Serialize values to JSON",
+    "body": [
+      "JSON.stringify() converts supported JavaScript values into JSON text. This is useful when sending data to an API or storing structured values as text.",
+      "JSON supports objects, arrays, strings, numbers, booleans, and null. Functions and undefined object properties are not represented as ordinary JSON values."
+    ],
+    "example": {
+      "code": "const student = { name: \"Ada\", score: 95 };\nconst text = JSON.stringify(student);",
+      "caption": "The object becomes a JSON string."
+    },
+    "wrong": {
+      "code": "const text = student;",
+      "why": "This keeps the original object reference. Use JSON.stringify() when a text representation is needed."
+    }
+  },
+  {
+    "title": "Parse JSON text",
+    "body": [
+      "JSON.parse() reads a JSON string and returns its corresponding JavaScript value. The text must follow JSON syntax, including double-quoted property names and string values.",
+      "Parsing can throw SyntaxError when text is malformed. Handle that possibility when content comes from storage, a file, or an external service."
+    ],
+    "example": {
+      "code": "try {\n  const data = JSON.parse(responseText);\n  console.log(data.name);\n} catch (error) {\n  console.error(\"Invalid JSON\");\n}",
+      "caption": "Invalid text is handled without crashing the flow."
+    },
+    "wrong": {
+      "code": "const data = JSON.parse(\"{name: 'Ada'}\");",
+      "why": "JSON requires double-quoted property names and string values. This is not valid JSON."
+    }
+  },
+  {
+    "title": "Validate data after parsing",
+    "body": [
+      "A successful parse only proves that the text is valid JSON. It does not prove that the result has the fields or types your application expects.",
+      "Check required properties and validate values before using them. Treat external data as untrusted, even when it is encoded as JSON."
+    ],
+    "example": {
+      "code": "const data = JSON.parse(text);\nif (typeof data.name === \"string\") {\n  showName(data.name);\n}",
+      "caption": "The property is checked before use."
+    },
+    "wrong": {
+      "code": "const data = JSON.parse(text);\ndeleteAccount(data.userId);",
+      "why": "Parsing does not validate authorization or the identifier. Check permissions before a sensitive action."
+    }
+  }
+],
+  "js22": [
+  {
+    "title": "Store and retrieve simple values",
+    "body": [
+      "localStorage and sessionStorage expose setItem(), getItem(), removeItem(), and clear(). Each uses string keys and string values.",
+      "Use storage for small preferences and temporary state, not large databases or sensitive secrets. Storage access can fail in restricted browser contexts."
+    ],
+    "example": {
+      "code": "localStorage.setItem(\"theme\", \"dark\");\nconst theme = localStorage.getItem(\"theme\");",
+      "caption": "The value can be retrieved later for the same origin."
+    },
+    "wrong": {
+      "code": "localStorage.setItem(\"theme\", { mode: \"dark\" });",
+      "why": "Storage values are strings. Convert an object with JSON.stringify() before saving."
+    }
+  },
+  {
+    "title": "Understand local and session scope",
+    "body": [
+      "localStorage persists across browser restarts for the same origin. sessionStorage is associated with a page session and is normally cleared when that tab's session ends.",
+      "Storage is scoped by origin, and sessionStorage has a separate page-session scope. Do not assume different sites or tabs share the same values."
+    ],
+    "example": {
+      "code": "sessionStorage.setItem(\"draft\", \"Unsaved text\");\nconst draft = sessionStorage.getItem(\"draft\");",
+      "caption": "The draft belongs to this page session."
+    },
+    "wrong": {
+      "code": "localStorage.getItem(\"draft\");",
+      "why": "This reads from a different storage area. Use sessionStorage if data should be limited to the page session."
+    }
+  },
+  {
+    "title": "Serialize data and handle privacy",
+    "body": [
+      "Use JSON.stringify() before saving an object and JSON.parse() after reading it. A stored value may be absent or malformed, so handle both cases.",
+      "Never store passwords or session tokens in Web Storage. Page scripts can read it, so an XSS vulnerability may expose stored values."
+    ],
+    "example": {
+      "code": "const settings = { compact: true };\nlocalStorage.setItem(\"settings\", JSON.stringify(settings));",
+      "caption": "Structured settings are encoded as JSON text."
+    },
+    "wrong": {
+      "code": "localStorage.setItem(\"password\", userPassword);",
+      "why": "Web Storage is accessible to scripts running on the page. Do not store passwords or secrets."
+    }
+  }
+],
+  "js23": [
+  {
+    "title": "Run synchronous code first",
+    "body": [
+      "JavaScript executes the current call stack to completion before processing queued asynchronous callbacks. A function call runs synchronously unless it schedules work for later.",
+      "A timer with a zero delay is not an instruction to run immediately. It schedules a task that can run after the current stack and other queued work."
+    ],
+    "example": {
+      "code": "console.log(\"first\");\nsetTimeout(() => console.log(\"later\"), 0);\nconsole.log(\"second\");",
+      "caption": "The output is first, second, later."
+    },
+    "wrong": {
+      "code": "setTimeout(() => console.log(\"later\"), 0);\nconsole.log(\"first\");",
+      "why": "The timer callback is still scheduled for later. Current synchronous code runs first."
+    }
+  },
+  {
+    "title": "Understand the microtask queue",
+    "body": [
+      "Promise then, catch, and finally callbacks run as microtasks. After the current synchronous stack finishes, the browser processes pending microtasks before moving to the next task.",
+      "A microtask can schedule another microtask. A long chain can delay rendering and other tasks, so keep callback work small."
+    ],
+    "example": {
+      "code": "console.log(\"A\");\nPromise.resolve().then(() => console.log(\"microtask\"));\nconsole.log(\"B\");",
+      "caption": "The order is A, B, microtask."
+    },
+    "wrong": {
+      "code": "Promise.resolve().then(() => console.log(\"microtask\"));\nconsole.log(\"A\");",
+      "why": "The callback does not interrupt the current stack. A is logged before the microtask."
+    }
+  },
+  {
+    "title": "Predict task and microtask order",
+    "body": [
+      "A simplified browser model runs a task, drains the microtask queue, may update rendering, and then selects another task. This helps explain why promise callbacks can run before timers.",
+      "Do not use timing guesses as synchronization. Use promises, events, or explicit state to know when asynchronous work is complete."
+    ],
+    "example": {
+      "code": "setTimeout(() => console.log(\"timer\"), 0);\nPromise.resolve().then(() => console.log(\"promise\"));\nconsole.log(\"sync\");",
+      "caption": "The order is sync, promise, timer."
+    },
+    "wrong": {
+      "code": "setTimeout(() => console.log(\"timer\"), 0);\nconsole.log(\"timer finished\");",
+      "why": "Scheduling a timer does not mean its callback has run. It executes in a later task."
+    }
+  }
+],
+  "js24": [
+  {
+    "title": "Move CPU work to a worker",
+    "body": [
+      "A Web Worker runs JavaScript on a separate thread from the page's main thread. It can perform computation without directly manipulating the document UI.",
+      "Communicate with a worker using postMessage() and message events. Data is passed through structured cloning or transferable objects."
+    ],
+    "example": {
+      "code": "const worker = new Worker(\"worker.js\");\nworker.postMessage({ count: 1000 });\nworker.onmessage = event => console.log(event.data);",
+      "caption": "The page sends data and receives a result."
+    },
+    "wrong": {
+      "code": "const worker = new Worker(\"worker.js\");\nworker.document.querySelector(\"h1\");",
+      "why": "A worker does not have access to the page DOM. Send messages to request UI updates on the main thread."
+    }
+  },
+  {
+    "title": "Handle worker messages and lifecycle",
+    "body": [
+      "A worker can listen for message events and send results back with postMessage(). The page can terminate a worker when its task is no longer needed.",
+      "Workers suit CPU-heavy tasks, not every small asynchronous operation. Creating too many workers adds memory and scheduling overhead."
+    ],
+    "example": {
+      "code": "// worker.js\nself.onmessage = event => {\n  const result = event.data.count * 2;\n  self.postMessage(result);\n};",
+      "caption": "The worker receives a message and replies."
+    },
+    "wrong": {
+      "code": "// worker.js\ndocument.body.textContent = \"Done\";",
+      "why": "Workers do not have document access. Send the result to the page and update the DOM there."
+    }
+  },
+  {
+    "title": "Exchange messages with WebSockets",
+    "body": [
+      "WebSocket provides a persistent full-duplex connection. The browser and server can both send messages after the connection is established.",
+      "Handle open, message, error, and close events. Validate message contents and authenticate users on the server; an open connection does not grant permission."
+    ],
+    "example": {
+      "code": "const socket = new WebSocket(\"wss://example.com/live\");\nsocket.addEventListener(\"message\", event => {\n  console.log(event.data);\n});",
+      "caption": "The page listens for incoming messages."
+    },
+    "wrong": {
+      "code": "const socket = new WebSocket(\"https://example.com/live\");",
+      "why": "WebSocket URLs use ws or wss schemes, not ordinary http or https."
+    }
+  }
+],
 };
