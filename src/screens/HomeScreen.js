@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 import ContinueStrip from "../components/ContinueStrip";
 import FadeIn from "../components/FadeIn";
 import IndexRow from "../components/IndexRow";
+import PressableScale from "../components/PressableScale";
 import Screen from "../components/Screen";
 import SectionHead from "../components/SectionHead";
 import ThemeToggle from "../components/ThemeToggle";
@@ -78,7 +79,7 @@ const findResume = async () => {
   return null;
 };
 
-export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
+export default function HomeScreen({ onSelectLanguage, onOpenTopic, onOpenDebuggingLab }) {
   const { colors } = useTheme();
   const [percents, setPercents] = useState({});
   const [resume, setResume] = useState(null);
@@ -144,6 +145,32 @@ export default function HomeScreen({ onSelectLanguage, onOpenTopic }) {
             The library you would need
           </Text>
         </View>
+
+        <PressableScale
+          onPress={onOpenDebuggingLab}
+          accessibilityRole="button"
+          accessibilityLabel="Open the offline Debugging Lab"
+          style={[
+            styles.labLink,
+            {
+              borderTopColor: colors.ruleStrong,
+              borderBottomColor: colors.rule,
+            },
+          ]}
+        >
+          <View style={styles.labLinkCopy}>
+            <Text style={[TYPO.label, { color: colors.accent }]}>
+              Practice tools · Offline
+            </Text>
+            <Text style={[TYPO.item, styles.labTitle, { color: colors.ink }]}>
+              Debugging Lab
+            </Text>
+            <Text style={[TYPO.small, { color: colors.muted }]}>
+              Find the faulty line. Choose the fix.
+            </Text>
+          </View>
+          <Text style={[TYPO.label, { color: colors.accent }]}>OPEN →</Text>
+        </PressableScale>
 
         <SectionHead
           left="Index"
@@ -219,6 +246,24 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   masthead: { paddingTop: 26, paddingBottom: 26 },
+  labLink: {
+    minHeight: 88,
+    paddingVertical: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 28,
+  },
+  labLinkCopy: {
+    flex: 1,
+    gap: 5,
+  },
+  labTitle: {
+    marginTop: 1,
+  },
   title: { marginTop: 12 },
   subtitle: { marginTop: 10 },
   lede: { marginTop: 14, maxWidth: 330 },

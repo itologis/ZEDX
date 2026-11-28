@@ -23,6 +23,7 @@ import {
 
 import AssessmentScreen from "./src/screens/AssessmentScreen";
 import HomeScreen from "./src/screens/HomeScreen";
+import DebuggingLabScreen from "./src/screens/DebuggingLabScreen";
 import IntroScreen from "./src/screens/IntroScreen";
 import LevelsScreen from "./src/screens/LevelsScreen";
 import QuizScreen from "./src/screens/QuizScreen";
@@ -101,6 +102,10 @@ function Root() {
 
   const goAssessment = useCallback((languageKey, dir = "forward") => {
     navigate({ name: "assessment", languageKey }, dir);
+  }, [navigate]);
+
+  const goDebuggingLab = useCallback((dir = "forward") => {
+    navigate({ name: "debuggingLab" }, dir);
   }, [navigate]);
 
   // `topicOrId` is either a full topic object (from Levels) or a topic id
@@ -244,9 +249,16 @@ function Root() {
     content = (
       <HomeScreen
         onSelectLanguage={goIntro}
+        onOpenDebuggingLab={() => goDebuggingLab()}
         onOpenTopic={(languageKey, topicId) =>
           goTopic(languageKey, topicId, "home")
         }
+      />
+    );
+  } else if (screen.name === "debuggingLab") {
+    content = (
+      <DebuggingLabScreen
+        onBack={() => handleNavigate("home", "back")}
       />
     );
   } else if (screen.name === "search") {

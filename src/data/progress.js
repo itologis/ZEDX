@@ -370,6 +370,37 @@ export const savePracticeDone = async (languageKey, topicId) => {
 };
 
 // ============================================================
+// DEBUGGING LAB (separate from lesson, practice, and quiz progress)
+// ============================================================
+
+const debuggingLabProgressKey = "debugging_lab_progress_v1";
+
+export const getDebuggingLabProgress = async (languageKey) => {
+  const progress = await read(debuggingLabProgressKey, {});
+  const solved = progress?.[languageKey];
+  return Array.isArray(solved) ? solved : [];
+};
+
+export const saveDebuggingLabSolved = async (languageKey, challengeId) => {
+  try {
+    const progress = await readObjectStrict(debuggingLabProgressKey);
+    const solved = Array.isArray(progress[languageKey])
+      ? progress[languageKey]
+      : [];
+
+    if (!solved.includes(challengeId)) {
+      progress[languageKey] = [...solved, challengeId];
+      return write(debuggingLabProgressKey, progress);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error saving debugging lab progress:", error);
+    return false;
+  }
+};
+
+// ============================================================
 // MISSED QUESTIONS (for review mode)
 // ============================================================
 

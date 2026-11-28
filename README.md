@@ -11,17 +11,18 @@ Built with Expo (SDK 58) and React Native. Runs on Android, iOS, and web.
 - **166 topics** across the seven languages: 58 Beginner, 42 Intermediate, and 66 Advanced.
 - **Lessons** — every topic has three lesson chapters with explanations, working examples, and wrong-code comparisons. All 58 Beginner topics include guided goals, plain-language explanations, worked walkthroughs, and comprehension checks. Each language also has a self-directed Beginner capstone.
 - **Practice** — one fill-in-the-blank exercise per topic, with an explanation.
+- **Debugging Lab** — 42 offline challenges across HTML, CSS, Java, Python, JavaScript, PHP, and SQL. Each language has Beginner, Intermediate, and Advanced exercises where learners find a faulty line, choose a repair, receive specific feedback for wrong repairs, reveal hints whenever they need them, and review the corrected code. Solved progress is saved separately on the device, and completed challenges can be replayed.
 - **Quizzes** — per language and per level, with topic-tagged Beginner and Intermediate coverage, four options per question, and a two-thirds passing threshold.
 - **Initial assessment** — a starting test to see where a student is.
-- **Progress** — lesson completion, practice, quiz passes, bookmarks, and missed questions are saved on the device. Curriculum migrations preserve completed topic IDs when topics change levels.
+- **Progress** — lesson completion, practice, debugging challenges, quiz passes, bookmarks, and missed questions are saved on the device. Curriculum migrations preserve completed topic IDs when topics change levels.
 - **Saved topics** and **search** — so any lesson is one tap away.
 - **Offline** — no internet needed, nothing leaves the phone.
 
 ## Screens
 
-Home · Intro · Levels · Topic · Quiz · Quizzes · Assessment · Search · Saved
+Home · Intro · Levels · Topic · Quiz · Quizzes · Assessment · Debugging Lab · Search · Saved
 
-The bottom tabs stay visible on browse screens (Home, Intro, Levels, Topic). The assessment and quiz hide the tabs and confirm before you leave, since they're focused flows.
+The bottom tabs stay visible on browse screens (Home, Intro, Levels, Topic). The assessment, quiz, and Debugging Lab hide the tabs; the assessment and quiz confirm before you leave, while the lab returns directly to Home.
 
 ## How to run
 
@@ -41,11 +42,13 @@ npm run android    # or: npm run ios / npm run web
 - `src/data/lessons/<language>.js` — the chapter content for each topic, keyed by topic id. Every chapter has three steps (`title`, `body`, `example`, `wrong`, `gotcha`).
 - `src/data/lessonGuides*.js` — guided teaching notes for Beginner lessons: learning goals, explanations, worked walkthroughs, comprehension checks, and capstone briefs.
 - `src/data/practice.js` — one fill-in-the-blank exercise per topic, with two wrong options and an explanation.
+- `src/data/debuggingLab.js` — offline debugging challenges for all seven languages, with faulty line numbers, repair choices, hints, and explanations.
 - `src/data/quiz.js` — the per-language, per-level quizzes and the question pool the assessment draws from.
 - `src/data/languages.js` — the list of languages the screens read from. Topics are picked up automatically, so adding a topic needs no screen changes.
-- `src/data/progress.js` — progress, quiz versions, assessment versions, and idempotent curriculum migrations stored with AsyncStorage.
+- `src/data/progress.js` — lesson, practice, debugging, and quiz progress, assessment versions, and idempotent curriculum migrations stored with AsyncStorage.
 - `src/data/curriculum.js` — promoted topic IDs and saved-data version constants.
 - `scripts/check-content-coverage.cjs` — the coverage checker behind `npm run check:content`.
+- `scripts/check-debugging-lab.cjs` — validates all debugging challenges and their separate local progress flow.
 
 ## Scripts
 
@@ -56,6 +59,7 @@ npm run android    # or: npm run ios / npm run web
 | `npm run lint` | ESLint via expo lint |
 | `npm run check:content` | Check that the content is complete and the progress flows work |
 | `npm run check:answers` | Check correct/wrong feedback wiring, retry resets, and assessment answer visibility |
+| `npm run check:debugging` | Check challenge coverage, repair data, and isolated local progress for all seven languages |
 | `npm run check:migration` | Test curriculum progress migration, quiz/assessment versioning, and missed-question re-keying |
 
 ## Design
